@@ -6,11 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "deploy-develop": "curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_PlesAIkhdZboVwiAtZsp9HidToLl/6ZvTA45H3O"
+    "deploy-develop": "curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_PlesAIkhdZboVwiAtZsp9HidToLl/6ZvTA45H3O",
+    "codegen": "graphql-codegen --config codegen.ts"
   },
   "dependencies": {
     "@apollo/client": "^4.0.7",
-    "@apollo/experimental-nextjs-app-support": "^0.13.2",
+    "@apollo/client-integration-nextjs": "^0.13.2",
     "@apollo/server": "^5.0.0",
     "@as-integrations/next": "^4.0.0",
     "@graphql-codegen/cli": "^6.0.0",

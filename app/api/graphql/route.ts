@@ -1,18 +1,18 @@
-import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
+import { ApolloServer } from '@apollo/server';
+import { startServerAndCreateNextHandler } from '@as-integrations/next';
+import { NextRequest } from 'next/server';
+import { typeDefs } from '@/graphql/schema';
+import { resolvers } from '@/graphql/resolvers';
+import { createContext } from '@/graphql/context';
 
-export async function GET() {
-  try {
-    // Example query to fetch all users
-    const result = await query("SELECT * FROM users");
-    return NextResponse.json({ success: true, users: result.rows });
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error("Error fetching users:", error);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
-    } else {
-      console.error("Error fetching users:", error);
-      return NextResponse.json({ success: false, error: "An unknown error occurred" }, { status: 500 });
-    }
-  }
-}
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+  introspection: true, // Enable for development
+});
+
+const handler = startServerAndCreateNextHandler<NextRequest>(server, {
+  context: createContext,
+});
+
+export { handler as GET, handler as POST };
