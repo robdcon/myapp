@@ -2,8 +2,8 @@ import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 
 // Pool configuration interface
 interface PoolConfig {
-  host?: string;
-  port?: number;
+  host: string;
+  port: number;
   database: string;
   user: string;
   password: string;
@@ -14,11 +14,11 @@ interface PoolConfig {
 
 // Create a connection pool
 const pool = new Pool({
-  host: process.env.PGHOST || 'localhost',
-  port: parseInt(process.env.PGPORT || '5432'),
-  database: process.env.PGDATABASE!,
-  user: process.env.PGUSER!,
-  password: process.env.PGPASSWORD!
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    host: process.env.PGHOST,
+    port: parseInt(process.env.PGPORT || '5432'),
+    database: process.env.PGDATABASE
 });
 
 // Main query function
