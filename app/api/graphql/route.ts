@@ -4,11 +4,15 @@ import { NextRequest } from 'next/server';
 import { typeDefs } from '@/graphql/schema';
 import { resolvers } from '@/graphql/resolvers';
 import { createContext } from '@/graphql/context';
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
 
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  introspection: true, // Enable for development
+  introspection: true,
+  plugins: [
+    ApolloServerPluginLandingPageLocalDefault({ embed: true }),
+  ],
 });
 
 const handler = startServerAndCreateNextHandler<NextRequest>(server, {
