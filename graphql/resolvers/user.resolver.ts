@@ -8,8 +8,7 @@ export const userResolvers = {
     },
     user: async (_: any, { email }: { email: string }) => {
       console.log('Fetching user with id:', email);
-      
-      return await queryOne('SELECT * FROM users WHERE id = $1', [email]);
+      return await queryOne('SELECT * FROM users WHERE email = $1', [email]);
     },
   },
   
@@ -25,11 +24,12 @@ export const userResolvers = {
   
   User: {
     boards: async (parent: any) => {
+      
       const result = await query(
-        'SELECT * FROM boards WHERE user_id = $1',
+        'SELECT * FROM user_boards WHERE user_id = $1',
         [parent.id]
       );
-      return result.rows;
+      return result.rows.map(row => row.board_id);
     },
   },
 };
