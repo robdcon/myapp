@@ -3,11 +3,13 @@ import { query, queryOne } from '@/lib/db';
 export const userResolvers = {
   Query: {
     users: async () => {
-      const result = await query('SELECT * FROM users ORDER BY created_at DESC');
+      const result = await query('SELECT * FROM users');
       return result.rows;
     },
-    user: async (_: any, { id }: { id: string }) => {
-      return await queryOne('SELECT * FROM users WHERE id = $1', [id]);
+    user: async (_: any, { email }: { email: string }) => {
+      console.log('Fetching user with id:', email);
+      
+      return await queryOne('SELECT * FROM users WHERE id = $1', [email]);
     },
   },
   
