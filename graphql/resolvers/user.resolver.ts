@@ -7,7 +7,7 @@ export const userResolvers = {
       return result.rows;
     },
     user: async (_: any, { email }: { email: string }) => {
-      console.log('Fetching user with id:', email);
+      console.log('Fetching user with email:', email);
       return await queryOne('SELECT * FROM users WHERE email = $1', [email]);
     },
   },
@@ -24,7 +24,6 @@ export const userResolvers = {
   
   User: {
     boards: async (parent: any) => {
-      
       const result = await query(
         'SELECT * FROM user_boards WHERE user_id = $1',
         [parent.id]
