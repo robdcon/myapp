@@ -1,14 +1,16 @@
 import { NextRequest } from 'next/server';
+import { auth0 } from "@/lib/auth0";
 
 export interface GraphQLContext {
   req: NextRequest;
-  // Add user session, auth tokens, etc.
+  user: any | null;
 }
 
 export async function createContext(req: NextRequest): Promise<GraphQLContext> {
+  const session = await auth0.getSession();
+  
   return {
     req,
-    // You can add authentication logic here
-    // user: await getUserFromToken(req.headers.get('authorization'))
+    user: session?.user || null,
   };
 }

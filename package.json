@@ -14,6 +14,7 @@
     "@apollo/client-integration-nextjs": "^0.13.2",
     "@apollo/server": "^5.0.0",
     "@as-integrations/next": "^4.0.0",
+    "@auth0/nextjs-auth0": "^4.10.0",
     "@graphql-codegen/cli": "^6.0.0",
     "graphql": "^16.11.0",
     "graphql-playground-html": "^1.6.30",
