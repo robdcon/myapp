@@ -7,7 +7,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "deploy-develop": "curl -X POST https://api.vercel.com/v1/integrations/deploy/prj_PlesAIkhdZboVwiAtZsp9HidToLl/6ZvTA45H3O",
-    "codegen": "graphql-codegen --config codegen.ts"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "push":"git push -u origin $(git branch --show-current)" 
   },
   "dependencies": {
     "@apollo/client": "^4.0.7",
