@@ -19,6 +19,39 @@ export const itemResolvers = {
 
             return result;
         },
+        
+        createItem: async (
+            _: any, 
+            { boardId, name, details, category }: { 
+                boardId: string; 
+                name: string; 
+                details?: string; 
+                category?: string;
+            }, 
+            context: GraphQLContext
+        ) => {
+            if (!context.user || !context.dbUser) {
+                throw new Error('Not authenticated');
+            }
+
+            const userId = context.dbUser.id;
+
+            try {
+                const result = await queryOne(
+                    `INSERT INTO items (board_id, name, details, category, created_by, is_checked)
+                     VALUES ($1, $2, $3, $4, $5, false)
+                     RETURNING *`,
+                    [boardId, name, details, category, userId]
+                );
+
+                return result;
+            } catch (error: any) {
+                if (error.code === '23505') {
+                    throw new Error(`Item "${name}" already exists on this board`);
+                }
+                throw error;
+            }
+        },
     },
 
     Query: {
