@@ -8,7 +8,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ApolloWrapper>{children}</ApolloWrapper>
+        
+          <ApolloWrapper>
+            {children}
+          </ApolloWrapper>
+        
       </body>
     </html>
   );

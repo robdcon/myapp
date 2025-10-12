@@ -1,11 +1,11 @@
 import { userResolvers } from './user.resolver';
-// import { boardResolvers } from './board.resolver';
+import { boardResolvers } from './board.resolver';
 // import { itemResolvers } from './item.resolver';
 
 export const resolvers = {
     Query: {
         ...userResolvers.Query,
-        // ...boardResolvers.Query,
+        ...boardResolvers.Query,
         // ...itemResolvers.Query,
     },
     Mutation: {

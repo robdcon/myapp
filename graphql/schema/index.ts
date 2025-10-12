@@ -6,6 +6,7 @@ export const typeDefs = `#graphql
         boards(user: String!): [Int]
         item(id: String!): Item
         items(board: Int!): [Item]
+        myBoards: [Board!]!
     }
     
     type Mutation {
@@ -36,8 +37,16 @@ export const typeDefs = `#graphql
     }
 
     type Board {
-        id: Int!
-        name: String
-        board_type: String
+        id: ID!
+        name: String!
+        board_type: BoardType!
+        user_id: String
+        created_at: String!
+        updated_at: String!
+    }
+
+    enum BoardType {
+        NOTICE_BOARD
+        CHECKLIST
     }
 `;

@@ -15,7 +15,7 @@ const server = new ApolloServer({
   ],
 });
 
-const handler = startServerAndCreateNextHandler<NextRequest>(server, {
+const handler = startServerAndCreateNextHandler<NextRequest>(server as ApolloServer<object>, {
   context: createContext,
 });
 

@@ -13,3 +13,6 @@ If the board is a checklist, I want to be able to check and uncheck items
 AC5:
 Items in a checklist should be able to be sorted into categories, e.g. an item has a category property and each items in a common category should be grouped together with a heading.
 
+AC6:
+When I log in, I want to be shown a list of links to the boards saved to my profile
+
