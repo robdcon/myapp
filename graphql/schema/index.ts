@@ -47,5 +47,6 @@ export const typeDefs = gql`
   type Mutation {
     createUser(name: String!, email: String!): User!
     toggleItemCheck(itemId: ID!): Item!
+    createItem(boardId: ID!, name: String!, details: String, category: String): Item!
   }
 `;
