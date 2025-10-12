@@ -40,13 +40,11 @@ export async function query<T extends QueryResultRow = any>(
 }
 
 // Get a single row
-export async function queryOne<T extends QueryResultRow = any>(
-  text: string,
-  params: any[] = []
-): Promise<T | null> {
-  const res = await query<T>(text, params);
-  return res.rows[0] || null;
-}
+export const queryOne = async (text: string, params?: any[]) => {
+  const result = await pool.query(text, params);
+  console.log('🔍 queryOne result:', result.rows[0]); // Add this log
+  return result.rows[0];
+};
 
 // Get all rows
 export async function queryMany<T extends QueryResultRow = any>(
