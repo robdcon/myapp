@@ -30,6 +30,18 @@ const TOGGLE_ITEM_CHECK = gql`
   }
 `;
 
+const GET_ITEM_QUERY = gql`
+  query GetItem($id: ID!) {
+    item(id: $id) {
+      id
+      name
+      details
+      is_checked
+      category
+    }
+  }
+`;
+
 interface BoardItemsProps {
   boardId: string;
 }
@@ -55,9 +67,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
     variables: { id: boardId },
   });
 
-  const [toggleCheck] = useMutation(TOGGLE_ITEM_CHECK, {
-    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
-  });
+  const [toggleCheck] = useMutation(TOGGLE_ITEM_CHECK);
 
   if (loading) return <p>Loading board...</p>;
   if (error) return <p>Error: {error.message}</p>;
@@ -94,7 +104,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
                   <input
                     type="checkbox"
                     checked={item.is_checked}
-                    onChange={() => toggleCheck({ variables: { itemId: item.id } })}
+                    onChange={() => toggleCheck({ variables: { itemId: item.id }, refetchQueries: [{ query: GET_ITEM_QUERY }] })}
                     className="mt-1 w-5 h-5 cursor-pointer"
                   />
                 )}
