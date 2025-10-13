@@ -14,7 +14,35 @@ function makeClient() {
   });
 
   return new ApolloClient({
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        Item: {
+          keyFields: ['id'],
+          fields: {
+            is_checked: {
+              // This allows optimistic updates to work smoothly
+              merge(existing, incoming) {
+                return incoming;
+              },
+            },
+          },
+        },
+        Query: {
+          fields: {
+            board: {
+              merge(existing, incoming) {
+                return incoming;
+              },
+            },
+          },
+        },
+      },
+    }),
+    defaultOptions: {
+      watchQuery: {
+        fetchPolicy: 'cache-and-network',
+      },
+    },
     link:
       typeof window === 'undefined'
         ? ApolloLink.from([

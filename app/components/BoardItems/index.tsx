@@ -104,7 +104,17 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
                   <input
                     type="checkbox"
                     checked={item.is_checked}
-                    onChange={() => toggleCheck({ variables: { itemId: item.id } })}
+                    onChange={() => toggleCheck({ 
+                      variables: { itemId: item.id }, 
+                      refetchQueries: [{ query: GET_ITEM_QUERY, variables: { id: item.id } }] ,
+                      optimisticResponse: {
+                        toggleItemCheck: {
+                          id: item.id,
+                          is_checked: !item.is_checked,
+                          __typename: 'Item'
+                        }
+                      }
+                    })}
                     className="mt-1 w-5 h-5 cursor-pointer"
                   />
                 )}

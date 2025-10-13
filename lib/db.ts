@@ -41,8 +41,10 @@ export async function query<T extends QueryResultRow = any>(
 
 // Get a single row
 export const queryOne = async (text: string, params?: any[]) => {
+  const start = Date.now();
   const result = await pool.query(text, params);
-  console.log('🔍 queryOne result:', result.rows[0]); // Add this log
+  const duration = Date.now() - start;
+  console.log('🔍 queryOne executed', { duration, rows: result.rowCount, hasResult: !!result.rows[0] });
   return result.rows[0];
 };
 
