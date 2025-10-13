@@ -34,8 +34,24 @@ interface BoardItemsProps {
   boardId: string;
 }
 
+interface BoardData {
+  board: {
+    id: string;
+    name: string;
+    board_type: string;
+    description?: string;
+    items: Array<{
+      id: string;
+      name: string;
+      details?: string;
+      is_checked: boolean;
+      category?: string;
+    }>;
+  };
+}
+
 export default function BoardItems({ boardId }: BoardItemsProps) {
-  const { loading, error, data } = useQuery(GET_BOARD_QUERY, {
+  const { loading, error, data } = useQuery<BoardData>(GET_BOARD_QUERY, {
     variables: { id: boardId },
   });
 
@@ -74,7 +90,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
                 key={item.id}
                 className="flex items-start gap-3 p-4 bg-white border rounded-lg hover:shadow-sm transition"
               >
-                {board.board_type === 'CHECKLIST' && (
+                {board?.board_type === 'CHECKLIST' && (
                   <input
                     type="checkbox"
                     checked={item.is_checked}
