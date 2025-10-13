@@ -96,15 +96,15 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
           <h2 className="text-xl font-semibold mb-4 text-gray-700">{category}</h2>
           <div className="space-y-2">
             {items.map((item: any) => (
-              <div
+              <label
                 key={item.id}
-                className="flex items-start gap-3 p-4 bg-white border rounded-lg hover:shadow-sm transition"
+                className="flex items-start gap-3 p-4 bg-white border rounded-lg hover:shadow-sm transition cursor-pointer"
               >
                 {board?.board_type === 'CHECKLIST' && (
                   <input
                     type="checkbox"
                     checked={item.is_checked}
-                    onChange={() => toggleCheck({ variables: { itemId: item.id }, refetchQueries: [{ query: GET_ITEM_QUERY }] })}
+                    onChange={() => toggleCheck({ variables: { itemId: item.id } })}
                     className="mt-1 w-5 h-5 cursor-pointer"
                   />
                 )}
@@ -116,7 +116,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
                     <p className="text-sm text-gray-600 mt-1">{item.details}</p>
                   )}
                 </div>
-              </div>
+              </label>
             ))}
           </div>
         </div>
