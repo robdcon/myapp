@@ -3,6 +3,7 @@
 import { useQuery } from '@apollo/client/react';
 import { gql } from '@apollo/client';
 import Link from 'next/link';
+import { MyBoardsData } from '@/types';
 
 const MY_BOARDS_QUERY = gql`
   query MyBoards {
@@ -14,16 +15,6 @@ const MY_BOARDS_QUERY = gql`
     }
   }
 `;
-
-interface MyBoardsData {
-  myBoards: {
-    id: string;
-    name: string;
-    type: string;
-    created_at: string;
-    board_type: string;
-  }[];
-}
 
 export default function BoardList() {
   const { loading, error, data } = useQuery<MyBoardsData>(MY_BOARDS_QUERY);

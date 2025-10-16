@@ -48,5 +48,7 @@ export const typeDefs = gql`
     createUser(name: String!, email: String!): User!
     toggleItemCheck(itemId: ID!): Item!
     createItem(boardId: ID!, name: String!, details: String, category: String): Item!
+    updateItem(itemId: ID!, name: String, details: String, category: String): Item!
+    deleteItem(itemId: ID!): Boolean!
   }
 `;

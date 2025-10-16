@@ -1,8 +1,19 @@
 'use client';
 
 import { useQuery, useMutation } from '@apollo/client/react';
+import { gql } from '@apollo/client';
+
+import Link from 'next/link';
 import { useState } from 'react';
-import { gql } from '@apollo/client'
+import StickyFooter from '@/app/components/StickyFooter';
+import BoardActions from '@/app/components/BoardActions';
+import ItemForm from '@/app/components/ItemForm';
+import { 
+  BoardItemsProps, 
+  GetBoardData, 
+  ItemFormData,
+  Item 
+} from '@/types';
 
 const GET_BOARD_QUERY = gql`
   query GetBoard($id: ID!) {
@@ -31,18 +42,6 @@ const TOGGLE_ITEM_CHECK = gql`
   }
 `;
 
-const GET_ITEM_QUERY = gql`
-  query GetItem($id: ID!) {
-    item(id: $id) {
-      id
-      name
-      details
-      is_checked
-      category
-    }
-  }
-`;
-
 const CREATE_ITEM = gql`
   mutation CreateItem($boardId: ID!, $name: String!, $details: String, $category: String) {
     createItem(boardId: $boardId, name: $name, details: $details, category: $category) {
@@ -55,40 +54,33 @@ const CREATE_ITEM = gql`
   }
 `;
 
-interface BoardItemsProps {
-  boardId: string;
-}
-
-interface BoardData {
-  board: {
-    id: string;
-    name: string;
-    board_type: string;
-    description?: string;
-    items: Array<{
-      id: string;
-      name: string;
-      details?: string;
-      is_checked: boolean;
-      category?: string;
-    }>;
-  };
-}
+const UPDATE_ITEM = gql`
+  mutation UpdateItem($itemId: ID!, $name: String, $details: String, $category: String) {
+    updateItem(itemId: $itemId, name: $name, details: $details, category: $category) {
+      id
+      name
+      details
+      is_checked
+      category
+    }
+  }
+`;
 
 export default function BoardItems({ boardId }: BoardItemsProps) {
   const [isAddingItem, setIsAddingItem] = useState(false);
-  const [newItem, setNewItem] = useState({ name: '', details: '', category: '' });
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
-  const { loading, error, data } = useQuery<BoardData>(GET_BOARD_QUERY, {
+  const { loading, error, data } = useQuery<GetBoardData>(GET_BOARD_QUERY, {
     variables: { id: boardId },
   });
 
-  const [toggleCheck] = useMutation(TOGGLE_ITEM_CHECK);
+  const [toggleCheck] = useMutation(TOGGLE_ITEM_CHECK, {
+    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
+  });
 
   const [createItem, { loading: creating }] = useMutation(CREATE_ITEM, {
     refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
     onCompleted: () => {
-      setNewItem({ name: '', details: '', category: '' });
       setIsAddingItem(false);
     },
     onError: (error) => {
@@ -96,27 +88,66 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newItem.name.trim()) return;
+  const [updateItem, { loading: updating }] = useMutation(UPDATE_ITEM, {
+    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
+    onCompleted: () => {
+      setEditingItemId(null);
+    },
+    onError: (error) => {
+      alert(error.message);
+    },
+  });
 
+  const handleCreateItem = (item: { name: string; details: string; category: string }) => {
     createItem({
       variables: {
         boardId,
-        name: newItem.name.trim(),
-        details: newItem.details.trim() || null,
-        category: newItem.category.trim() || null,
+        name: item.name.trim(),
+        details: item.details.trim() || null,
+        category: item.category.trim() || null,
       },
     });
   };
 
-  if (loading) return <p>Loading board...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  const handleUpdateItem = (item: { name: string; details: string; category: string }) => {
+    if (!editingItemId) return;
+    
+    updateItem({
+      variables: {
+        itemId: editingItemId,
+        name: item.name.trim(),
+        details: item.details.trim() || null,
+        category: item.category.trim() || null,
+      },
+    });
+  };
+
+  const handleResetChecks = () => {
+    (board?.items ?? [])
+      .filter((i: any) => i.is_checked)
+      .forEach((i: any) => toggleCheck({ variables: { itemId: i.id } }));
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-gray-500">Loading board...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p className="text-red-600">Error: {error.message}</p>
+      </div>
+    );
+  }
 
   const board = data?.board;
-
+  
   // Group items by category
-  const itemsByCategory = board?.items.reduce((acc: any, item: any) => {
+  const itemsByCategory = board?.items?.reduce((acc: any, item: any) => {
     const category = item.category || 'Uncategorized';
     if (!acc[category]) {
       acc[category] = [];
@@ -125,136 +156,154 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
     return acc;
   }, {});
 
-  // Get unique categories for the dropdown
+  // Get unique categories
   const categories = board?.items?.map((item: any) => item.category).filter(Boolean);
-  const uniqueCategories = [...new Set(categories)].sort((a, b) => a.localeCompare(b));
+  const uniqueCategories = [...new Set(categories)].sort();
+
+  const editingItem = editingItemId 
+    ? board?.items?.find((i: any) => i.id === editingItemId) 
+    : null;
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-2">{board?.name}</h1>
-      {board?.description && (
-        <p className="text-gray-600 mb-6">{board.description}</p>
-      )}
-
-      {Object.entries(itemsByCategory || {}).map(([category, items]: [string, any]) => (
-        <div key={category} className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700">{category}</h2>
-          <div className="space-y-2">
-            {items.map((item: any) => (
-              <label
-                key={item.id}
-                className="flex items-start gap-3 p-4 bg-white border rounded-lg hover:shadow-sm transition cursor-pointer"
-              >
-                {board?.board_type === 'CHECKLIST' && (
-                  <input
-                    type="checkbox"
-                    checked={item.is_checked}
-                    onChange={() => toggleCheck({
-                      variables: { itemId: item.id },
-                      refetchQueries: [{ query: GET_ITEM_QUERY, variables: { id: item.id } }],
-                      optimisticResponse: {
-                        toggleItemCheck: {
-                          id: item.id,
-                          is_checked: !item.is_checked,
-                          __typename: 'Item'
-                        }
-                      }
-                    })}
-                    className="mt-1 w-5 h-5 cursor-pointer"
-                  />
-                )}
-                <div className="flex-1">
-                  <h3 className={`font-medium ${item.is_checked ? 'line-through text-gray-400' : ''}`}>
-                    {item.name}
-                  </h3>
-                  {item.details && (
-                    <p className="text-sm text-gray-600 mt-1">{item.details}</p>
-                  )}
-                </div>
-              </label>
-            ))}
+    <div className="max-w-4xl mx-auto pb-24">
+      {/* Header */}
+      <div className="mb-8">
+        <Link 
+          href="/"
+          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to boards
+        </Link>
+        
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">{board?.name}</h1>
+            
+            {board?.description && (
+              <p className="text-lg text-gray-600">{board.description}</p>
+            )}
+            
+            <div className="mt-3 flex items-center gap-3">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                {board?.board_type === 'CHECKLIST' ? '✓ Checklist' : '📋 Notice Board'}
+              </span>
+              
+              {board?.board_type === 'CHECKLIST' && (board?.items?.length ?? 0) > 0 && (
+                <span className="text-sm text-gray-600">
+                  {(board?.items?.filter((i: any) => i.is_checked).length ?? 0)} / {(board?.items?.length ?? 0)} completed
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      ))}
-      <button
-        onClick={() => setIsAddingItem(true)}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-      >
-        + Add Item
-      </button>
+      </div>
+
+      {/* Add Item Form */}
       {isAddingItem && (
-        <div className="mb-6 p-6 bg-white border-2 border-blue-200 rounded-lg">
-          <h3 className="text-lg font-semibold mb-4">Add New Item</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Item Name *
-              </label>
-              <input
-                type="text"
-                value={newItem.name}
-                onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                placeholder="e.g., Strawberries"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                autoFocus
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Details (optional)
-              </label>
-              <input
-                type="text"
-                value={newItem.details}
-                onChange={(e) => setNewItem({ ...newItem, details: e.target.value })}
-                placeholder="e.g., 2 packs"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category (optional)
-              </label>
-              <input
-                type="text"
-                value={newItem.category}
-                onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                placeholder="e.g., Fruit"
-                list="categories"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <datalist id="categories">
-                {uniqueCategories.map((cat: string) => (
-                  <option key={cat} value={cat} />
-                ))}
-              </datalist>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                type="submit"
-                disabled={creating || !newItem.name.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
-              >
-                {creating ? 'Adding...' : 'Add Item'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAddingItem(false);
-                  setNewItem({ name: '', details: '', category: '' });
-                }}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
+        <div className="mb-6">
+          <ItemForm
+            onSubmit={handleCreateItem}
+            onCancel={() => setIsAddingItem(false)}
+            isLoading={creating}
+            existingCategories={uniqueCategories}
+            mode="create"
+          />
         </div>
       )}
+
+      {/* Edit Item Form */}
+      {editingItemId && editingItem && (
+        <div className="mb-6">
+          <ItemForm
+            onSubmit={handleUpdateItem}
+            onCancel={() => setEditingItemId(null)}
+            isLoading={updating}
+            initialValues={{
+              name: editingItem.name,
+              details: editingItem.details || '',
+              category: editingItem.category || '',
+            }}
+            existingCategories={uniqueCategories}
+            mode="edit"
+          />
+        </div>
+      )}
+
+      {/* Items by Category */}
+      {!itemsByCategory || Object.entries(itemsByCategory).length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <p className="text-gray-500 mb-4">No items yet. Start adding items to your board!</p>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {Object.entries(itemsByCategory).map(([category, items]: [string, any]) => (
+            <div key={category} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-800">{category}</h2>
+              </div>
+              
+              <div className="divide-y divide-gray-200">
+                {items.map((item: any) => (
+                  <div key={item.id} className="flex items-start gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group">
+                    <label className="flex items-start gap-4 flex-1 cursor-pointer">
+                      {board?.board_type === 'CHECKLIST' && (
+                        <div className="flex-shrink-0 pt-1">
+                          <input
+                            type="checkbox"
+                            checked={item.is_checked}
+                            onChange={() => toggleCheck({ variables: { itemId: item.id } })}
+                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className={`text-base font-medium ${
+                          item.is_checked 
+                            ? 'line-through text-gray-400' 
+                            : 'text-gray-900'
+                        }`}>
+                          {item.name}
+                        </h3>
+                        
+                        {item.details && (
+                          <p className={`mt-1 text-sm ${
+                            item.is_checked 
+                              ? 'text-gray-400' 
+                              : 'text-gray-600'
+                          }`}>
+                            {item.details}
+                          </p>
+                        )}
+                      </div>
+                    </label>
+
+                    <button
+                      onClick={() => setEditingItemId(item.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Sticky Footer */}
+      <StickyFooter>
+        <BoardActions
+          isAddingItem={isAddingItem}
+          onToggleAddItem={() => setIsAddingItem(!isAddingItem)}
+          onResetChecks={handleResetChecks}
+          showReset={board?.board_type === 'CHECKLIST' && board?.items?.some((i: any) => i.is_checked)}
+        />
+      </StickyFooter>
     </div>
   );
 }

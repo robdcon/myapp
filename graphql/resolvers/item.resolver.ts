@@ -1,6 +1,5 @@
 import { query, queryOne } from '@/lib/db';
 import { GraphQLContext } from '@/graphql/context';
-import { Query } from 'pg';
 
 export const itemResolvers = {
     Mutation: {
@@ -19,22 +18,22 @@ export const itemResolvers = {
 
             return result;
         },
-        
+
         createItem: async (
-            _: any, 
-            { boardId, name, details, category }: { 
-                boardId: string; 
-                name: string; 
-                details?: string; 
+            _: any,
+            { boardId, name, details, category }: {
+                boardId: string;
+                name: string;
+                details?: string;
                 category?: string;
-            }, 
+            },
             context: GraphQLContext
         ) => {
-            if (!context.user) {
+            if (!context.user || !context.dbUser) {
                 throw new Error('Not authenticated');
             }
 
-            const userId = context.user.id;
+            const userId = context.dbUser.id;
 
             try {
                 const result = await queryOne(
@@ -51,6 +50,79 @@ export const itemResolvers = {
                 }
                 throw error;
             }
+        },
+
+        updateItem: async (
+            _: any,
+            { itemId, name, details, category }: {
+                itemId: string;
+                name?: string;
+                details?: string;
+                category?: string;
+            },
+            context: GraphQLContext
+        ) => {
+            if (!context.user) {
+                throw new Error('Not authenticated');
+            }
+
+            const updates: string[] = [];
+            const values: any[] = [];
+            let paramCount = 1;
+
+            if (name !== undefined) {
+                updates.push(`name = $${paramCount++}`);
+                values.push(name);
+            }
+            if (details !== undefined) {
+                updates.push(`details = $${paramCount++}`);
+                values.push(details);
+            }
+            if (category !== undefined) {
+                updates.push(`category = $${paramCount++}`);
+                values.push(category);
+            }
+
+            if (updates.length === 0) {
+                throw new Error('No fields to update');
+            }
+
+            updates.push(`updated_at = CURRENT_TIMESTAMP`);
+            values.push(itemId);
+
+            try {
+                const result = await queryOne(
+                    `UPDATE items 
+                 SET ${updates.join(', ')}
+                 WHERE id = $${paramCount}
+                 RETURNING *`,
+                    values
+                );
+
+                return result;
+            } catch (error: any) {
+                if (error.code === '23505') {
+                    throw new Error(`Item "${name}" already exists on this board`);
+                }
+                throw error;
+            }
+        },
+
+        deleteItem: async (
+            _: any,
+            { itemId }: { itemId: string },
+            context: GraphQLContext
+        ) => {
+            if (!context.user) {
+                throw new Error('Not authenticated');
+            }
+
+            await query(
+                `UPDATE items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1`,
+                [itemId]
+            );
+
+            return true;
         },
     },
 
