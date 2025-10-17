@@ -43,6 +43,13 @@ export interface Item {
   updated_at: string;
 }
 
+export interface ItemRowProps {
+  item: Item;
+  boardType: BoardType;
+  onToggleCheck: (itemId: string) => void;
+  onEdit: (itemId: string) => void;
+}
+
 export interface ItemImage {
   id: string;
   item_id: string;
@@ -74,6 +81,14 @@ export interface ToggleItemCheckData {
 
 export interface DeleteItemData {
   deleteItem: boolean;
+}
+
+export interface MutationData {
+  data: {
+    toggleItemCheck: Item;
+    createItem:   Item;
+    updateItem:   Item;
+  }
 }
 
 // Form types

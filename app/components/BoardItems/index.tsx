@@ -2,17 +2,19 @@
 
 import { useQuery, useMutation } from '@apollo/client/react';
 import { gql } from '@apollo/client';
-
 import Link from 'next/link';
 import { useState } from 'react';
 import StickyFooter from '@/app/components/StickyFooter';
 import BoardActions from '@/app/components/BoardActions';
 import ItemForm from '@/app/components/ItemForm';
+import BoardItemRow from '@/app/components/BoardItemRow';
 import { 
   BoardItemsProps, 
   GetBoardData, 
   ItemFormData,
-  Item 
+  Item,
+  BoardType, 
+  ToggleItemCheckData
 } from '@/types';
 
 const GET_BOARD_QUERY = gql`
@@ -75,11 +77,77 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
   });
 
   const [toggleCheck] = useMutation(TOGGLE_ITEM_CHECK, {
-    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
+    optimisticResponse: (vars) => {
+      const item = board?.items?.find((i: Item) => i.id === vars.itemId);
+      return {
+        toggleItemCheck: {
+          __typename: 'Item',
+          id: vars.itemId,
+          is_checked: !item?.is_checked,
+        },
+      };
+    },
+    update: (cache, result) => {
+      const mutationData = result.data as ToggleItemCheckData | undefined;
+      if (!mutationData?.toggleItemCheck) return;
+
+      const existingData = cache.readQuery<GetBoardData>({
+        query: GET_BOARD_QUERY,
+        variables: { id: boardId },
+      });
+
+      if (existingData?.board) {
+        cache.writeQuery({
+          query: GET_BOARD_QUERY,
+          variables: { id: boardId },
+          data: {
+            board: {
+              ...existingData.board,
+              items: existingData.board.items?.map((item: Item) =>
+                item.id === mutationData.toggleItemCheck.id
+                  ? { ...item, is_checked: mutationData.toggleItemCheck.is_checked }
+                  : item
+              ),
+            },
+          },
+        });
+      }
+    },
   });
 
   const [createItem, { loading: creating }] = useMutation(CREATE_ITEM, {
-    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
+    optimisticResponse: (vars) => ({
+      createItem: {
+        __typename: 'Item',
+        id: `temp-${Date.now()}`, // Temporary ID
+        name: vars.name,
+        details: vars.details || '',
+        is_checked: false,
+        category: vars.category || '',
+      },
+    }),
+    update: (cache, result) => {
+      const mutationData = result.data as { createItem: Item } | undefined;
+      if (!mutationData?.createItem) return;
+
+      const existingData = cache.readQuery<GetBoardData>({
+        query: GET_BOARD_QUERY,
+        variables: { id: boardId },
+      });
+
+      if (existingData?.board) {
+        cache.writeQuery({
+          query: GET_BOARD_QUERY,
+          variables: { id: boardId },
+          data: {
+            board: {
+              ...existingData.board,
+              items: [...(existingData.board.items || []), mutationData.createItem],
+            },
+          },
+        });
+      }
+    },
     onCompleted: () => {
       setIsAddingItem(false);
     },
@@ -89,7 +157,45 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
   });
 
   const [updateItem, { loading: updating }] = useMutation(UPDATE_ITEM, {
-    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
+    optimisticResponse: (vars) => {
+      const item = board?.items?.find((i: Item) => i.id === vars.itemId);
+      return {
+        updateItem: {
+          __typename: 'Item',
+          id: vars.itemId,
+          name: vars.name || item?.name || '',
+          details: vars.details || item?.details || '',
+          is_checked: item?.is_checked || false,
+          category: vars.category || item?.category || '',
+        },
+      };
+    },
+    update: (cache, result) => {
+      const mutationData = result.data as { updateItem: Item } | undefined;
+      if (!mutationData?.updateItem) return;
+
+      const existingData = cache.readQuery<GetBoardData>({
+        query: GET_BOARD_QUERY,
+        variables: { id: boardId },
+      });
+
+      if (existingData?.board) {
+        cache.writeQuery({
+          query: GET_BOARD_QUERY,
+          variables: { id: boardId },
+          data: {
+            board: {
+              ...existingData.board,
+              items: existingData.board.items?.map((item: Item) =>
+                item.id === mutationData.updateItem.id
+                  ? { ...item, ...mutationData.updateItem }
+                  : item
+              ),
+            },
+          },
+        });
+      }
+    },
     onCompleted: () => {
       setEditingItemId(null);
     },
@@ -98,7 +204,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
     },
   });
 
-  const handleCreateItem = (item: { name: string; details: string; category: string }) => {
+  const handleCreateItem = (item: ItemFormData) => {
     createItem({
       variables: {
         boardId,
@@ -109,7 +215,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
     });
   };
 
-  const handleUpdateItem = (item: { name: string; details: string; category: string }) => {
+  const handleUpdateItem = (item: ItemFormData) => {
     if (!editingItemId) return;
     
     updateItem({
@@ -122,10 +228,14 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
     });
   };
 
+  const handleToggleCheck = (itemId: string) => {
+    toggleCheck({ variables: { itemId } });
+  };
+
   const handleResetChecks = () => {
-    (board?.items ?? [])
-      .filter((i: any) => i.is_checked)
-      .forEach((i: any) => toggleCheck({ variables: { itemId: i.id } }));
+    board?.items
+      ?.filter((i: Item) => i.is_checked)
+      .forEach((i: Item) => handleToggleCheck(i.id));
   };
 
   if (loading) {
@@ -147,7 +257,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
   const board = data?.board;
   
   // Group items by category
-  const itemsByCategory = board?.items?.reduce((acc: any, item: any) => {
+  const itemsByCategory = board?.items?.reduce((acc: any, item: Item) => {
     const category = item.category || 'Uncategorized';
     if (!acc[category]) {
       acc[category] = [];
@@ -157,11 +267,11 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
   }, {});
 
   // Get unique categories
-  const categories = board?.items?.map((item: any) => item.category).filter(Boolean);
+  const categories = board?.items?.map((item: Item) => item.category).filter(Boolean);
   const uniqueCategories = [...new Set(categories)].sort();
 
   const editingItem = editingItemId 
-    ? board?.items?.find((i: any) => i.id === editingItemId) 
+    ? board?.items?.find((i: Item) => i.id === editingItemId) 
     : null;
 
   return (
@@ -188,12 +298,12 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
             
             <div className="mt-3 flex items-center gap-3">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                {board?.board_type === 'CHECKLIST' ? '✓ Checklist' : '📋 Notice Board'}
+                {board?.board_type === BoardType.CHECKLIST ? '✓ Checklist' : '📋 Notice Board'}
               </span>
               
-              {board?.board_type === 'CHECKLIST' && (board?.items?.length ?? 0) > 0 && (
+              {board?.board_type === BoardType.CHECKLIST && (board?.items ?? []).length > 0 && (
                 <span className="text-sm text-gray-600">
-                  {(board?.items?.filter((i: any) => i.is_checked).length ?? 0)} / {(board?.items?.length ?? 0)} completed
+                  {(board.items ?? []).filter((i: Item) => i.is_checked).length} / {(board.items ?? []).length} completed
                 </span>
               )}
             </div>
@@ -208,7 +318,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
             onSubmit={handleCreateItem}
             onCancel={() => setIsAddingItem(false)}
             isLoading={creating}
-            existingCategories={uniqueCategories}
+            existingCategories={uniqueCategories.filter((category): category is string => category !== undefined)}
             mode="create"
           />
         </div>
@@ -226,7 +336,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
               details: editingItem.details || '',
               category: editingItem.category || '',
             }}
-            existingCategories={uniqueCategories}
+            existingCategories={uniqueCategories.filter((category): category is string => category !== undefined)}
             mode="edit"
           />
         </div>
@@ -246,48 +356,14 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
               </div>
               
               <div className="divide-y divide-gray-200">
-                {items.map((item: any) => (
-                  <div key={item.id} className="flex items-start gap-4 px-6 py-4 hover:bg-gray-50 transition-colors group">
-                    <label className="flex items-start gap-4 flex-1 cursor-pointer">
-                      {board?.board_type === 'CHECKLIST' && (
-                        <div className="flex-shrink-0 pt-1">
-                          <input
-                            type="checkbox"
-                            checked={item.is_checked}
-                            onChange={() => toggleCheck({ variables: { itemId: item.id } })}
-                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
-                          />
-                        </div>
-                      )}
-                      
-                      <div className="flex-1 min-w-0">
-                        <h3 className={`text-base font-medium ${
-                          item.is_checked 
-                            ? 'line-through text-gray-400' 
-                            : 'text-gray-900'
-                        }`}>
-                          {item.name}
-                        </h3>
-                        
-                        {item.details && (
-                          <p className={`mt-1 text-sm ${
-                            item.is_checked 
-                              ? 'text-gray-400' 
-                              : 'text-gray-600'
-                          }`}>
-                            {item.details}
-                          </p>
-                        )}
-                      </div>
-                    </label>
-
-                    <button
-                      onClick={() => setEditingItemId(item.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 text-sm text-blue-600 hover:text-blue-800"
-                    >
-                      Edit
-                    </button>
-                  </div>
+                {items.map((item: Item) => (
+                  <BoardItemRow
+                    key={item.id}
+                    item={item}
+                    boardType={board?.board_type ?? BoardType.CHECKLIST}
+                    onToggleCheck={handleToggleCheck}
+                    onEdit={setEditingItemId}
+                  />
                 ))}
               </div>
             </div>
@@ -301,7 +377,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
           isAddingItem={isAddingItem}
           onToggleAddItem={() => setIsAddingItem(!isAddingItem)}
           onResetChecks={handleResetChecks}
-          showReset={board?.board_type === 'CHECKLIST' && board?.items?.some((i: any) => i.is_checked)}
+          showReset={board?.board_type === BoardType.CHECKLIST && board?.items?.some((i: Item) => i.is_checked)}
         />
       </StickyFooter>
     </div>
