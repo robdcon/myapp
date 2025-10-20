@@ -122,7 +122,9 @@ export interface BoardActionsProps {
   isAddingItem: boolean;
   onToggleAddItem: () => void;
   onResetChecks?: () => void;
+  onCheckAll?: () => void;
   showReset?: boolean;
+  showCheckAll?: boolean;
 }
 
 export interface StickyFooterProps {

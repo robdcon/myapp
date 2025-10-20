@@ -233,8 +233,22 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
   };
 
   const handleResetChecks = () => {
+    if (!window.confirm('Are you sure you want to uncheck all items?')) {
+      return;
+    }
+    
     board?.items
       ?.filter((i: Item) => i.is_checked)
+      .forEach((i: Item) => handleToggleCheck(i.id));
+  };
+
+  const handleCheckAll = () => {
+    if (!window.confirm('Are you sure you want to check all items?')) {
+      return;
+    }
+    
+    board?.items
+      ?.filter((i: Item) => !i.is_checked)
       .forEach((i: Item) => handleToggleCheck(i.id));
   };
 
@@ -392,7 +406,9 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
           isAddingItem={isAddingItem}
           onToggleAddItem={() => setIsAddingItem(!isAddingItem)}
           onResetChecks={handleResetChecks}
+          onCheckAll={handleCheckAll}
           showReset={board?.board_type === BoardType.CHECKLIST && board?.items?.some((i: Item) => i.is_checked)}
+          showCheckAll={board?.board_type === BoardType.CHECKLIST && board?.items?.some((i: Item) => !i.is_checked)}
         />
       </StickyFooter>
     </div>
