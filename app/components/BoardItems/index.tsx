@@ -238,6 +238,10 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
       .forEach((i: Item) => handleToggleCheck(i.id));
   };
 
+  const handleQuickAdd = (category: string) => {
+    setIsAddingItem(true);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -353,16 +357,16 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
         <div className="space-y-8">
           {Object.entries(itemsByCategory).map(([category, items]: [string, any]) => (
             <div key={category} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
+              <div className="bg-gray-50 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-800">{category}</h2>
                 <button
-                  onClick={() => setIsAddingItem(!isAddingItem)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"
+                  onClick={() => handleQuickAdd(category)}
+                  className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  title={`Add item to ${category}`}
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  {isAddingItem ? 'Close Form' : 'Add Item'}
                 </button>
               </div>
 
