@@ -7,7 +7,7 @@ export const userResolvers = {
       return result.rows;
     },
     user: async (_: any, { email }: { email: string }) => {
-      console.log('Fetching user with email:', email);
+      // console.log('Fetching user with email:', email);
       return await queryOne('SELECT * FROM users WHERE email = $1', [email]);
     },
   },

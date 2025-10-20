@@ -71,10 +71,10 @@ async function seed() {
     `, [boardId, johnId, janeId]);
 
     await client.query('COMMIT');
-    console.log('✅ Database seeded successfully!');
-    console.log(`📋 Board ID: ${boardId}`);
-    console.log(`👤 John ID: ${johnId}`);
-    console.log(`👤 Jane ID: ${janeId}`);
+    // console.log('✅ Database seeded successfully!');
+    // console.log(`📋 Board ID: ${boardId}`);
+    // console.log(`👤 John ID: ${johnId}`);
+    // console.log(`👤 Jane ID: ${janeId}`);
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('❌ Error seeding database:', error);

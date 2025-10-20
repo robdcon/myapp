@@ -23,7 +23,7 @@ export default function ItemForm({
       details: initialValues.details || '',
       category: initialValues.category || '',
     });
-  }, [initialValues]);
+  }, [initialValues.name, initialValues.details, initialValues.category]); // Only depend on actual values
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -29,11 +29,11 @@ export const itemResolvers = {
             },
             context: GraphQLContext
         ) => {
-            if (!context.user || !context.dbUser) {
+            if (!context.user) {
                 throw new Error('Not authenticated');
             }
 
-            const userId = context.dbUser.id;
+            const userId = context.user.id;
 
             try {
                 const result = await queryOne(

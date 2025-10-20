@@ -8,12 +8,12 @@ import StickyFooter from '@/app/components/StickyFooter';
 import BoardActions from '@/app/components/BoardActions';
 import ItemForm from '@/app/components/ItemForm';
 import BoardItemRow from '@/app/components/BoardItemRow';
-import { 
-  BoardItemsProps, 
-  GetBoardData, 
+import {
+  BoardItemsProps,
+  GetBoardData,
   ItemFormData,
   Item,
-  BoardType, 
+  BoardType,
   ToggleItemCheckData
 } from '@/types';
 
@@ -217,7 +217,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
 
   const handleUpdateItem = (item: ItemFormData) => {
     if (!editingItemId) return;
-    
+
     updateItem({
       variables: {
         itemId: editingItemId,
@@ -255,7 +255,7 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
   }
 
   const board = data?.board;
-  
+
   // Group items by category
   const itemsByCategory = board?.items?.reduce((acc: any, item: Item) => {
     const category = item.category || 'Uncategorized';
@@ -268,17 +268,19 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
 
   // Get unique categories
   const categories = board?.items?.map((item: Item) => item.category).filter(Boolean);
+  // remove duplicates without using new Set
+
   const uniqueCategories = [...new Set(categories)].sort();
 
-  const editingItem = editingItemId 
-    ? board?.items?.find((i: Item) => i.id === editingItemId) 
+  const editingItem = editingItemId
+    ? board?.items?.find((i: Item) => i.id === editingItemId)
     : null;
 
   return (
     <div className="max-w-4xl mx-auto pb-24">
       {/* Header */}
       <div className="mb-8">
-        <Link 
+        <Link
           href="/"
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
         >
@@ -287,20 +289,20 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
           </svg>
           Back to boards
         </Link>
-        
+        {/* Board Intro */}
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">{board?.name}</h1>
-            
+
             {board?.description && (
               <p className="text-lg text-gray-600">{board.description}</p>
             )}
-            
+
             <div className="mt-3 flex items-center gap-3">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                 {board?.board_type === BoardType.CHECKLIST ? '✓ Checklist' : '📋 Notice Board'}
               </span>
-              
+
               {board?.board_type === BoardType.CHECKLIST && (board?.items ?? []).length > 0 && (
                 <span className="text-sm text-gray-600">
                   {(board.items ?? []).filter((i: Item) => i.is_checked).length} / {(board.items ?? []).length} completed
@@ -353,8 +355,17 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
             <div key={category} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="bg-gray-50 px-6 py-3 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-800">{category}</h2>
+                <button
+                  onClick={() => setIsAddingItem(!isAddingItem)}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  {isAddingItem ? 'Close Form' : 'Add Item'}
+                </button>
               </div>
-              
+
               <div className="divide-y divide-gray-200">
                 {items.map((item: Item) => (
                   <BoardItemRow

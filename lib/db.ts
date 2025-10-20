@@ -30,7 +30,7 @@ export async function query<T extends QueryResultRow = any>(
   try {
     const res = await pool.query<T>(text, params);
     const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: res.rowCount });
+    // console.log('Executed query', { text, duration, rows: res.rowCount });
     return res;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -44,7 +44,7 @@ export const queryOne = async (text: string, params?: any[]) => {
   const start = Date.now();
   const result = await pool.query(text, params);
   const duration = Date.now() - start;
-  console.log('🔍 queryOne executed', { duration, rows: result.rowCount, hasResult: !!result.rows[0] });
+  // console.log('🔍 queryOne executed', { duration, rows: result.rowCount, hasResult: !!result.rows[0] });
   return result.rows[0];
 };
 

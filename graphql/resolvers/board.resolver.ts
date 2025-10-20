@@ -52,9 +52,9 @@ export const boardResolvers = {
 
   Board: {
     items: async (parent: any) => {
-      console.log('🔍 Parent board object:', parent);
-      console.log('🔍 Parent board ID:', parent.id);
-      console.log('🔍 Parent board ID type:', typeof parent.id);
+      // console.log('🔍 Parent board object:', parent);
+      // console.log('🔍 Parent board ID:', parent.id);
+      // console.log('🔍 Parent board ID type:', typeof parent.id);
       
       const result = await query(
         `SELECT * FROM items 
@@ -63,9 +63,9 @@ export const boardResolvers = {
         [parent.id]
       );
       
-      console.log('📦 Items query result:', result);
-      console.log('📦 Items rows:', result.rows);
-      console.log('📦 Items row count:', result.rowCount);
+      // console.log('📦 Items query result:', result);
+      // console.log('📦 Items rows:', result.rows);
+      // console.log('📦 Items row count:', result.rowCount);
       
       return result.rows || [];
     },
