@@ -12,7 +12,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ApolloWrapper>
-          {children}
+          <Provider>
+            {children}
+          </Provider>
         </ApolloWrapper>
       </body>
     </html>
