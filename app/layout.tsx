@@ -1,4 +1,6 @@
 import { ApolloWrapper } from '@/lib/apollo-wrapper';
+import { Provider } from "@/components/ui/provider";
+
 import './globals.css';
 
 export default function RootLayout({
