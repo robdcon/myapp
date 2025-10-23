@@ -1,0 +1,15 @@
+{
+    "servers": {
+        "chakra-ui": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@chakra-ui/react-mcp"
+            ]
+        },
+        "github-mcp": {
+            "type": "http",
+            "url": "https://api.githubcopilot.com/mcp"
+        }
+    }
+}

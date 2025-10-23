@@ -9,6 +9,21 @@ import BoardActions from '@/app/components/BoardActions';
 import ItemForm from '@/app/components/ItemForm';
 import BoardItemRow from '@/app/components/BoardItemRow';
 import {
+  Box,
+  Container,
+  Heading,
+  Text,
+  Button,
+  Flex,
+  VStack,
+  HStack,
+  Badge,
+  Card,
+  Spinner,
+  Alert,
+  IconButton,
+} from "@chakra-ui/react";
+import {
   BoardItemsProps,
   GetBoardData,
   ItemFormData,
@@ -258,17 +273,23 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-gray-500">Loading board...</div>
-      </div>
+      <Flex justify="center" align="center" minH="400px">
+        <Spinner size="xl" colorPalette="teal" />
+      </Flex>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-600">Error: {error.message}</p>
-      </div>
+      <Container maxW="container.lg" py={8}>
+        <Alert.Root status="error">
+          <Alert.Indicator />
+          <Alert.Content>
+            <Alert.Title>Error loading board</Alert.Title>
+            <Alert.Description>{error.message}</Alert.Description>
+          </Alert.Content>
+        </Alert.Root>
+      </Container>
     );
   }
 
@@ -286,119 +307,132 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
 
   // Get unique categories
   const categories = board?.items?.map((item: Item) => item.category).filter(Boolean);
-  // remove duplicates without using new Set
-
   const uniqueCategories = [...new Set(categories)].sort();
 
   const editingItem = editingItemId
     ? board?.items?.find((i: Item) => i.id === editingItemId)
     : null;
 
+  const checkedCount = (board?.items ?? []).filter((i: Item) => i.is_checked).length;
+  const totalCount = (board?.items ?? []).length;
+
   return (
-    <div className="max-w-4xl mx-auto pb-24">
-      {/* Header */}
-      <div className="mb-8">
-        <Link
-          href="/"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
-        >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to boards
-        </Link>
-        {/* Board Intro */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">{board?.name}</h1>
+    <Box minH="100vh" bg="gray.50" pb={24}>
+      <Container maxW="container.lg" py={8}>
+        {/* Header */}
+        <VStack align="stretch" gap={6} mb={8}>
+          <Button asChild variant="ghost" size="sm" width="fit-content">
+            <Link href="/">
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to boards
+            </Link>
+          </Button>
+
+          {/* Board Info */}
+          <Box>
+            <Heading size="4xl" mb={3}>{board?.name}</Heading>
 
             {board?.description && (
-              <p className="text-lg text-gray-600">{board.description}</p>
+              <Text fontSize="lg" color="gray.600" mb={4}>
+                {board.description}
+              </Text>
             )}
 
-            <div className="mt-3 flex items-center gap-3">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            <HStack gap={3}>
+              <Badge colorPalette="blue" size="lg">
                 {board?.board_type === BoardType.CHECKLIST ? '✓ Checklist' : '📋 Notice Board'}
-              </span>
+              </Badge>
 
-              {board?.board_type === BoardType.CHECKLIST && (board?.items ?? []).length > 0 && (
-                <span className="text-sm text-gray-600">
-                  {(board.items ?? []).filter((i: Item) => i.is_checked).length} / {(board.items ?? []).length} completed
-                </span>
+              {board?.board_type === BoardType.CHECKLIST && totalCount > 0 && (
+                <Text fontSize="sm" color="gray.600">
+                  {checkedCount} / {totalCount} completed
+                </Text>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </HStack>
+          </Box>
+        </VStack>
 
-      {/* Add Item Form */}
-      {isAddingItem && (
-        <div className="mb-6">
-          <ItemForm
-            onSubmit={handleCreateItem}
-            onCancel={() => setIsAddingItem(false)}
-            isLoading={creating}
-            existingCategories={uniqueCategories.filter((category): category is string => category !== undefined)}
-            mode="create"
-          />
-        </div>
-      )}
+        {/* Add Item Form */}
+        {isAddingItem && (
+          <Box mb={6}>
+            <ItemForm
+              onSubmit={handleCreateItem}
+              onCancel={() => setIsAddingItem(false)}
+              isLoading={creating}
+              existingCategories={uniqueCategories.filter((category): category is string => category !== undefined)}
+              mode="create"
+            />
+          </Box>
+        )}
 
-      {/* Edit Item Form */}
-      {editingItemId && editingItem && (
-        <div className="mb-6">
-          <ItemForm
-            onSubmit={handleUpdateItem}
-            onCancel={() => setEditingItemId(null)}
-            isLoading={updating}
-            initialValues={{
-              name: editingItem.name,
-              details: editingItem.details || '',
-              category: editingItem.category || '',
-            }}
-            existingCategories={uniqueCategories.filter((category): category is string => category !== undefined)}
-            mode="edit"
-          />
-        </div>
-      )}
+        {/* Edit Item Form */}
+        {editingItemId && editingItem && (
+          <Box mb={6}>
+            <ItemForm
+              onSubmit={handleUpdateItem}
+              onCancel={() => setEditingItemId(null)}
+              isLoading={updating}
+              initialValues={{
+                name: editingItem.name,
+                details: editingItem.details || '',
+                category: editingItem.category || '',
+              }}
+              existingCategories={uniqueCategories.filter((category): category is string => category !== undefined)}
+              mode="edit"
+            />
+          </Box>
+        )}
 
-      {/* Items by Category */}
-      {!itemsByCategory || Object.entries(itemsByCategory).length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-500 mb-4">No items yet. Start adding items to your board!</p>
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {Object.entries(itemsByCategory).map(([category, items]: [string, any]) => (
-            <div key={category} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-              <div className="bg-gray-50 px-6 py-3 border-b border-gray-200 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-800">{category}</h2>
-                <button
-                  onClick={() => handleQuickAdd(category)}
-                  className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                  title={`Add item to ${category}`}
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </button>
-              </div>
+        {/* Items by Category */}
+        {!itemsByCategory || Object.entries(itemsByCategory).length === 0 ? (
+          <Card.Root>
+            <Card.Body textAlign="center" py={12}>
+              <Text color="gray.500" fontSize="lg" mb={4}>
+                No items yet. Start adding items to your board!
+              </Text>
+            </Card.Body>
+          </Card.Root>
+        ) : (
+          <VStack align="stretch" gap={6}>
+            {Object.entries(itemsByCategory).map(([category, items]: [string, any]) => (
+              <Card.Root key={category}>
+                <Card.Header bg="gray.50" borderBottom="1px" borderColor="gray.200">
+                  <Flex justify="space-between" align="center">
+                    <Heading size="lg">{category}</Heading>
+                    <IconButton
+                      onClick={() => handleQuickAdd(category)}
+                      variant="ghost"
+                      colorPalette="blue"
+                      aria-label={`Add item to ${category}`}
+                      size="sm"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </IconButton>
+                  </Flex>
+                </Card.Header>
 
-              <div className="divide-y divide-gray-200">
-                {items.map((item: Item) => (
-                  <BoardItemRow
-                    key={item.id}
-                    item={item}
-                    boardType={board?.board_type ?? BoardType.CHECKLIST}
-                    onToggleCheck={handleToggleCheck}
-                    onEdit={setEditingItemId}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                <Card.Body p={0}>
+                  <VStack align="stretch" gap={0} divideY="1px" divideColor="gray.200">
+                    {items.map((item: Item) => (
+                      <BoardItemRow
+                        key={item.id}
+                        item={item}
+                        boardType={board?.board_type ?? BoardType.CHECKLIST}
+                        onToggleCheck={handleToggleCheck}
+                        onEdit={setEditingItemId}
+                      />
+                    ))}
+                  </VStack>
+                </Card.Body>
+              </Card.Root>
+            ))}
+          </VStack>
+        )}
+      </Container>
 
       {/* Sticky Footer */}
       <StickyFooter>
@@ -411,6 +445,6 @@ export default function BoardItems({ boardId }: BoardItemsProps) {
           showCheckAll={board?.board_type === BoardType.CHECKLIST && board?.items?.some((i: Item) => !i.is_checked)}
         />
       </StickyFooter>
-    </div>
+    </Box>
   );
 }
