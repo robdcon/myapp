@@ -1,5 +1,5 @@
 import { auth0 } from "@/lib/auth0";
-import BoardList from "@/app/components/Boards";
+import { BoardList } from "@/src/features/boards";
 import { Button, VStack, Box, Heading, Container, Flex } from "@chakra-ui/react";
 import Link from "next/link";
 
@@ -45,7 +45,7 @@ export default async function Home() {
         <Container maxW="container.xl">
           <Flex justify="space-between" align="center">
             <Heading size="xl">Welcome, {session.user.name}!</Heading>
-            <Button asChild colorScheme="red" variant="ghost">
+            <Button asChild colorPalette="red" variant="ghost">
               <Link href="/auth/logout">
                 Logout
               </Link>
