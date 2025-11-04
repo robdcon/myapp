@@ -3,7 +3,7 @@ import { BoardList } from "@/src/features/boards";
 import { Button, VStack, Box, Heading, Container, Flex } from "@chakra-ui/react";
 import Link from "next/link";
 
-export default async function Home() {
+export async function Home() {
   const session = await auth0.getSession();
 
   if (!session) {

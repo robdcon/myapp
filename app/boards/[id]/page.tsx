@@ -1,1 +1,1 @@
-export { BoardPage as default } from '@/src/pages/boards/[id]/index';
+export { BoardPage as default } from '@/src/pages/board/index';
