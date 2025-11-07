@@ -37,7 +37,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
     variables: { id: boardId },
   });
 
-  const { toggleItemCheck, loading: toggleLoading } = useToggleItemCheck(boardId);
+  const { toggleItemCheck, isItemToggling } = useToggleItemCheck(boardId);
 
   const board = data?.board;
   const items = board?.items || [];
@@ -186,7 +186,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                         boardType={board?.board_type ?? BoardType.CHECKLIST}
                         onToggleCheck={toggleItemCheck}
                         onEdit={setEditingItemId}
-                        isToggling={toggleLoading}
+                        isToggling={isItemToggling(item.id)}
                       />
                     ))}
                   </VStack>

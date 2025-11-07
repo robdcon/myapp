@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Box, Flex, VStack, Text, Button } from "@chakra-ui/react";
 import { BoardType } from '@/src/entities/board';
 import type { Item } from '@/src/entities/item';
@@ -12,14 +13,14 @@ export interface BoardItemRowProps {
   isToggling?: boolean;
 }
 
-export function BoardItemRow({ 
+export const BoardItemRow = React.memo(function BoardItemRow({ 
   item, 
   boardType, 
   onToggleCheck, 
   onEdit,
   isToggling = false
 }: Readonly<BoardItemRowProps>) {
-  const handleRowClick = (e: React.MouseEvent) => {
+  const handleRowClick = React.useCallback((e: React.MouseEvent) => {
     // Don't trigger row click if clicking on the edit button
     if ((e.target as HTMLElement).closest('button[data-edit-button]')) {
       return;
@@ -29,17 +30,17 @@ export function BoardItemRow({
     if (boardType === BoardType.CHECKLIST) {
       onToggleCheck(item.id);
     }
-  };
+  }, [boardType, onToggleCheck, item.id]);
 
-  const handleEditClick = (e: React.MouseEvent) => {
+  const handleEditClick = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent row click
     onEdit(item.id);
-  };
+  }, [onEdit, item.id]);
 
-  const handleCheckboxClick = (e: React.MouseEvent) => {
+  const handleCheckboxClick = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent row click (since row click also toggles)
     onToggleCheck(item.id);
-  };
+  }, [onToggleCheck, item.id]);
 
   return (
     <Box 
@@ -105,4 +106,4 @@ export function BoardItemRow({
       </Flex>
     </Box>
   );
-}
+});
