@@ -1,8 +1,8 @@
 import { auth0 } from "@/lib/auth0";
 import { redirect } from 'next/navigation';
-import BoardItems from '@/app/components/BoardItems';
+import { BoardViewer } from '@/src/widgets/board-viewer';
 
-export async function BoardPage({ params }: { params: Promise<{ id: string }> }) {
+export async function BoardPage({ params }: Readonly<{ params: Promise<{ id: string }> }>) {
   const session = await auth0.getSession();
   
   if (!session) {
@@ -12,8 +12,8 @@ export async function BoardPage({ params }: { params: Promise<{ id: string }> })
   const { id } = await params;
 
   return (
-    <main className="p-8">
-      <BoardItems boardId={id} />
+    <main>
+      <BoardViewer boardId={id} />
     </main>
   );
 }

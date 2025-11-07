@@ -1,4 +1,4 @@
-import { Item } from "@/types";
+import { Item } from "@/src/entities/item";
 
 export enum BoardType {
   CHECKLIST = 'checklist',
@@ -19,4 +19,37 @@ export interface CreateBoardInput {
   name: string;
   description?: string;
   board_type: BoardType;
+}
+
+export interface UpdateBoardInput {
+  id: string;
+  name?: string;
+  description?: string;
+}
+
+export interface BoardFormData {
+  name: string;
+  board_type: BoardType;
+  description?: string;
+}
+
+// GraphQL Response Types
+export interface GetBoardData {
+  board: Board;
+}
+
+export interface MyBoardsData {
+  myBoards: Board[];
+}
+
+export interface CreateBoardData {
+  createBoard: Board;
+}
+
+export interface UpdateBoardData {
+  updateBoard: Board;
+}
+
+export interface DeleteBoardData {
+  deleteBoard: boolean;
 }

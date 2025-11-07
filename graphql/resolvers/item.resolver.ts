@@ -146,8 +146,8 @@ export const itemResolvers = {
 
             const result = await query(
                 `SELECT * FROM items 
-         WHERE board_id = $1 AND deleted_at IS NULL
-         ORDER BY category NULLS LAST, created_at ASC`,
+                WHERE board_id = $1 AND deleted_at IS NULL
+                ORDER BY category NULLS LAST, created_at ASC`,
                 [boardId]
             );
 

@@ -1,10 +1,2 @@
-export interface Board {
-  id: string;
-  name: string;
-  created_at: string;
-  board_type: string;
-}
-
-export interface MyBoardsData {
-  myBoards: Board[];
-}
+// Re-export from entities for backward compatibility
+export type { Board, MyBoardsData } from '@/src/entities/board';
