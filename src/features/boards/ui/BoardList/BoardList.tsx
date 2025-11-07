@@ -5,6 +5,18 @@ import Link from 'next/link';
 import { Box, Button, Card, Grid, Heading, Text, Badge, Flex, Spinner, Alert } from "@chakra-ui/react";
 import { MY_BOARDS_QUERY } from '../../api/queries';
 import { MyBoardsData } from '../../model/types';
+import { BoardType } from '@/src/entities/board';
+
+function getBoardTypeLabel(boardType: string): string {
+  switch (boardType) {
+    case BoardType.CHECKLIST:
+      return '✓ Checklist';
+    case BoardType.NOTICE_BOARD:
+      return '📋 Notice Board';
+    default:
+      return boardType.replace('_', ' ');
+  }
+}
 
 export default function BoardList() {
   const { loading, error, data } = useQuery<MyBoardsData>(MY_BOARDS_QUERY);
@@ -45,7 +57,7 @@ export default function BoardList() {
                 <Flex direction="column" gap={3}>
                   <Heading size="lg">{board.name}</Heading>
                   <Badge colorPalette="teal" width="fit-content">
-                    {board.board_type.replace('_', ' ')}
+                    {getBoardTypeLabel(board.board_type)}
                   </Badge>
                   <Text fontSize="sm" color="gray.500">
                     Created: {new Date(board.created_at).toLocaleDateString()}

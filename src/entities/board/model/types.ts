@@ -1,8 +1,8 @@
 import { Item } from "@/src/entities/item";
 
 export enum BoardType {
-  CHECKLIST = 'checklist',
-  NOTICE_BOARD = 'notice_board'
+  CHECKLIST = 'CHECKLIST',
+  NOTICE_BOARD = 'NOTICE_BOARD'
 }
 
 export interface Board {

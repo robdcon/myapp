@@ -134,6 +134,6 @@ export interface StickyFooterProps {
 // GraphQL Context
 export interface GraphQLContext {
   req: Request;
-  user: any | null;
+  user: object | null;
   dbUser?: User | null;
 }
