@@ -10,8 +10,10 @@ export const useBulkItemActions = (boardId: string, items: Item[]) => {
     }
     
     const uncheckedItems = items.filter(item => !item.is_checked);
-    for (const item of uncheckedItems) {
-      toggleItemCheck(item.id);
+    // Add small delays to prevent overwhelming the server
+    for (let index = 0; index < uncheckedItems.length; index++) {
+      const item = uncheckedItems[index];
+      setTimeout(() => toggleItemCheck(item.id), index * 10);
     }
   };
 
@@ -21,8 +23,10 @@ export const useBulkItemActions = (boardId: string, items: Item[]) => {
     }
     
     const checkedItems = items.filter(item => item.is_checked);
-    for (const item of checkedItems) {
-      toggleItemCheck(item.id);
+    // Add small delays to prevent overwhelming the server
+    for (let index = 0; index < checkedItems.length; index++) {
+      const item = checkedItems[index];
+      setTimeout(() => toggleItemCheck(item.id), index * 10);
     }
   };
 

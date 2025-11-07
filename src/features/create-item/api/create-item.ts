@@ -9,7 +9,7 @@ export const useCreateItem = (boardId: string, onSuccess?: () => void) => {
     optimisticResponse: (vars) => ({
       createItem: {
         __typename: 'Item',
-        id: `temp-${Date.now()}`,
+        id: `temp-${Date.now()}-${Math.random()}`, // Better unique temporary ID
         name: vars.name,
         details: vars.details || '',
         is_checked: false,
