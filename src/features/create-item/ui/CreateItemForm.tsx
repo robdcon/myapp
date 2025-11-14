@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Box, Button, VStack, Input, createListCollection } from '@chakra-ui/react';
 import { SelectRoot, SelectTrigger, SelectContent, SelectItem, SelectValueText, SelectLabel } from '@/components/ui/select';
 import { useCreateItem } from '../api/create-item';
@@ -12,12 +12,13 @@ export function CreateItemForm({
   boardId, 
   onSuccess, 
   isOpen, 
-  onClose 
+  onClose,
+  defaultCategory 
 }: Readonly<CreateItemFeatureProps>) {
   const [formData, setFormData] = useState<ItemFormData>({
     name: '',
     details: '',
-    category: '',
+    category: defaultCategory || '',
   });
 
   // Create collection for categories
@@ -29,6 +30,23 @@ export function CreateItemForm({
       })),
     });
   }, []);
+
+  // Update form when defaultCategory changes
+  useEffect(() => {
+    if (defaultCategory) {
+      setFormData(prev => ({
+        ...prev,
+        category: defaultCategory,
+      }));
+    }
+  }, [defaultCategory]);
+
+  // Reset form when closed
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({ name: '', details: '', category: defaultCategory || '' });
+    }
+  }, [isOpen, defaultCategory]);
 
   const { createItem, loading } = useCreateItem(boardId, () => {
     onSuccess?.();

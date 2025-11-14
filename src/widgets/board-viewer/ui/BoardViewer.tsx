@@ -32,6 +32,7 @@ import type { BoardViewerWidgetProps } from '../model/types';
 export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
 
   const { loading, error, data } = useQuery<GetBoardData>(GET_BOARD_QUERY, {
     variables: { id: boardId },
@@ -80,8 +81,14 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
     ? items.find(i => i.id === editingItemId)
     : null;
 
-  const handleQuickAdd = () => {
+  const handleQuickAdd = (category?: string) => {
+    setSelectedCategory(category);
     setIsAddingItem(true);
+  };
+
+  const handleCloseAddForm = () => {
+    setIsAddingItem(false);
+    setSelectedCategory(undefined);
   };
 
   return (
@@ -125,9 +132,13 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         {/* Add Item Form */}
         <CreateItemForm
           boardId={boardId}
-          onSuccess={() => setIsAddingItem(false)}
+          onSuccess={() => {
+            setIsAddingItem(false);
+            setSelectedCategory(undefined);
+          }}
           isOpen={isAddingItem}
-          onClose={() => setIsAddingItem(false)}
+          onClose={handleCloseAddForm}
+          defaultCategory={selectedCategory}
         />
 
         {/* Edit Item Form */}
@@ -161,7 +172,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                   <Flex justify="space-between" align="center">
                     <Heading size="lg">{category}</Heading>
                     <IconButton
-                      onClick={handleQuickAdd}
+                      onClick={() => handleQuickAdd(category)}
                       variant="ghost"
                       colorPalette="blue"
                       aria-label={`Add item to ${category}`}
@@ -198,7 +209,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
       <StickyFooter>
         <Flex justify="space-between" align="center">
           <Button
-            onClick={() => setIsAddingItem(!isAddingItem)}
+            onClick={() => isAddingItem ? handleCloseAddForm() : handleQuickAdd()}
             colorPalette="blue"
             size="lg"
           >

@@ -3,4 +3,5 @@ export interface CreateItemFeatureProps {
   onSuccess?: () => void;
   isOpen: boolean;
   onClose: () => void;
+  defaultCategory?: string;
 }
