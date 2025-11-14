@@ -11,6 +11,8 @@ export { apiRequest } from './api/client';
 
 // Config
 export { APP_CONFIG, VALIDATION_RULES, UI_CONSTANTS } from './config/constants';
+export { ITEM_CATEGORIES, DEFAULT_CATEGORY } from './config/categories';
+export type { ItemCategory } from './config/categories';
 
 // Types
 export type { 

@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { Box, Button, VStack, Input } from '@chakra-ui/react';
+import { useState, useMemo } from 'react';
+import { Box, Button, VStack, Input, createListCollection } from '@chakra-ui/react';
+import { SelectRoot, SelectTrigger, SelectContent, SelectItem, SelectValueText, SelectLabel } from '@/components/ui/select';
 import { useCreateItem } from '../api/create-item';
+import { ITEM_CATEGORIES } from '@/src/shared';
 import type { CreateItemFeatureProps } from '../model/types';
 import type { ItemFormData } from '@/src/entities/item';
 
 export function CreateItemForm({ 
   boardId, 
   onSuccess, 
-  existingCategories = [], 
   isOpen, 
   onClose 
 }: Readonly<CreateItemFeatureProps>) {
@@ -18,6 +19,16 @@ export function CreateItemForm({
     details: '',
     category: '',
   });
+
+  // Create collection for categories
+  const categoryCollection = useMemo(() => {
+    return createListCollection({
+      items: ITEM_CATEGORIES.map(category => ({
+        label: category,
+        value: category,
+      })),
+    });
+  }, []);
 
   const { createItem, loading } = useCreateItem(boardId, () => {
     onSuccess?.();
@@ -64,23 +75,29 @@ export function CreateItemForm({
           </Box>
 
           <Box>
-            <label htmlFor="item-category" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
-              Category (optional)
-            </label>
-            <Input
-              id="item-category"
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              placeholder="e.g., Fruit"
-              list="categories"
-            />
-            {existingCategories.length > 0 && (
-              <datalist id="categories">
-                {existingCategories.map((cat) => (
-                  <option key={cat} value={cat} />
+            <SelectRoot
+              collection={categoryCollection}
+              value={formData.category ? [formData.category] : []}
+              onValueChange={(details) => {
+                const selectedValue = details.value[0] || '';
+                setFormData({ ...formData, category: selectedValue });
+              }}
+              size="sm"
+            >
+              <SelectLabel htmlFor="item-category" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                Category (optional)
+              </SelectLabel>
+              <SelectTrigger clearable>
+                <SelectValueText placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryCollection.items.map((category) => (
+                  <SelectItem key={category.value} item={category}>
+                    {category.label}
+                  </SelectItem>
                 ))}
-              </datalist>
-            )}
+              </SelectContent>
+            </SelectRoot>
           </Box>
 
           <Box display="flex" gap={3}>

@@ -73,7 +73,6 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
 
   // Group items by category
   const itemsByCategory = ItemEntity.groupByCategory(items);
-  const uniqueCategories = ItemEntity.getUniqueCategories(items);
   const checkedCount = ItemEntity.getCheckedCount(items);
   const totalCount = items.length;
 
@@ -127,7 +126,6 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         <CreateItemForm
           boardId={boardId}
           onSuccess={() => setIsAddingItem(false)}
-          existingCategories={uniqueCategories}
           isOpen={isAddingItem}
           onClose={() => setIsAddingItem(false)}
         />
@@ -137,7 +135,6 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           itemId={editingItemId}
           boardId={boardId}
           onSuccess={() => setEditingItemId(null)}
-          existingCategories={uniqueCategories}
           isOpen={!!editingItemId && !!editingItem}
           onClose={() => setEditingItemId(null)}
           initialValues={editingItem ? {

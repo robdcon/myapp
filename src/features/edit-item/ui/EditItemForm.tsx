@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Box, Button, VStack, Input } from '@chakra-ui/react';
+import { useState, useEffect, useMemo } from 'react';
+import { Box, Button, VStack, Input, createListCollection } from '@chakra-ui/react';
+import { SelectRoot, SelectTrigger, SelectContent, SelectItem, SelectValueText, SelectLabel } from '@/components/ui/select';
 import { useEditItem } from '../api/edit-item';
+import { ITEM_CATEGORIES } from '@/src/shared';
 import type { EditItemFeatureProps } from '../model/types';
 import type { ItemFormData } from '@/src/entities/item';
 
@@ -10,7 +12,6 @@ export function EditItemForm({
   itemId,
   boardId, 
   onSuccess, 
-  existingCategories = [], 
   isOpen, 
   onClose,
   initialValues 
@@ -20,6 +21,16 @@ export function EditItemForm({
     details: initialValues?.details || '',
     category: initialValues?.category || '',
   });
+
+  // Create collection for categories
+  const categoryCollection = useMemo(() => {
+    return createListCollection({
+      items: ITEM_CATEGORIES.map(category => ({
+        label: category,
+        value: category,
+      })),
+    });
+  }, []);
 
   useEffect(() => {
     if (initialValues) {
@@ -80,23 +91,29 @@ export function EditItemForm({
           </Box>
 
           <Box>
-            <label htmlFor="edit-item-category" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
-              Category (optional)
-            </label>
-            <Input
-              id="edit-item-category"
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              placeholder="e.g., Fruit"
-              list="edit-categories"
-            />
-            {existingCategories.length > 0 && (
-              <datalist id="edit-categories">
-                {existingCategories.map((cat) => (
-                  <option key={cat} value={cat} />
+            <SelectRoot
+              collection={categoryCollection}
+              value={formData.category ? [formData.category] : []}
+              onValueChange={(details) => {
+                const selectedValue = details.value[0] || '';
+                setFormData({ ...formData, category: selectedValue });
+              }}
+              size="sm"
+            >
+              <SelectLabel htmlFor="edit-item-category" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                Category (optional)
+              </SelectLabel>
+              <SelectTrigger clearable>
+                <SelectValueText placeholder="Select a category" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoryCollection.items.map((category) => (
+                  <SelectItem key={category.value} item={category}>
+                    {category.label}
+                  </SelectItem>
                 ))}
-              </datalist>
-            )}
+              </SelectContent>
+            </SelectRoot>
           </Box>
 
           <Box display="flex" gap={3}>
