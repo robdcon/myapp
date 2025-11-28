@@ -10,11 +10,11 @@ export async function Home() {
     return (
       <Container maxW="container.sm" centerContent py={20}>
         <Box textAlign="center">
-          <Heading size="3xl" mb={4}>Welcome to Board Manager</Heading>
+          <Heading size="3xl" mb={4} color="appPrimary.700">Welcome to Board Manager</Heading>
           <VStack gap={4} mt={8}>
             <Button 
               asChild
-              colorScheme="teal" 
+              colorPalette="appPrimary" 
               size="lg"
               width="200px"
             >
@@ -24,7 +24,7 @@ export async function Home() {
             </Button>
             <Button 
               asChild
-              colorScheme="blue" 
+              colorPalette="appSecondary" 
               variant="outline"
               size="lg"
               width="200px"
@@ -40,11 +40,11 @@ export async function Home() {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50">
+    <Box minH="100vh" bg="gray.50" pb={8}>
       <Box bg="white" borderBottom="1px" borderColor="gray.200" py={4}>
         <Container maxW="container.xl">
           <Flex justify="space-between" align="center">
-            <Heading size="xl">Welcome, {session.user.name}!</Heading>
+            <Heading size="xl" color="appPrimary.700">Welcome, {session.user.name}!</Heading>
             <Button asChild colorPalette="red" variant="ghost">
               <Link href="/auth/logout">
                 Logout

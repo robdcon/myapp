@@ -63,7 +63,7 @@ export function CreateItemForm({
   if (!isOpen) return null;
 
   return (
-    <Box p={6} bg="white" border="2px" borderColor="blue.200" rounded="lg" shadow="lg">
+    <Box p={6} bg="white" border="2px" borderColor="appPrimary.200" rounded="lg" shadow="lg">
       <form onSubmit={handleSubmit}>
         <VStack gap={4} align="stretch">
           <Box>
@@ -122,7 +122,7 @@ export function CreateItemForm({
             <Button
               type="submit"
               disabled={loading || !formData.name.trim()}
-              colorPalette="blue"
+              colorPalette="appPrimary"
               flex={1}
               loading={loading}
             >

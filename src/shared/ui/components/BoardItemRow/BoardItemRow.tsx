@@ -45,20 +45,20 @@ export const BoardItemRow = React.memo(function BoardItemRow({
   return (
     <Box 
       p={4} 
-      _hover={{ bg: boardType === BoardType.CHECKLIST ? "blue.25" : "gray.50" }} 
-      _active={{ bg: boardType === BoardType.CHECKLIST ? "blue.50" : "gray.100", transform: "scale(0.998)" }}
+      _hover={{ bg: boardType === BoardType.CHECKLIST ? "appPrimary.50" : "gray.50" }} 
+      _active={{ bg: boardType === BoardType.CHECKLIST ? "appPrimary.100" : "gray.100", transform: "scale(0.998)" }}
       cursor={boardType === BoardType.CHECKLIST ? "pointer" : "default"}
       onClick={handleRowClick}
       transition="all 0.1s ease"
       opacity={isToggling ? 0.7 : 1}
       pointerEvents={isToggling ? "none" : "auto"}
-      borderRadius="md"
       position="relative"
+      className='item-row'
     >
       <Flex justify="space-between" align="center">
         <Flex align="center" gap={3} flex={1}>
           {boardType === BoardType.CHECKLIST && (
-            <Box onClick={handleCheckboxClick}>
+            <Box onClick={handleCheckboxClick} className='checkbox-container'>
               <input
                 type="checkbox"
                 checked={item.is_checked}
@@ -66,7 +66,7 @@ export const BoardItemRow = React.memo(function BoardItemRow({
                 style={{ 
                   transform: 'scale(1.3)',
                   cursor: 'pointer',
-                  accentColor: '#3182ce', // Blue color for better visibility
+                  accentColor: '#219591', // Dark cyan color from your turquoise palette
                   filter: isToggling ? 'brightness(0.8)' : 'none'
                 }}
                 tabIndex={-1} // Remove from tab order since row is clickable
@@ -98,8 +98,8 @@ export const BoardItemRow = React.memo(function BoardItemRow({
           onClick={handleEditClick}
           variant="ghost"
           size="sm"
-          colorPalette="blue"
-          _hover={{ bg: "blue.50" }}
+          colorPalette="appPrimary"
+          _hover={{ bg: "appPrimary.50" }}
         >
           Edit
         </Button>

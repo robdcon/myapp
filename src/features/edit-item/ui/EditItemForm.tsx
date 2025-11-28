@@ -61,7 +61,7 @@ export function EditItemForm({
   if (!isOpen || !itemId) return null;
 
   return (
-    <Box p={6} bg="white" border="2px" borderColor="orange.200" rounded="lg" shadow="lg">
+    <Box p={6} bg="white" border="2px" borderColor="appSecondary.200" rounded="lg" shadow="lg">
       <form onSubmit={handleSubmit}>
         <VStack gap={4} align="stretch">
           <Box>
@@ -120,7 +120,7 @@ export function EditItemForm({
             <Button
               type="submit"
               disabled={loading || !formData.name.trim()}
-              colorPalette="orange"
+              colorPalette="appSecondary"
               flex={1}
               loading={loading}
             >

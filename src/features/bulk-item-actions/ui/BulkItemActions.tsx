@@ -18,7 +18,7 @@ export function BulkItemActions({
       {hasUncheckedItems && (
         <Button
           onClick={onCheckAll}
-          colorPalette="green"
+          colorPalette="emeraldDepths"
           size="sm"
           variant="outline"
         >
@@ -28,7 +28,7 @@ export function BulkItemActions({
       {hasCheckedItems && (
         <Button
           onClick={onUncheckAll}
-          colorPalette="orange"
+          colorPalette="tropicalTeal"
           size="sm"
           variant="outline"
         >

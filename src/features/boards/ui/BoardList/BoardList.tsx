@@ -23,7 +23,7 @@ export default function BoardList() {
 
   if (loading) return (
     <Flex justify="center" align="center" minH="200px">
-      <Spinner size="xl" colorPalette="teal" />
+      <Spinner size="xl" colorPalette="darkCyan" />
     </Flex>
   );
   
@@ -52,20 +52,30 @@ export default function BoardList() {
       ) : (
         <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={6}>
           {data?.myBoards.map((board) => (
-            <Card.Root key={board.id} _hover={{ transform: 'translateY(-4px)', shadow: 'lg' }} transition="all 0.2s">
-              <Card.Body>
-                <Flex direction="column" gap={3}>
-                  <Heading size="lg">{board.name}</Heading>
-                  <Badge colorPalette="teal" width="fit-content">
+            <Card.Root 
+              key={board.id} 
+              _hover={{ 
+                transform: 'translateY(-4px)', 
+                shadow: 'xl',
+                borderColor: 'appPrimary.300'
+              }} 
+              transition="all 0.2s"
+              borderColor="appPrimary.200"
+              variant="outline"
+            >
+              <Card.Body p={6}>
+                <Flex direction="column" gap={4}>
+                  <Heading size="lg" color="appPrimary.700">{board.name}</Heading>
+                  <Badge colorPalette="appPrimary" width="fit-content" variant="subtle">
                     {getBoardTypeLabel(board.board_type)}
                   </Badge>
-                  <Text fontSize="sm" color="gray.500">
+                  <Text fontSize="sm" color="gray.500" fontWeight="medium">
                     Created: {new Date(board.created_at).toLocaleDateString()}
                   </Text>
                 </Flex>
               </Card.Body>
               <Card.Footer>
-                <Button asChild colorPalette="teal" width="full">
+                <Button asChild colorPalette="appPrimary" width="full">
                   <Link href={`/boards/${board.id}`}>
                     View Board
                   </Link>

@@ -14,6 +14,8 @@ export const ITEM_CATEGORIES = [
     'Oils and Vinegars',
     'Baking Supplies',
     'Snacks',
+    'Toiletries',
+    'Kitchen',
     'Other'
 ] as const;
 

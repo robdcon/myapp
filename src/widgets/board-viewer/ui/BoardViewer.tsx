@@ -53,7 +53,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   if (loading) {
     return (
       <Flex justify="center" align="center" minH="400px">
-        <Spinner size="xl" colorPalette="teal" />
+        <Spinner size="xl" colorPalette="appPrimary" />
       </Flex>
     );
   }
@@ -92,7 +92,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   };
 
   return (
-    <Box minH="100vh" bg="gray.50" pb={24}>
+    <Box minH="100vh" bg="gray.50" pb={24} className='board-viewer'>
       <Container maxW="container.lg" py={8}>
         {/* Header */}
         <VStack align="stretch" gap={6} mb={8}>
@@ -107,7 +107,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
 
           {/* Board Info */}
           <Box>
-            <Heading size="4xl" mb={3}>{board?.name}</Heading>
+            <Heading size="4xl" mb={3} color="appPrimary.800">{board?.name}</Heading>
 
             {board?.description && (
               <Text fontSize="lg" color="gray.600" mb={4}>
@@ -116,7 +116,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
             )}
 
             <HStack gap={3}>
-              <Badge colorPalette="blue" size="lg">
+              <Badge colorPalette="appPrimary" size="lg">
                 {board?.board_type === BoardType.CHECKLIST ? '✓ Checklist' : '📋 Notice Board'}
               </Badge>
 
@@ -159,7 +159,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         {Object.entries(itemsByCategory).length === 0 ? (
           <Card.Root>
             <Card.Body textAlign="center" py={12}>
-              <Text color="gray.500" fontSize="lg" mb={4}>
+              <Text color="gray.500" fontSize="lg" mb={4} fontWeight="medium">
                 No items yet. Start adding items to your board!
               </Text>
             </Card.Body>
@@ -167,14 +167,28 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         ) : (
           <VStack align="stretch" gap={6}>
             {Object.entries(itemsByCategory).map(([category, categoryItems]: [string, Item[]]) => (
-              <Card.Root key={category}>
-                <Card.Header bg="gray.50" borderBottom="1px" borderColor="gray.200">
+              <Card.Root 
+                key={category} 
+                variant="outline"
+                borderColor="appPrimary.200"
+                _hover={{ 
+                  shadow: "lg", 
+                  transform: "translateY(-2px)",
+                  borderColor: "appPrimary.300"
+                }}
+                transition="all 0.2s ease"
+              >
+                <Card.Header 
+                  bg="appPrimary.50" 
+                  borderBottom="1px" 
+                  borderColor="appPrimary.100"
+                >
                   <Flex justify="space-between" align="center">
-                    <Heading size="lg">{category}</Heading>
+                    <Heading size="lg" color="appPrimary.700">{category}</Heading>
                     <IconButton
                       onClick={() => handleQuickAdd(category)}
                       variant="ghost"
-                      colorPalette="blue"
+                      colorPalette="appPrimary"
                       aria-label={`Add item to ${category}`}
                       size="sm"
                     >
@@ -185,8 +199,8 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                   </Flex>
                 </Card.Header>
 
-                <Card.Body p={0}>
-                  <VStack align="stretch" gap={0} divideY="1px" divideColor="gray.200">
+                <Card.Body p={0} className='BoardItems'>
+                  <VStack align="stretch" gap={0} divideY="1px" divideColor="appPrimary.100">
                     {categoryItems.map((item: Item) => (
                       <BoardItemRow
                         key={item.id}
@@ -210,7 +224,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         <Flex justify="space-between" align="center">
           <Button
             onClick={() => isAddingItem ? handleCloseAddForm() : handleQuickAdd()}
-            colorPalette="blue"
+            colorPalette="appPrimary"
             size="lg"
           >
             {isAddingItem ? 'Cancel' : 'Add Item'}
