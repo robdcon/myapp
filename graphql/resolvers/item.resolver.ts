@@ -153,6 +153,19 @@ export const itemResolvers = {
 
             return result.rows || [];
         },
+
+        uncheckedItems: async (_: any, { boardId }: { boardId: string }, context: GraphQLContext) => {
+            if (!context.user) {
+                throw new Error('Not authenticated');
+            }
+            const result = await query(
+                `SELECT * FROM items 
+                WHERE board_id = $1 AND is_checked = false AND deleted_at IS NULL
+                ORDER BY category NULLS LAST, created_at ASC`,
+                [boardId]
+            );
+            return result.rows || [];
+        }
     },
 
     Item: {

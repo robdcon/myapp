@@ -42,6 +42,7 @@ export const typeDefs = gql`
     board(id: ID!): Board
     items(boardId: ID!): [Item!]!
     item(id: ID!): Item
+    uncheckedItems(boardId: ID!): [Item!]!
   }
 
   type Mutation {

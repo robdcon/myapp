@@ -28,6 +28,7 @@ import { StickyFooter, BoardItemRow } from '@/src/shared';
 import type { GetBoardData } from '@/src/entities/board';
 import type { Item } from '@/src/entities/item';
 import type { BoardViewerWidgetProps } from '../model/types';
+import { UncheckedItemsList } from '@/src/features/display-list-summary';
 
 export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const [isAddingItem, setIsAddingItem] = useState(false);
@@ -166,6 +167,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           </Card.Root>
         ) : (
           <VStack align="stretch" gap={6}>
+            <UncheckedItemsList boardId={boardId} />
             {Object.entries(itemsByCategory).map(([category, categoryItems]: [string, Item[]]) => (
               <Card.Root 
                 key={category} 
