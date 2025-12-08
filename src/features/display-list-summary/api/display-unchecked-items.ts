@@ -1,27 +1,29 @@
 import { useQuery } from '@apollo/client/react';
-import { gql } from '@apollo/client';
-
-// Query the cache to get the unchecked items
-const GET_UNCHECKED_ITEMS_QUERY = gql`
-    query GetUncheckedItems($boardId: ID!) {
-            uncheckedItems(boardId: $boardId) {
-                id
-                name
-                details
-                is_checked
-                category
-            }
-        }
-`;
+import { GET_BOARD_QUERY } from '@/src/entities/board';
+import type { GetBoardData } from '@/src/entities/board';
+import type { Item } from '@/src/entities/item';
+import { useMemo } from 'react';
 
 export const useDisplayUncheckedItems = (boardId: string) => {
-    const { data, loading, error } = useQuery(GET_UNCHECKED_ITEMS_QUERY, {
-        variables: { boardId }
+    // Use cache-only policy to only read from cache and watch for changes
+    const { data, loading, error } = useQuery<GetBoardData>(GET_BOARD_QUERY, {
+        variables: { id: boardId },
+        fetchPolicy: 'cache-only', // Only read from cache, don't make network request
+        nextFetchPolicy: 'cache-only', // Keep using cache-only on refetch
     });
 
+    // Memoize the filtered unchecked items
+    const uncheckedItems = useMemo(() => {
+        return data?.board?.items?.filter((item: Item) => !item.is_checked) || [];
+    }, [data?.board?.items]);
+
+    console.log('Unchecked items from cache (reactive):', uncheckedItems);
+
     return {
-        data,
+        uncheckedItems,
+        totalUnchecked: uncheckedItems.length,
+        hasUncheckedItems: uncheckedItems.length > 0,
         loading,
-        error,
-    }
+        error
+    };
 }
