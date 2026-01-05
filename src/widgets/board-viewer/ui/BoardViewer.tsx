@@ -164,6 +164,63 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           </Box>
         </VStack>
 
+        {/* Sticky Category Navigation */}
+        {Object.keys(itemsByCategory).length > 0 && (
+          <Box
+            position="sticky"
+            top="0"
+            zIndex="sticky"
+            bg="white"
+            borderBottom="2px"
+            borderColor="appPrimary.200"
+            py={3}
+            mb={6}
+            shadow="sm"
+          >
+            <HStack
+              gap={2}
+              overflowX="auto"
+              css={{
+                '&::-webkit-scrollbar': {
+                  height: '6px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: '#f1f1f1',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: '#219591',
+                  borderRadius: '3px',
+                },
+                '&::-webkit-scrollbar-thumb:hover': {
+                  background: '#1b786e',
+                },
+              }}
+            >
+              {Object.entries(itemsByCategory).map(([category, items]) => (
+                <Button
+                  key={category}
+                  onClick={() => scrollToCategory(category)}
+                  size="sm"
+                  variant={highlightedCategory === category ? "solid" : "outline"}
+                  colorPalette="appPrimary"
+                  flexShrink={0}
+                  fontWeight="medium"
+                >
+                  {category}
+                  <Badge
+                    ml={2}
+                    colorPalette={highlightedCategory === category ? "white" : "appPrimary"}
+                    variant="subtle"
+                    fontSize="xs"
+                  >
+                    {items.length}
+                  </Badge>
+                </Button>
+              ))}
+            </HStack>
+          </Box>
+        )}
+
         {/* Add Item Form */}
         <CreateItemForm
           boardId={boardId}
