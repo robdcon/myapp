@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@apollo/client/react';
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Box,
@@ -34,6 +34,10 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [highlightedCategory, setHighlightedCategory] = useState<string | undefined>(undefined);
+  
+  // Refs to store category section elements
+  const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { loading, error, data } = useQuery<GetBoardData>(GET_BOARD_QUERY, {
     variables: { id: boardId },
@@ -50,6 +54,55 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
     hasCheckedItems, 
     hasUncheckedItems 
   } = useBulkItemActions(boardId, items);
+
+  // Scroll to category section
+  const scrollToCategory = useCallback((category: string) => {
+    const element = categoryRefs.current[category];
+    if (element) {
+      // Add highlight effect
+      setHighlightedCategory(category);
+      
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center'
+      });
+      
+      // Remove highlight after animation
+      setTimeout(() => setHighlightedCategory(undefined), 2000);
+    }
+  }, []);
+
+  const editingItem = editingItemId
+    ? items.find(i => i.id === editingItemId)
+    : null;
+
+  const handleQuickAdd = (category?: string) => {
+    setSelectedCategory(category);
+    setIsAddingItem(true);
+  };
+
+  const handleCloseAddForm = () => {
+    setIsAddingItem(false);
+    setSelectedCategory(undefined);
+  };
+
+  const handleItemCreated = (category?: string) => {
+    setIsAddingItem(false);
+    setSelectedCategory(undefined);
+    
+    // Scroll to the category where item was added
+    if (category) {
+      setTimeout(() => scrollToCategory(category), 300);
+    } else {
+      // If no category, scroll to top to see all items
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Group items by category
+  const itemsByCategory = ItemEntity.groupByCategory(items);
+  const checkedCount = ItemEntity.getCheckedCount(items);
+  const totalCount = items.length;
 
   if (loading) {
     return (
@@ -72,25 +125,6 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
       </Container>
     );
   }
-
-  // Group items by category
-  const itemsByCategory = ItemEntity.groupByCategory(items);
-  const checkedCount = ItemEntity.getCheckedCount(items);
-  const totalCount = items.length;
-
-  const editingItem = editingItemId
-    ? items.find(i => i.id === editingItemId)
-    : null;
-
-  const handleQuickAdd = (category?: string) => {
-    setSelectedCategory(category);
-    setIsAddingItem(true);
-  };
-
-  const handleCloseAddForm = () => {
-    setIsAddingItem(false);
-    setSelectedCategory(undefined);
-  };
 
   return (
     <Box minH="100vh" bg="gray.50" pb={24} className='board-viewer'>
@@ -133,10 +167,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         {/* Add Item Form */}
         <CreateItemForm
           boardId={boardId}
-          onSuccess={() => {
-            setIsAddingItem(false);
-            setSelectedCategory(undefined);
-          }}
+          onSuccess={(category) => handleItemCreated(category)}
           isOpen={isAddingItem}
           onClose={handleCloseAddForm}
           defaultCategory={selectedCategory}
@@ -170,15 +201,18 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
             <UncheckedItemsList boardId={boardId} />
             {Object.entries(itemsByCategory).map(([category, categoryItems]: [string, Item[]]) => (
               <Card.Root 
-                key={category} 
+                key={category}
+                ref={(el) => { categoryRefs.current[category] = el; }}
                 variant="outline"
-                borderColor="appPrimary.200"
+                borderColor={highlightedCategory === category ? "appPrimary.400" : "appPrimary.200"}
+                borderWidth={highlightedCategory === category ? "3px" : "1px"}
                 _hover={{ 
                   shadow: "lg", 
                   transform: "translateY(-2px)",
                   borderColor: "appPrimary.300"
                 }}
-                transition="all 0.2s ease"
+                transition="all 0.3s ease"
+                bg={highlightedCategory === category ? "appPrimary.50" : "white"}
               >
                 <Card.Header 
                   bg="appPrimary.50" 
