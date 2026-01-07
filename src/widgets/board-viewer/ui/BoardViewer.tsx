@@ -24,6 +24,7 @@ import { CreateItemForm } from '@/src/features/create-item';
 import { EditItemForm } from '@/src/features/edit-item';
 import { BulkItemActions, useBulkItemActions } from '@/src/features/bulk-item-actions';
 import { useToggleItemCheck } from '@/src/features/toggle-item-check';
+import { useDeleteItem } from '@/src/features/delete-item';
 import { StickyFooter, BoardItemRow } from '@/src/shared';
 import type { GetBoardData } from '@/src/entities/board';
 import type { Item } from '@/src/entities/item';
@@ -46,6 +47,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   });
 
   const { toggleItemCheck, isItemToggling } = useToggleItemCheck(boardId);
+  const { deleteItem, isDeleting } = useDeleteItem({ boardId });
 
   const board = data?.board;
   const items = board?.items || [];
@@ -316,6 +318,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                         boardType={board?.board_type ?? BoardType.CHECKLIST}
                         onToggleCheck={toggleItemCheck}
                         onEdit={setEditingItemId}
+                        onDelete={deleteItem}
                         isToggling={isItemToggling(item.id)}
                       />
                     ))}

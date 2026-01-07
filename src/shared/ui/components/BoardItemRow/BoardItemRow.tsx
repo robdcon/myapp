@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Box, Flex, VStack, Text, Button } from "@chakra-ui/react";
+import { Box, Flex, VStack, Text, Button, HStack } from "@chakra-ui/react";
 import { BoardType } from '@/src/entities/board';
 import type { Item } from '@/src/entities/item';
 
@@ -10,6 +10,7 @@ export interface BoardItemRowProps {
   boardType: BoardType;
   onToggleCheck: (itemId: string) => void;
   onEdit: (itemId: string) => void;
+  onDelete?: (itemId: string) => void;
   isToggling?: boolean;
 }
 
@@ -18,11 +19,12 @@ export const BoardItemRow = React.memo(function BoardItemRow({
   boardType, 
   onToggleCheck, 
   onEdit,
+  onDelete,
   isToggling = false
 }: Readonly<BoardItemRowProps>) {
   const handleRowClick = React.useCallback((e: React.MouseEvent) => {
-    // Don't trigger row click if clicking on the edit button
-    if ((e.target as HTMLElement).closest('button[data-edit-button]')) {
+    // Don't trigger row click if clicking on the edit button or delete button
+    if ((e.target as HTMLElement).closest('button[data-edit-button], button[data-delete-button]')) {
       return;
     }
     
@@ -36,6 +38,13 @@ export const BoardItemRow = React.memo(function BoardItemRow({
     e.stopPropagation(); // Prevent row click
     onEdit(item.id);
   }, [onEdit, item.id]);
+
+  const handleDeleteClick = React.useCallback((e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent row click
+    if (onDelete && window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
+      onDelete(item.id);
+    }
+  }, [onDelete, item.id, item.name]);
 
   const handleCheckboxClick = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent row click (since row click also toggles)
@@ -93,16 +102,30 @@ export const BoardItemRow = React.memo(function BoardItemRow({
             )}
           </VStack>
         </Flex>
-        <Button
-          data-edit-button="true"
-          onClick={handleEditClick}
-          variant="ghost"
-          size="sm"
-          colorPalette="appPrimary"
-          _hover={{ bg: "appPrimary.50" }}
-        >
-          Edit
-        </Button>
+        <HStack gap={2}>
+          <Button
+            data-edit-button="true"
+            onClick={handleEditClick}
+            variant="ghost"
+            size="sm"
+            colorPalette="appPrimary"
+            _hover={{ bg: "appPrimary.50" }}
+          >
+            Edit
+          </Button>
+          {onDelete && (
+            <Button
+              data-delete-button="true"
+              onClick={handleDeleteClick}
+              variant="ghost"
+              size="sm"
+              colorPalette="red"
+              _hover={{ bg: "red.50" }}
+            >
+              Delete
+            </Button>
+          )}
+        </HStack>
       </Flex>
     </Box>
   );
