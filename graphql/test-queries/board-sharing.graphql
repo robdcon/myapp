@@ -1,0 +1,92 @@
+# Board Sharing GraphQL Test Queries
+
+## 1. Get Board Shares for a Board
+query GetBoardShares {
+  boardShares(boardId: "1") {
+    id
+    board_id
+    shared_with_user_email
+    shared_with_user_name
+    permission_level
+    created_at
+  }
+}
+
+## 2. Get Boards Shared With Me
+query GetSharedBoards {
+  sharedBoards {
+    id
+    name
+    board_type
+    my_permission
+    isShared
+    created_at
+  }
+}
+
+## 3. Share a Board
+mutation ShareBoard {
+  shareBoard(
+    boardId: "1"
+    email: "jane@example.com"
+    permission: EDIT
+  ) {
+    id
+    shared_with_user_email
+    shared_with_user_name
+    permission_level
+    created_at
+  }
+}
+
+## 4. Update Share Permission
+mutation UpdateBoardShare {
+  updateBoardShare(
+    shareId: "1"
+    permission: ADMIN
+  ) {
+    id
+    permission_level
+    updated_at
+  }
+}
+
+## 5. Remove Share
+mutation RemoveBoardShare {
+  removeBoardShare(shareId: "1")
+}
+
+## 6. Generate Public Share Link
+mutation GenerateShareLink {
+  generateShareLink(boardId: "1")
+}
+
+## 7. Revoke Public Share Link
+mutation RevokeShareLink {
+  revokeShareLink(boardId: "1")
+}
+
+## 8. Get Board with Sharing Info
+query GetBoardWithShares {
+  board(id: "1") {
+    id
+    name
+    board_type
+    description
+    isShared
+    myPermission
+    shareToken
+    isPublic
+    shares {
+      id
+      shared_with_user_email
+      shared_with_user_name
+      permission_level
+    }
+    items {
+      id
+      name
+      is_checked
+    }
+  }
+}

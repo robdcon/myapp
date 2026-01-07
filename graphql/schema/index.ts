@@ -17,6 +17,30 @@ export const typeDefs = gql`
     created_at: String!
     updated_at: String!
     items: [Item!]!
+    shares: [BoardShare!]!
+    isShared: Boolean!
+    myPermission: PermissionLevel
+    shareToken: String
+    isPublic: Boolean!
+  }
+
+  type BoardShare {
+    id: ID!
+    board_id: ID!
+    board: Board!
+    shared_with_user_id: String!
+    shared_with_user_email: String
+    shared_with_user_name: String
+    shared_by_user_id: String!
+    permission_level: PermissionLevel!
+    created_at: String!
+    updated_at: String!
+  }
+
+  enum PermissionLevel {
+    VIEW
+    EDIT
+    ADMIN
   }
 
   type Item {
@@ -39,7 +63,9 @@ export const typeDefs = gql`
     users: [User!]!
     user(email: String!): User
     myBoards: [Board!]!
+    sharedBoards: [Board!]!
     board(id: ID!): Board
+    boardShares(boardId: ID!): [BoardShare!]!
     items(boardId: ID!): [Item!]!
     item(id: ID!): Item
     uncheckedItems(boardId: ID!): [Item!]!
@@ -51,5 +77,12 @@ export const typeDefs = gql`
     createItem(boardId: ID!, name: String!, details: String, category: String): Item!
     updateItem(itemId: ID!, name: String, details: String, category: String): Item!
     deleteItem(itemId: ID!): Boolean!
+    
+    # Board Sharing Mutations
+    shareBoard(boardId: ID!, email: String!, permission: PermissionLevel!): BoardShare!
+    updateBoardShare(shareId: ID!, permission: PermissionLevel!): BoardShare!
+    removeBoardShare(shareId: ID!): Boolean!
+    generateShareLink(boardId: ID!): String!
+    revokeShareLink(boardId: ID!): Boolean!
   }
 `;

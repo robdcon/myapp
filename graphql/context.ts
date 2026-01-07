@@ -11,6 +11,18 @@ export async function createContext(req: NextRequest): Promise<GraphQLContext> {
   const session = await auth0.getSession();
   console.log('GraphQL Context - User Session:', session?.user);
   
+  // TEST MODE: Allow testing with a mock user via header
+  // Remove this in production!
+  const testUserId = req.headers.get('x-test-user-id');
+  if (process.env.NODE_ENV === 'development' && testUserId) {
+    console.log('⚠️ TEST MODE: Using test user ID:', testUserId);
+    return {
+      req,
+      user: { sub: testUserId },
+      dbUser: null,
+    };
+  }
+  
   return {
     req,
     user: session?.user || null,

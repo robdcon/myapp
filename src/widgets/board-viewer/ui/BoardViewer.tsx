@@ -29,12 +29,14 @@ import type { GetBoardData } from '@/src/entities/board';
 import type { Item } from '@/src/entities/item';
 import type { BoardViewerWidgetProps } from '../model/types';
 import { UncheckedItemsList } from '@/src/features/display-list-summary';
+import { ShareBoardDialog } from '@/src/features/boards/ui/ShareBoardDialog';
 
 export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [highlightedCategory, setHighlightedCategory] = useState<string | undefined>(undefined);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   
   // Refs to store category section elements
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -142,7 +144,20 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
 
           {/* Board Info */}
           <Box>
-            <Heading size="4xl" mb={3} color="appPrimary.800">{board?.name}</Heading>
+            <HStack justify="space-between" align="flex-start" mb={3}>
+              <Heading size="4xl" color="appPrimary.800">{board?.name}</Heading>
+              
+              <Button
+                colorPalette="appPrimary"
+                size="sm"
+                onClick={() => setIsShareDialogOpen(true)}
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
+              </Button>
+            </HStack>
 
             {board?.description && (
               <Text fontSize="lg" color="gray.600" mb={4}>
@@ -333,6 +348,16 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           )}
         </Flex>
       </StickyFooter>
+
+      {/* Share Board Dialog */}
+      {board && (
+        <ShareBoardDialog
+          open={isShareDialogOpen}
+          onClose={() => setIsShareDialogOpen(false)}
+          boardId={boardId}
+          boardName={board.name}
+        />
+      )}
     </Box>
   );
 }

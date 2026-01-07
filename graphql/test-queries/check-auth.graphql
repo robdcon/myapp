@@ -1,0 +1,26 @@
+# Check Authentication and Board Ownership
+# Use this to debug permission issues
+
+# 1. First, check your authentication
+# This query should return your user info if you're logged in
+query CheckAuth {
+  boards {
+    id
+    name
+  }
+}
+
+# 2. Check if you have boards and your ownership
+# Run this in your database to see your user and board relationships:
+# SELECT u.id, u.email, u.auth0_id, ub.board_id, ub.role, b.name
+# FROM users u
+# LEFT JOIN user_boards ub ON ub.user_id = u.id
+# LEFT JOIN boards b ON b.id = ub.board_id
+# WHERE u.email = 'YOUR_EMAIL_HERE';
+
+# 3. If you need to manually grant yourself ownership, run:
+# INSERT INTO user_boards (user_id, board_id, role)
+# SELECT u.id, b.id, 'OWNER'
+# FROM users u, boards b
+# WHERE u.email = 'YOUR_EMAIL_HERE' AND b.id = YOUR_BOARD_ID
+# ON CONFLICT (user_id, board_id) DO UPDATE SET role = 'OWNER';
