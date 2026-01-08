@@ -8,7 +8,6 @@ import {
   VStack,
   HStack,
   Text,
-  IconButton,
   Badge,
   Spinner,
 } from '@chakra-ui/react';
@@ -239,16 +238,17 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
                             </SelectContent>
                           </SelectRoot>
 
-                          <IconButton
+                          <Button
                             aria-label={`Remove access for ${share.shared_with_user_name || share.shared_with_user_email}`}
                             size="sm"
                             variant="ghost"
                             colorPalette="red"
                             onClick={() => handleRemoveShare(share.id)}
                             disabled={removing}
+                            px={2}
                           >
                             <span aria-hidden="true">✕</span>
-                          </IconButton>
+                          </Button>
                         </HStack>
                       </HStack>
                     ))
