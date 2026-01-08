@@ -32,6 +32,10 @@ import type { BoardViewerWidgetProps } from '../model/types';
 import { UncheckedItemsList } from '@/src/features/display-list-summary';
 import { ShareBoardDialog } from '@/src/features/boards/ui/ShareBoardDialog';
 
+// UI Constants
+const HIGHLIGHT_ANIMATION_DURATION = 2000; // milliseconds
+const SCROLL_DELAY = 300; // milliseconds
+
 export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -47,7 +51,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   });
 
   const { toggleItemCheck, isItemToggling } = useToggleItemCheck(boardId);
-  const { deleteItem, isDeleting } = useDeleteItem({ boardId });
+  const { deleteItem } = useDeleteItem({ boardId });
 
   const board = data?.board;
   const items = board?.items || [];
@@ -72,7 +76,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
       });
       
       // Remove highlight after animation
-      setTimeout(() => setHighlightedCategory(undefined), 2000);
+      setTimeout(() => setHighlightedCategory(undefined), HIGHLIGHT_ANIMATION_DURATION);
     }
   }, []);
 
@@ -96,7 +100,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
     
     // Scroll to the category where item was added
     if (category) {
-      setTimeout(() => scrollToCategory(category), 300);
+      setTimeout(() => scrollToCategory(category), SCROLL_DELAY);
     } else {
       // If no category, scroll to top to see all items
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -202,14 +206,14 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                   height: '6px',
                 },
                 '&::-webkit-scrollbar-track': {
-                  background: '#f1f1f1',
+                  background: 'gray.100',
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  background: '#219591',
+                  background: 'var(--chakra-colors-app-primary-500)',
                   borderRadius: '3px',
                 },
                 '&::-webkit-scrollbar-thumb:hover': {
-                  background: '#1b786e',
+                  background: 'var(--chakra-colors-app-primary-600)',
                 },
               }}
             >

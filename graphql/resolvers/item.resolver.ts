@@ -4,20 +4,25 @@ import { pool } from '@/lib/db';
 import { GraphQLError } from 'graphql';
 
 // Helper function to check if user has edit permission on a board
-async function checkBoardEditPermission(userId: string, boardId: string): Promise<boolean> {
+async function checkBoardEditPermission(boardId: string, userId: string): Promise<boolean> {
   const result = await pool.query(
-    `SELECT 1 FROM user_boards ub
-     WHERE ub.board_id = $1 
-     AND ub.user_id = (SELECT id FROM users WHERE auth0_id = $2)
-     UNION
-     SELECT 1 FROM board_shares bs
-     WHERE bs.board_id = $1 
-     AND bs.shared_with_user_id = $2
-     AND bs.permission_level IN ('EDIT', 'ADMIN')`,
+    `SELECT EXISTS (
+       SELECT 1
+       FROM user_boards ub
+       WHERE ub.board_id = $1
+         AND ub.user_id = (SELECT id FROM users WHERE auth0_id = $2)
+     )
+     OR EXISTS (
+       SELECT 1
+       FROM board_shares bs
+       WHERE bs.board_id = $1
+         AND bs.shared_with_user_id = $2
+         AND bs.permission_level IN ('EDIT', 'ADMIN')
+     ) AS has_permission`,
     [boardId, userId]
   );
   
-  return result.rows.length > 0;
+  return Boolean(result.rows[0]?.has_permission);
 }
 
 // Helper function to get board_id from item_id

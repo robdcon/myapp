@@ -2,7 +2,7 @@
 
 import { useQuery } from '@apollo/client/react';
 import Link from 'next/link';
-import { Box, Button, Card, Grid, Heading, Text, Badge, Flex, Spinner, Alert, HStack } from "@chakra-ui/react";
+import { Button, Card, Grid, Heading, Text, Badge, Flex, Spinner, Alert, HStack } from "@chakra-ui/react";
 import { GET_SHARED_BOARDS_QUERY } from '@/src/entities/board-share/api';
 import { BoardType } from '@/src/entities/board';
 import { PermissionLevel } from '@/types/board-share';

@@ -13,6 +13,9 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import { DialogRoot, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogCloseTrigger } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { SelectRoot, SelectTrigger, SelectContent, SelectItem, SelectValueText } from '@/components/ui/select';
+import { createListCollection } from '@chakra-ui/react';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { GET_BOARD_SHARES_QUERY, SHARE_BOARD_MUTATION, UPDATE_BOARD_SHARE_MUTATION, REMOVE_BOARD_SHARE_MUTATION } from '@/src/entities/board-share/api';
 import { PermissionLevel, BoardShare } from '@/types/board-share';
@@ -24,10 +27,19 @@ interface ShareBoardDialogProps {
   boardName: string;
 }
 
+const permissionItems = createListCollection({
+  items: [
+    { label: 'Can view', value: PermissionLevel.VIEW },
+    { label: 'Can edit', value: PermissionLevel.EDIT },
+    { label: 'Admin', value: PermissionLevel.ADMIN },
+  ],
+});
+
 export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoardDialogProps) {
   const [email, setEmail] = useState('');
-  const [permission, setPermission] = useState<PermissionLevel>(PermissionLevel.EDIT);
+  const [permission, setPermission] = useState<string[]>([PermissionLevel.EDIT]);
   const [error, setError] = useState('');
+  const [shareToRemove, setShareToRemove] = useState<string | null>(null);
 
   const { data, loading, refetch } = useQuery(GET_BOARD_SHARES_QUERY, {
     variables: { boardId },
@@ -68,11 +80,15 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
         variables: {
           boardId,
           email: email.trim(),
-          permission,
+          permission: permission[0] as PermissionLevel,
         },
       });
     } catch (err) {
-      // Error handled in onError
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred while sharing the board.');
+      }
     }
   };
 
@@ -85,24 +101,16 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
     });
   };
 
-  const handleRemoveShare = async (shareId: string) => {
-    if (window.confirm('Are you sure you want to remove this share?')) {
-      await removeShare({
-        variables: { shareId },
-      });
-    }
+  const handleRemoveShare = (shareId: string) => {
+    setShareToRemove(shareId);
   };
 
-  const getPermissionColor = (perm: PermissionLevel) => {
-    switch (perm) {
-      case PermissionLevel.VIEW:
-        return 'gray';
-      case PermissionLevel.EDIT:
-        return 'blue';
-      case PermissionLevel.ADMIN:
-        return 'purple';
-      default:
-        return 'gray';
+  const handleConfirmRemoveShare = async () => {
+    if (shareToRemove) {
+      await removeShare({
+        variables: { shareId: shareToRemove },
+      });
+      setShareToRemove(null);
     }
   };
 
@@ -135,22 +143,23 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
 
                 <HStack>
                   <Box flex={1}>
-                    <select
+                    <SelectRoot
+                      collection={permissionItems}
                       value={permission}
-                      onChange={(e) => setPermission(e.target.value as PermissionLevel)}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        borderRadius: '6px',
-                        border: '1px solid #e2e8f0',
-                        fontSize: '14px',
-                        backgroundColor: 'white',
-                      }}
+                      onValueChange={(e) => setPermission(e.value)}
+                      size="sm"
                     >
-                      <option value={PermissionLevel.VIEW}>Can view</option>
-                      <option value={PermissionLevel.EDIT}>Can edit</option>
-                      <option value={PermissionLevel.ADMIN}>Admin</option>
-                    </select>
+                      <SelectTrigger>
+                        <SelectValueText placeholder="Select permission" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {permissionItems.items.map((item) => (
+                          <SelectItem key={item.value} item={item}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </SelectRoot>
                   </Box>
 
                   <Button
@@ -208,35 +217,37 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
                         </Box>
 
                         <HStack gap={2}>
-                          <select
-                            value={share.permission_level}
-                            onChange={(e) =>
-                              handleUpdatePermission(share.id, e.target.value as PermissionLevel)
+                          <SelectRoot
+                            collection={permissionItems}
+                            value={[share.permission_level]}
+                            onValueChange={(e) =>
+                              handleUpdatePermission(share.id, e.value[0] as PermissionLevel)
                             }
                             disabled={updating}
-                            style={{
-                              width: '140px',
-                              padding: '6px 10px',
-                              borderRadius: '6px',
-                              border: '1px solid #e2e8f0',
-                              fontSize: '13px',
-                              backgroundColor: 'white',
-                            }}
+                            size="sm"
+                            width="140px"
                           >
-                            <option value={PermissionLevel.VIEW}>Can view</option>
-                            <option value={PermissionLevel.EDIT}>Can edit</option>
-                            <option value={PermissionLevel.ADMIN}>Admin</option>
-                          </select>
+                            <SelectTrigger>
+                              <SelectValueText />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {permissionItems.items.map((item) => (
+                                <SelectItem key={item.value} item={item}>
+                                  {item.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </SelectRoot>
 
                           <IconButton
-                            aria-label="Remove access"
+                            aria-label={`Remove access for ${share.shared_with_user_name || share.shared_with_user_email}`}
                             size="sm"
                             variant="ghost"
                             colorPalette="red"
                             onClick={() => handleRemoveShare(share.id)}
                             disabled={removing}
                           >
-                            ✕
+                            <span aria-hidden="true">✕</span>
                           </IconButton>
                         </HStack>
                       </HStack>
@@ -275,6 +286,17 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <ConfirmDialog
+        open={shareToRemove !== null}
+        onClose={() => setShareToRemove(null)}
+        onConfirm={handleConfirmRemoveShare}
+        title="Remove Access"
+        message="Are you sure you want to remove this person's access to the board?"
+        confirmText="Remove"
+        cancelText="Cancel"
+        confirmColorPalette="red"
+      />
     </DialogRoot>
   );
 }

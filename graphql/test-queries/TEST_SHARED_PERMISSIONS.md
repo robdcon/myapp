@@ -41,11 +41,11 @@ query GetSharedBoards {
   sharedBoards {
     id
     name
-    my_permission
+    myPermission
   }
 }
 ```
-**Expected:** Should see the shared board with `my_permission: "EDIT"`
+**Expected:** Should see the shared board with `myPermission: "EDIT"`
 
 ---
 

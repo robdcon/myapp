@@ -56,7 +56,7 @@ query GetSharedBoards {
   sharedBoards {
     id
     name
-    my_permission
+    myPermission
   }
 }
 ```

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Box, Flex, VStack, Text, Button, HStack } from "@chakra-ui/react";
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { BoardType } from '@/src/entities/board';
 import type { Item } from '@/src/entities/item';
 
@@ -22,6 +23,8 @@ export const BoardItemRow = React.memo(function BoardItemRow({
   onDelete,
   isToggling = false
 }: Readonly<BoardItemRowProps>) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
+
   const handleRowClick = React.useCallback((e: React.MouseEvent) => {
     // Don't trigger row click if clicking on the edit button or delete button
     if ((e.target as HTMLElement).closest('button[data-edit-button], button[data-delete-button]')) {
@@ -41,10 +44,14 @@ export const BoardItemRow = React.memo(function BoardItemRow({
 
   const handleDeleteClick = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent row click
-    if (onDelete && window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
+    setShowDeleteConfirm(true);
+  }, []);
+
+  const handleConfirmDelete = React.useCallback(() => {
+    if (onDelete) {
       onDelete(item.id);
     }
-  }, [onDelete, item.id, item.name]);
+  }, [onDelete, item.id]);
 
   const handleCheckboxClick = React.useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent row click (since row click also toggles)
@@ -127,6 +134,17 @@ export const BoardItemRow = React.memo(function BoardItemRow({
           )}
         </HStack>
       </Flex>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Item"
+        message={`Are you sure you want to delete "${item.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColorPalette="red"
+      />
     </Box>
   );
 });

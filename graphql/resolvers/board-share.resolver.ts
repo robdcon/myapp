@@ -36,19 +36,25 @@ export const boardShareResolvers = {
         });
       }
 
-      // Check if user has permission to view shares (must be owner or have ADMIN permission)
+      // Check if user has admin access to view shares
       const permissionCheck = await pool.query(
-        `SELECT ub.role, bs.permission_level
-         FROM user_boards ub
-         LEFT JOIN board_shares bs ON bs.board_id = ub.board_id AND bs.shared_with_user_id = $1
-         WHERE ub.board_id = $2 AND ub.user_id = (
-           SELECT id FROM users WHERE auth0_id = $1
-         )`,
-        [userId, boardId]
+        `SELECT 
+           CASE 
+             WHEN ub.role = 'OWNER' THEN true
+             WHEN bs.permission_level = 'ADMIN' THEN true
+             ELSE false
+           END as has_admin_access
+         FROM (SELECT $1::integer as board_id) b
+         LEFT JOIN user_boards ub ON ub.board_id = b.board_id
+         LEFT JOIN users u ON u.id = ub.user_id AND u.auth0_id = $2
+         LEFT JOIN board_shares bs ON bs.board_id = b.board_id 
+           AND bs.shared_with_user_id = $2 
+           AND bs.permission_level = 'ADMIN'
+         LIMIT 1`,
+        [boardId, userId]
       );
 
-      const hasAdminAccess = permissionCheck.rows[0]?.role === 'OWNER' || 
-                            permissionCheck.rows[0]?.permission_level === 'ADMIN';
+      const hasAdminAccess = permissionCheck.rows[0]?.has_admin_access === true;
 
       if (!hasAdminAccess) {
         throw new GraphQLError('You do not have permission to view shares for this board', {
@@ -88,10 +94,11 @@ export const boardShareResolvers = {
         [userId]
       );
 
-      console.log('🔍 sharedBoards query - found', result.rows.length, 'boards');
-      console.log('🔍 sharedBoards query - boards:', result.rows.map(r => ({ id: r.id, name: r.name, permission: r.my_permission })));
-
-      return result.rows;
+      // Map database field to GraphQL schema (snake_case -> camelCase)
+      return result.rows.map(({ my_permission, ...rest }) => ({
+        ...rest,
+        myPermission: my_permission,
+      }));
     },
   },
 
@@ -109,17 +116,23 @@ export const boardShareResolvers = {
 
       // Check if user has permission to share (must be owner or ADMIN)
       const permissionCheck = await pool.query(
-        `SELECT ub.role, bs.permission_level
-         FROM user_boards ub
-         LEFT JOIN board_shares bs ON bs.board_id = ub.board_id AND bs.shared_with_user_id = $1
-         WHERE ub.board_id = $2 AND ub.user_id = (
-           SELECT id FROM users WHERE auth0_id = $1
-         )`,
-        [userId, boardId]
+        `SELECT 
+           CASE 
+             WHEN ub.role = 'OWNER' THEN true
+             WHEN bs.permission_level = 'ADMIN' THEN true
+             ELSE false
+           END as can_share
+         FROM (SELECT $1::integer as board_id) b
+         LEFT JOIN user_boards ub ON ub.board_id = b.board_id
+         LEFT JOIN users u ON u.id = ub.user_id AND u.auth0_id = $2
+         LEFT JOIN board_shares bs ON bs.board_id = b.board_id 
+           AND bs.shared_with_user_id = $2 
+           AND bs.permission_level = 'ADMIN'
+         LIMIT 1`,
+        [boardId, userId]
       );
 
-      const hasSharePermission = permissionCheck.rows[0]?.role === 'OWNER' || 
-                                permissionCheck.rows[0]?.permission_level === 'ADMIN';
+      const hasSharePermission = permissionCheck.rows[0]?.can_share === true;
 
       if (!hasSharePermission) {
         throw new GraphQLError('You do not have permission to share this board', {
@@ -193,23 +206,30 @@ export const boardShareResolvers = {
 
       // Get the share and check permissions
       const shareResult = await pool.query(
-        `SELECT bs.*, ub.role
+        `SELECT bs.*, ub.role,
+           CASE 
+             WHEN ub.role IS NOT NULL THEN ub.role
+             WHEN admin_share.permission_level = 'ADMIN' THEN 'ADMIN'
+             ELSE NULL
+           END as user_permission
          FROM board_shares bs
-         INNER JOIN user_boards ub ON ub.board_id = bs.board_id
-         WHERE bs.id = $1 AND ub.user_id = (
-           SELECT id FROM users WHERE auth0_id = $2
-         )`,
+         LEFT JOIN user_boards ub ON ub.board_id = bs.board_id
+         LEFT JOIN users u ON u.id = ub.user_id AND u.auth0_id = $2
+         LEFT JOIN board_shares admin_share ON admin_share.board_id = bs.board_id 
+           AND admin_share.shared_with_user_id = $2 
+           AND admin_share.permission_level = 'ADMIN'
+         WHERE bs.id = $1`,
         [shareId, userId]
       );
 
       if (shareResult.rows.length === 0) {
-        throw new GraphQLError('Share not found or you do not have permission', {
-          extensions: { code: 'FORBIDDEN' },
+        throw new GraphQLError('Share not found', {
+          extensions: { code: 'NOT_FOUND' },
         });
       }
 
-      const hasPermission = shareResult.rows[0].role === 'OWNER' || 
-                           shareResult.rows[0].permission_level === 'ADMIN';
+      const hasPermission = shareResult.rows[0].user_permission === 'OWNER' || 
+                           shareResult.rows[0].user_permission === 'ADMIN';
 
       if (!hasPermission) {
         throw new GraphQLError('You do not have permission to modify this share', {
@@ -218,7 +238,7 @@ export const boardShareResolvers = {
       }
 
       // Update the permission
-      const result = await pool.query(
+      await pool.query(
         `UPDATE board_shares 
          SET permission_level = $1, updated_at = NOW()
          WHERE id = $2
@@ -251,23 +271,30 @@ export const boardShareResolvers = {
 
       // Check if user has permission to remove share
       const shareResult = await pool.query(
-        `SELECT bs.*, ub.role
+        `SELECT bs.*,
+           CASE 
+             WHEN ub.role IS NOT NULL THEN ub.role
+             WHEN admin_share.permission_level = 'ADMIN' THEN 'ADMIN'
+             ELSE NULL
+           END as user_permission
          FROM board_shares bs
-         INNER JOIN user_boards ub ON ub.board_id = bs.board_id
-         WHERE bs.id = $1 AND ub.user_id = (
-           SELECT id FROM users WHERE auth0_id = $2
-         )`,
+         LEFT JOIN user_boards ub ON ub.board_id = bs.board_id
+         LEFT JOIN users u ON u.id = ub.user_id AND u.auth0_id = $2
+         LEFT JOIN board_shares admin_share ON admin_share.board_id = bs.board_id 
+           AND admin_share.shared_with_user_id = $2 
+           AND admin_share.permission_level = 'ADMIN'
+         WHERE bs.id = $1`,
         [shareId, userId]
       );
 
       if (shareResult.rows.length === 0) {
-        throw new GraphQLError('Share not found or you do not have permission', {
-          extensions: { code: 'FORBIDDEN' },
+        throw new GraphQLError('Share not found', {
+          extensions: { code: 'NOT_FOUND' },
         });
       }
 
-      const hasPermission = shareResult.rows[0].role === 'OWNER' || 
-                           shareResult.rows[0].permission_level === 'ADMIN';
+      const hasPermission = shareResult.rows[0].user_permission === 'OWNER' || 
+                           shareResult.rows[0].user_permission === 'ADMIN';
 
       if (!hasPermission) {
         throw new GraphQLError('You do not have permission to remove this share', {
@@ -294,14 +321,14 @@ export const boardShareResolvers = {
 
       // Check if user is owner
       const ownerCheck = await pool.query(
-        `SELECT role FROM user_boards 
-         WHERE board_id = $1 AND user_id = (
-           SELECT id FROM users WHERE auth0_id = $2
-         )`,
+        `SELECT ub.role 
+         FROM user_boards ub
+         INNER JOIN users u ON u.id = ub.user_id AND u.auth0_id = $2
+         WHERE ub.board_id = $1`,
         [boardId, userId]
       );
 
-      if (ownerCheck.rows[0]?.role !== 'OWNER') {
+      if (ownerCheck.rows.length === 0 || ownerCheck.rows[0]?.role !== 'OWNER') {
         throw new GraphQLError('Only the board owner can generate share links', {
           extensions: { code: 'FORBIDDEN' },
         });
@@ -336,14 +363,14 @@ export const boardShareResolvers = {
 
       // Check if user is owner
       const ownerCheck = await pool.query(
-        `SELECT role FROM user_boards 
-         WHERE board_id = $1 AND user_id = (
-           SELECT id FROM users WHERE auth0_id = $2
-         )`,
+        `SELECT ub.role 
+         FROM user_boards ub
+         INNER JOIN users u ON u.id = ub.user_id AND u.auth0_id = $2
+         WHERE ub.board_id = $1`,
         [boardId, userId]
       );
 
-      if (ownerCheck.rows[0]?.role !== 'OWNER') {
+      if (ownerCheck.rows.length === 0 || ownerCheck.rows[0]?.role !== 'OWNER') {
         throw new GraphQLError('Only the board owner can revoke share links', {
           extensions: { code: 'FORBIDDEN' },
         });

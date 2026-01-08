@@ -18,7 +18,7 @@ query GetSharedBoards {
     id
     name
     board_type
-    my_permission
+    myPermission
     isShared
     created_at
   }
