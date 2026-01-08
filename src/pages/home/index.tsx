@@ -1,5 +1,5 @@
 import { auth0 } from "@/lib/auth0";
-import { BoardList } from "@/src/features/boards";
+import { BoardList, SharedBoardsList } from "@/src/features/boards";
 import { Button, VStack, Box, Heading, Container, Flex } from "@chakra-ui/react";
 import Link from "next/link";
 
@@ -54,7 +54,14 @@ export async function Home() {
         </Container>
       </Box>
       <Container maxW="container.xl" py={8}>
-        <BoardList />
+        <VStack gap={12} align="stretch">
+          <BoardList />
+          
+          <Box>
+            <Heading size="2xl" mb={6} color="blue.700">Shared with Me</Heading>
+            <SharedBoardsList />
+          </Box>
+        </VStack>
       </Container>
     </Box>
   );

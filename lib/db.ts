@@ -15,7 +15,7 @@ interface PoolConfig {
 // Create a connection pool
 const pool = new Pool({
     user: process.env.PGUSER,
-    password: process.env.PGPASSWORD,
+    password: process.env.PGPASSWORD ? String(process.env.PGPASSWORD) : undefined,
     host: process.env.PGHOST,
     port: parseInt(process.env.PGPORT || '5432'),
     database: process.env.PGDATABASE

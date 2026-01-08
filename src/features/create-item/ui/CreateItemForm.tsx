@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Box, Button, VStack, Input, createListCollection } from '@chakra-ui/react';
+import { Box, Button, VStack, Input, createListCollection, Heading } from '@chakra-ui/react';
 import { SelectRoot, SelectTrigger, SelectContent, SelectItem, SelectValueText, SelectLabel } from '@/components/ui/select';
 import { useCreateItem } from '../api/create-item';
 import { ITEM_CATEGORIES } from '@/src/shared';
@@ -48,8 +48,26 @@ export function CreateItemForm({
     }
   }, [isOpen, defaultCategory]);
 
+  // Handle escape key
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   const { createItem, loading } = useCreateItem(boardId, () => {
-    onSuccess?.();
+    onSuccess?.(formData.category || undefined);
     onClose();
     setFormData({ name: '', details: '', category: '' });
   });
@@ -63,77 +81,120 @@ export function CreateItemForm({
   if (!isOpen) return null;
 
   return (
-    <Box p={6} bg="white" border="2px" borderColor="appPrimary.200" rounded="lg" shadow="lg">
-      <form onSubmit={handleSubmit}>
-        <VStack gap={4} align="stretch">
-          <Box>
-            <label htmlFor="item-name" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
-              Item Name *
-            </label>
-            <Input
-              id="item-name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g., Strawberries"
-              autoFocus
-              required
-            />
+    <Box
+      position="fixed"
+      top="0"
+      left="0"
+      right="0"
+      bottom="0"
+      bg="blackAlpha.600"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      zIndex="modal"
+      onClick={onClose}
+    >
+      <Box
+        bg="white"
+        rounded="lg"
+        shadow="2xl"
+        maxW="500px"
+        w="90%"
+        maxH="90vh"
+        overflow="auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Box
+          p={6}
+          borderBottom="1px"
+          borderColor="appPrimary.100"
+          bg="appPrimary.50"
+        >
+          <Heading size="lg" color="appPrimary.700">
+            Add New Item
+            {defaultCategory && ` to ${defaultCategory}`}
+          </Heading>
+        </Box>
+        
+        <form onSubmit={handleSubmit}>
+          <Box p={6}>
+            <VStack gap={4} align="stretch">
+              <Box>
+                <label htmlFor="item-name" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                  Item Name *
+                </label>
+                <Input
+                  id="item-name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g., Strawberries"
+                  autoFocus
+                  required
+                />
+              </Box>
+
+              <Box>
+                <label htmlFor="item-details" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                  Details (optional)
+                </label>
+                <Input
+                  id="item-details"
+                  value={formData.details}
+                  onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+                  placeholder="e.g., 2 packs"
+                />
+              </Box>
+
+              <Box>
+                <SelectRoot
+                  collection={categoryCollection}
+                  value={formData.category ? [formData.category] : []}
+                  onValueChange={(details) => {
+                    const selectedValue = details.value[0] || '';
+                    setFormData({ ...formData, category: selectedValue });
+                  }}
+                  size="sm"
+                >
+                  <SelectLabel htmlFor="item-category" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                    Category (optional)
+                  </SelectLabel>
+                  <SelectTrigger clearable>
+                    <SelectValueText placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categoryCollection.items.map((category) => (
+                      <SelectItem key={category.value} item={category}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </SelectRoot>
+              </Box>
+            </VStack>
           </Box>
 
-          <Box>
-            <label htmlFor="item-details" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
-              Details (optional)
-            </label>
-            <Input
-              id="item-details"
-              value={formData.details}
-              onChange={(e) => setFormData({ ...formData, details: e.target.value })}
-              placeholder="e.g., 2 packs"
-            />
-          </Box>
-
-          <Box>
-            <SelectRoot
-              collection={categoryCollection}
-              value={formData.category ? [formData.category] : []}
-              onValueChange={(details) => {
-                const selectedValue = details.value[0] || '';
-                setFormData({ ...formData, category: selectedValue });
-              }}
-              size="sm"
-            >
-              <SelectLabel htmlFor="item-category" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
-                Category (optional)
-              </SelectLabel>
-              <SelectTrigger clearable>
-                <SelectValueText placeholder="Select a category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categoryCollection.items.map((category) => (
-                  <SelectItem key={category.value} item={category}>
-                    {category.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </SelectRoot>
-          </Box>
-
-          <Box display="flex" gap={3}>
+          <Box
+            p={6}
+            borderTop="1px"
+            borderColor="gray.200"
+            display="flex"
+            gap={3}
+            justifyContent="flex-end"
+          >
+            <Button type="button" onClick={onClose} variant="outline">
+              Cancel
+            </Button>
             <Button
               type="submit"
               disabled={loading || !formData.name.trim()}
               colorPalette="appPrimary"
-              flex={1}
               loading={loading}
             >
               Add Item
             </Button>
-            <Button type="button" onClick={onClose} variant="outline">
-              Cancel
-            </Button>
           </Box>
-        </VStack>
-      </form>
+        </form>
+      </Box>
     </Box>
   );
 }

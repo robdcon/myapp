@@ -38,8 +38,8 @@ export default function BoardList() {
   );
 
   return (
-    <Box p={6}>
-      <Heading size="2xl" mb={6}>My Boards</Heading>
+    <Box>
+      <Heading size="2xl" mb={6} color="appPrimary.700">My Boards</Heading>
       
       {data?.myBoards.length === 0 ? (
         <Card.Root>

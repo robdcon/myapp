@@ -1,6 +1,6 @@
 export interface CreateItemFeatureProps {
   boardId: string;
-  onSuccess?: () => void;
+  onSuccess?: (category?: string) => void;
   isOpen: boolean;
   onClose: () => void;
   defaultCategory?: string;
