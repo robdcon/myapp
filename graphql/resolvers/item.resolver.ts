@@ -52,7 +52,7 @@ export const itemResolvers = {
                 });
             }
 
-            const hasPermission = await checkBoardEditPermission(userId, boardId);
+            const hasPermission = await checkBoardEditPermission(boardId, userId);
             if (!hasPermission) {
                 throw new GraphQLError('You do not have permission to edit items on this board', {
                     extensions: { code: 'FORBIDDEN' },
@@ -87,8 +87,8 @@ export const itemResolvers = {
             }
 
             const userId = context.user.sub;
-            const hasPermission = await checkBoardEditPermission(userId, boardId);
-            
+            const hasPermission = await checkBoardEditPermission(boardId, userId);
+
             if (!hasPermission) {
                 throw new GraphQLError('You do not have permission to add items to this board', {
                     extensions: { code: 'FORBIDDEN' },
@@ -147,7 +147,7 @@ export const itemResolvers = {
                 });
             }
 
-            const hasPermission = await checkBoardEditPermission(userId, boardId);
+            const hasPermission = await checkBoardEditPermission(boardId, userId);
             if (!hasPermission) {
                 throw new GraphQLError('You do not have permission to edit items on this board', {
                     extensions: { code: 'FORBIDDEN' },
@@ -220,7 +220,7 @@ export const itemResolvers = {
                 });
             }
 
-            const hasPermission = await checkBoardEditPermission(userId, boardId);
+            const hasPermission = await checkBoardEditPermission(boardId, userId);
             if (!hasPermission) {
                 throw new GraphQLError('You do not have permission to delete items on this board', {
                     extensions: { code: 'FORBIDDEN' },
