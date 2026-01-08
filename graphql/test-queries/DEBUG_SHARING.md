@@ -1,5 +1,14 @@
 # Debug Board Sharing Setup
 
+## Step 0: Enable Test Mode (If Using x-test-user-id Header)
+To use the `x-test-user-id` header for testing, you must explicitly enable test mode:
+```bash
+# Set this environment variable before starting the server
+export ENABLE_TEST_MODE=true
+```
+
+⚠️ **Security Note:** This feature is disabled by default for security. Never enable in production!
+
 ## Step 1: Check Users Table
 ```sql
 SELECT id, email, auth0_id, name 
@@ -69,7 +78,7 @@ query GetSharedBoards {
 
 2. **Not Logged In**: Make sure you're actually logged in as the shared user
    - Check in your app by clicking your profile/avatar
-   - Or use the test mode header: `{"x-test-user-id": "auth0|123456789"}`
+   - Or use the test mode header (requires `ENABLE_TEST_MODE=true`): `{"x-test-user-id": "auth0|123456789"}`
 
 3. **Auth0 ID Mismatch**: The auth0_id in the database doesn't match the logged-in user
    - Run: `SELECT auth0_id FROM users WHERE email = 'jane@example.com'`

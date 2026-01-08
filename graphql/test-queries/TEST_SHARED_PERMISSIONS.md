@@ -2,6 +2,15 @@
 
 ## Setup Instructions
 
+### 0. Enable Test Mode (Required for using x-test-user-id header)
+To use the `x-test-user-id` header for testing, you must explicitly enable test mode:
+```bash
+# Set this environment variable before starting the server
+export ENABLE_TEST_MODE=true
+```
+
+⚠️ **Security Note:** Never enable test mode in production! This environment variable must be explicitly set to `'true'` to activate test mode.
+
 ### 1. Get User Auth0 IDs
 Run this SQL to get the auth0_id for both users:
 ```sql
