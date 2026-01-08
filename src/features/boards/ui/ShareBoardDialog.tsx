@@ -34,13 +34,17 @@ const permissionItems = createListCollection({
   ],
 });
 
+interface BoardSharesData {
+  boardShares: BoardShare[];
+}
+
 export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoardDialogProps) {
   const [email, setEmail] = useState('');
   const [permission, setPermission] = useState<string[]>([PermissionLevel.EDIT]);
   const [error, setError] = useState('');
   const [shareToRemove, setShareToRemove] = useState<string | null>(null);
 
-  const { data, loading, refetch } = useQuery(GET_BOARD_SHARES_QUERY, {
+  const { data, loading, refetch } = useQuery<BoardSharesData>(GET_BOARD_SHARES_QUERY, {
     variables: { boardId },
     skip: !open,
   });

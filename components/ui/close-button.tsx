@@ -1,7 +1,7 @@
-import { IconButton } from "@chakra-ui/react"
+import { Button } from "@chakra-ui/react"
 import * as React from "react"
 
-export interface CloseButtonProps extends IconButton.RootProps {}
+export interface CloseButtonProps extends React.ComponentPropsWithoutRef<typeof Button> {}
 
 export const CloseButton = React.forwardRef<
   HTMLButtonElement,
@@ -9,7 +9,7 @@ export const CloseButton = React.forwardRef<
 >(function CloseButton(props, ref) {
   const { children, ...rest } = props
   return (
-    <IconButton variant="ghost" aria-label="Close" ref={ref} {...rest}>
+    <Button variant="ghost" aria-label="Close" ref={ref} {...rest}>
       {children || (
         <svg
           width="24"
@@ -25,6 +25,6 @@ export const CloseButton = React.forwardRef<
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       )}
-    </IconButton>
+    </Button>
   )
 })
