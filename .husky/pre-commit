@@ -1,0 +1,8 @@
+# Format staged files with Prettier
+npx lint-staged
+
+# Run TypeScript type checking
+echo "🔍 Running TypeScript type check..."
+npx tsc --noEmit || { echo "❌ TypeScript errors found! Fix them before committing."; exit 1; }
+
+echo "✅ Pre-commit checks passed!"
