@@ -14,9 +14,9 @@ Git hooks are scripts that Git executes before or after events such as: commit, 
 
 **What it does:**
 
-1. **Runs lint-staged** - Only checks files you're committing (not the entire codebase)
-   - Runs Prettier to auto-format code consistently on staged files
-2. **Runs TypeScript type checking** - Ensures no type errors exist across the entire project
+1. **Runs lint-staged** - Auto-formats staged files with Prettier (does not run linting on staged files)
+   - Applies Prettier formatting to TypeScript, JavaScript, JSON, and Markdown files you're committing
+2. **Runs TypeScript type checking** - Ensures no type errors exist across the entire project (not just staged files)
 
 **Why it's helpful:** Catches errors before they get committed, keeps code formatted consistently
 
@@ -83,8 +83,8 @@ git commit -m "feat: Updated the authentication system and fixed bugs and added 
 1. You stage files: `git add src/components/Button.tsx`
 2. You commit: `git commit -m "feat: add new button component"`
 3. **Pre-commit hook runs:**
-   - Formats `Button.tsx` with Prettier
-   - Runs TypeScript check on entire project
+   - Auto-formats `Button.tsx` with Prettier (staged files only)
+   - Runs TypeScript type check on entire project (all files, not just staged)
    - If errors found → commit is blocked
 4. **Commit-msg hook runs:**
    - Validates "feat: add new button component"
