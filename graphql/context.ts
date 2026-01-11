@@ -9,7 +9,6 @@ export interface GraphQLContext {
 
 export async function createContext(req: NextRequest): Promise<GraphQLContext> {
   const session = await auth0.getSession();
-  console.log('GraphQL Context - User Session:', session?.user);
 
   // TEST MODE: Allow testing with a mock user via header
   // Test mode for development - must be explicitly enabled
