@@ -42,15 +42,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Add a comment to notify about Copilot review
-      # Note: Copilot reviews are requested through GitHub's review system
-      # This workflow serves as a reminder to request the review
-      - name: Add Copilot Review Reminder
+      # Step 2: Request a GitHub Copilot review and add a confirmation comment
+      # This uses the GitHub CLI to trigger a Copilot-powered review on the PR.
+      # A comment is then added to confirm that the request was made.
+      - name: Request GitHub Copilot Review
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh pr review ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --copilot
+          
           gh pr comment ${{ github.event.pull_request.number }} \
             --repo ${{ github.repository }} \
-            --body "🤖 GitHub Copilot review workflow triggered successfully for PR #${{ github.event.pull_request.number }}"
-
-          echo "✅ Reminder comment added to PR #${{ github.event.pull_request.number }}"
+            --body "🤖 GitHub Copilot review has been requested automatically for PR #${{ github.event.pull_request.number }}."
+          
+          echo "✅ GitHub Copilot review requested and confirmation comment added for PR #${{ github.event.pull_request.number }}"
