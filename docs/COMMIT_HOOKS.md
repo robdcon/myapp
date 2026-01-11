@@ -15,9 +15,8 @@ Git hooks are scripts that Git executes before or after events such as: commit, 
 **What it does:**
 
 1. **Runs lint-staged** - Only checks files you're committing (not the entire codebase)
-   - Runs ESLint to catch code errors and enforce style
-   - Runs Prettier to auto-format code consistently
-2. **Runs TypeScript type checking** - Ensures no type errors exist
+   - Runs Prettier to auto-format code consistently on staged files
+2. **Runs TypeScript type checking** - Ensures no type errors exist across the entire project
 
 **Why it's helpful:** Catches errors before they get committed, keeps code formatted consistently
 
@@ -84,7 +83,7 @@ git commit -m "feat: Updated the authentication system and fixed bugs and added 
 1. You stage files: `git add src/components/Button.tsx`
 2. You commit: `git commit -m "feat: add new button component"`
 3. **Pre-commit hook runs:**
-   - Lints and formats `Button.tsx`
+   - Formats `Button.tsx` with Prettier
    - Runs TypeScript check on entire project
    - If errors found → commit is blocked
 4. **Commit-msg hook runs:**
@@ -135,7 +134,7 @@ Configures the commit message validation rules. You can customize:
 - Max message length
 - Required/optional scope format
 
-### `.eslintrc.js`
+### `.eslintrc.json`
 
 Configures ESLint rules for code quality. Current rules:
 
@@ -160,10 +159,12 @@ Defines which tools run on which file types:
 
 ```json
 "lint-staged": {
-  "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
+  "*.{ts,tsx}": ["prettier --write"],
   "*.{json,md}": ["prettier --write"]
 }
 ```
+
+**Note:** Currently only Prettier runs on staged files. ESLint is not included in lint-staged due to ESLint 9 compatibility considerations, but TypeScript type checking still runs on the entire project during pre-commit.
 
 ## Troubleshooting
 
@@ -244,12 +245,15 @@ Want to modify the hooks? Here's how:
 
 ### Add/remove ESLint rules
 
-Edit `.eslintrc.js`:
+Edit `.eslintrc.json`:
 
-```javascript
-rules: {
-  'no-console': 'off',  // Allow all console statements
-  '@typescript-eslint/no-unused-vars': 'error',  // Make it an error instead of warning
+```json
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "no-console": "off",
+    "@typescript-eslint/no-unused-vars": "error"
+  }
 }
 ```
 
@@ -270,10 +274,14 @@ Edit the `lint-staged` section in `package.json`:
 
 ```json
 "lint-staged": {
-  "*.{ts,tsx}": ["eslint --fix", "prettier --write", "jest --findRelatedTests"],
+  "*.{ts,tsx}": ["prettier --write", "jest --findRelatedTests"],
   "*.css": ["stylelint --fix"]
 }
 ```
+
+**Note:** You can add ESLint back if desired: `["eslint --fix", "prettier --write"]`
+
+````
 
 ### Add a new hook
 
@@ -281,6 +289,6 @@ Create a new file in `.husky/`:
 
 ```bash
 npx husky add .husky/pre-push "npm test"
-```
+````
 
 This creates a `pre-push` hook that runs tests before pushing to remote.
