@@ -47,19 +47,13 @@ export function ConfirmDialog({
           <DialogCloseTrigger />
         </DialogHeader>
 
-        <DialogBody>
-          {message}
-        </DialogBody>
+        <DialogBody>{message}</DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             {cancelText}
           </Button>
-          <Button
-            colorPalette={confirmColorPalette}
-            onClick={handleConfirm}
-            loading={isLoading}
-          >
+          <Button colorPalette={confirmColorPalette} onClick={handleConfirm} loading={isLoading}>
             {confirmText}
           </Button>
         </DialogFooter>

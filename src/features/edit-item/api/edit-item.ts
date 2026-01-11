@@ -31,8 +31,10 @@ export const useEditItem = (boardId: string, onSuccess?: () => void) => {
       });
 
       if (existingData?.board) {
-        const currentItem = existingData.board.items?.find((item: Item) => item.id === variables.itemId);
-        
+        const currentItem = existingData.board.items?.find(
+          (item: Item) => item.id === variables.itemId
+        );
+
         cache.writeQuery({
           query: GET_BOARD_QUERY,
           variables: { id: boardId },
@@ -41,10 +43,10 @@ export const useEditItem = (boardId: string, onSuccess?: () => void) => {
               ...existingData.board,
               items: existingData.board.items?.map((item: Item) =>
                 item.id === mutationData.updateItem.id
-                  ? { 
-                      ...item, 
+                  ? {
+                      ...item,
                       ...mutationData.updateItem,
-                      is_checked: currentItem?.is_checked || false 
+                      is_checked: currentItem?.is_checked || false,
                     }
                   : item
               ),

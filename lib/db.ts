@@ -14,11 +14,11 @@ interface PoolConfig {
 
 // Create a connection pool
 const pool = new Pool({
-    user: process.env.PGUSER,
-    password: process.env.PGPASSWORD ? String(process.env.PGPASSWORD) : undefined,
-    host: process.env.PGHOST,
-    port: parseInt(process.env.PGPORT || '5432'),
-    database: process.env.PGDATABASE
+  user: process.env.PGUSER,
+  password: process.env.PGPASSWORD ? String(process.env.PGPASSWORD) : undefined,
+  host: process.env.PGHOST,
+  port: parseInt(process.env.PGPORT || '5432'),
+  database: process.env.PGDATABASE,
 });
 
 // Main query function
@@ -58,9 +58,7 @@ export async function queryMany<T extends QueryResultRow = any>(
 }
 
 // Transaction helper
-export async function transaction<T>(
-  callback: (client: PoolClient) => Promise<T>
-): Promise<T> {
+export async function transaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

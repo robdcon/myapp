@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { auth0 } from "@/lib/auth0";
+import { auth0 } from '@/lib/auth0';
 
 export interface GraphQLContext {
   req: NextRequest;
@@ -10,7 +10,7 @@ export interface GraphQLContext {
 export async function createContext(req: NextRequest): Promise<GraphQLContext> {
   const session = await auth0.getSession();
   console.log('GraphQL Context - User Session:', session?.user);
-  
+
   // TEST MODE: Allow testing with a mock user via header
   // Test mode for development - must be explicitly enabled
   const testUserId = req.headers.get('x-test-user-id');
@@ -22,7 +22,7 @@ export async function createContext(req: NextRequest): Promise<GraphQLContext> {
       dbUser: null,
     };
   }
-  
+
   return {
     req,
     user: session?.user || null,

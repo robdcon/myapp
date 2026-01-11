@@ -1,11 +1,11 @@
-import { Alert } from "@chakra-ui/react";
+import { Alert } from '@chakra-ui/react';
 
 interface ErrorAlertProps {
   title?: string;
   message: string;
 }
 
-export function ErrorAlert({ title = "Error", message }: ErrorAlertProps) {
+export function ErrorAlert({ title = 'Error', message }: ErrorAlertProps) {
   return (
     <Alert.Root status="error">
       <Alert.Indicator />

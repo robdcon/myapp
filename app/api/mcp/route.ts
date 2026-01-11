@@ -32,16 +32,14 @@ class ServerMCPClient {
   async initialize() {
     if (this.initialized) return;
 
-    this.server = spawn('node', [
-      'D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'
-    ], {
+    this.server = spawn('node', ['D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'], {
       cwd: 'D:\\CODE\\AI\\mcp-servers\\mcp-design-system',
-      stdio: 'pipe'
+      stdio: 'pipe',
     });
 
     this.server.stdout?.on('data', (data: Buffer) => {
       const responses = data.toString().trim().split('\n');
-      responses.forEach(response => {
+      responses.forEach((response) => {
         if (!response) return;
         try {
           const parsed: MCPResponse = JSON.parse(response);
@@ -58,9 +56,9 @@ class ServerMCPClient {
 
     // Initialize the server
     await this.sendRequest('initialize', {
-      protocolVersion: "2024-11-05",
+      protocolVersion: '2024-11-05',
       capabilities: { tools: {} },
-      clientInfo: { name: "chakra-app", version: "1.0.0" }
+      clientInfo: { name: 'chakra-app', version: '1.0.0' },
     });
 
     this.initialized = true;
@@ -70,14 +68,14 @@ class ServerMCPClient {
     return new Promise((resolve, reject) => {
       const id = ++this.requestId;
       const request: MCPRequest = {
-        jsonrpc: "2.0",
+        jsonrpc: '2.0',
         id,
         method,
-        params
+        params,
       };
 
       this.pendingRequests.set(id, resolve);
-      
+
       const timeout = setTimeout(() => {
         this.pendingRequests.delete(id);
         reject(new Error('Request timeout'));
@@ -103,13 +101,10 @@ export async function POST(request: NextRequest) {
     const { tool, args } = await request.json();
     const client = ServerMCPClient.getInstance();
     const response = await client.callTool(tool, args);
-    
+
     return NextResponse.json(response);
   } catch (error) {
     console.error('MCP API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to call MCP server' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to call MCP server' }, { status: 500 });
   }
 }

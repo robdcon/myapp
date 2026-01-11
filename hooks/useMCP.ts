@@ -31,6 +31,6 @@ export function useMCP() {
     isInitialized,
     error,
     callTool,
-    getUsageInstructions: () => mcpClient.getUsageInstructions()
+    getUsageInstructions: () => mcpClient.getUsageInstructions(),
   };
 }

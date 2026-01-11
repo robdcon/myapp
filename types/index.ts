@@ -86,9 +86,9 @@ export interface DeleteItemData {
 export interface MutationData {
   data: {
     toggleItemCheck: Item;
-    createItem:   Item;
-    updateItem:   Item;
-  }
+    createItem: Item;
+    updateItem: Item;
+  };
 }
 
 // Form types

@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-// Queries  
+// Queries
 export const GET_ITEM_QUERY = gql`
   query GetItem($id: ID!) {
     item(id: $id) {

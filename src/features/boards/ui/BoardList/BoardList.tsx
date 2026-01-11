@@ -2,7 +2,18 @@
 
 import { useQuery } from '@apollo/client/react';
 import Link from 'next/link';
-import { Box, Button, Card, Grid, Heading, Text, Badge, Flex, Spinner, Alert } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Card,
+  Grid,
+  Heading,
+  Text,
+  Badge,
+  Flex,
+  Spinner,
+  Alert,
+} from '@chakra-ui/react';
 import { MY_BOARDS_QUERY } from '../../api/queries';
 import { MyBoardsData } from '../../model/types';
 import { BoardType } from '@/src/entities/board';
@@ -21,26 +32,30 @@ function getBoardTypeLabel(boardType: string): string {
 export default function BoardList() {
   const { loading, error, data } = useQuery<MyBoardsData>(MY_BOARDS_QUERY);
 
-  if (loading) return (
-    <Flex justify="center" align="center" minH="200px">
-      <Spinner size="xl" colorPalette="darkCyan" />
-    </Flex>
-  );
-  
-  if (error) return (
-    <Alert.Root status="error">
-      <Alert.Indicator />
-      <Alert.Content>
-        <Alert.Title>Error loading boards</Alert.Title>
-        <Alert.Description>{error.message}</Alert.Description>
-      </Alert.Content>
-    </Alert.Root>
-  );
+  if (loading)
+    return (
+      <Flex justify="center" align="center" minH="200px">
+        <Spinner size="xl" colorPalette="darkCyan" />
+      </Flex>
+    );
+
+  if (error)
+    return (
+      <Alert.Root status="error">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>Error loading boards</Alert.Title>
+          <Alert.Description>{error.message}</Alert.Description>
+        </Alert.Content>
+      </Alert.Root>
+    );
 
   return (
     <Box>
-      <Heading size="2xl" mb={6} color="appPrimary.700">My Boards</Heading>
-      
+      <Heading size="2xl" mb={6} color="appPrimary.700">
+        My Boards
+      </Heading>
+
       {data?.myBoards.length === 0 ? (
         <Card.Root>
           <Card.Body>
@@ -52,20 +67,22 @@ export default function BoardList() {
       ) : (
         <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={6}>
           {data?.myBoards.map((board) => (
-            <Card.Root 
-              key={board.id} 
-              _hover={{ 
-                transform: 'translateY(-4px)', 
+            <Card.Root
+              key={board.id}
+              _hover={{
+                transform: 'translateY(-4px)',
                 shadow: 'xl',
-                borderColor: 'appPrimary.300'
-              }} 
+                borderColor: 'appPrimary.300',
+              }}
               transition="all 0.2s"
               borderColor="appPrimary.200"
               variant="outline"
             >
               <Card.Body p={6}>
                 <Flex direction="column" gap={4}>
-                  <Heading size="lg" color="appPrimary.700">{board.name}</Heading>
+                  <Heading size="lg" color="appPrimary.700">
+                    {board.name}
+                  </Heading>
                   <Badge colorPalette="appPrimary" width="fit-content" variant="subtle">
                     {getBoardTypeLabel(board.board_type)}
                   </Badge>
@@ -76,9 +93,7 @@ export default function BoardList() {
               </Card.Body>
               <Card.Footer>
                 <Button asChild colorPalette="appPrimary" width="full">
-                  <Link href={`/boards/${board.id}`}>
-                    View Board
-                  </Link>
+                  <Link href={`/boards/${board.id}`}>View Board</Link>
                 </Button>
               </Card.Footer>
             </Card.Root>

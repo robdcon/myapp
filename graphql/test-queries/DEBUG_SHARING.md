@@ -1,13 +1,15 @@
 # Debug Board Sharing Setup
 
 ## Step 1: Check Users Table
+
 ```sql
-SELECT id, email, auth0_id, name 
-FROM users 
+SELECT id, email, auth0_id, name
+FROM users
 ORDER BY created_at DESC;
 ```
 
 ## Step 2: Check Board Shares Table
+
 ```sql
 SELECT bs.id, bs.board_id, bs.shared_with_user_id, bs.permission_level,
        b.name as board_name,
@@ -18,6 +20,7 @@ LEFT JOIN users u ON u.auth0_id = bs.shared_with_user_id;
 ```
 
 ## Step 3: Check User Boards (Ownership)
+
 ```sql
 SELECT ub.user_id, ub.board_id, ub.role,
        u.email as user_email,
@@ -28,6 +31,7 @@ LEFT JOIN boards b ON b.id = ub.board_id;
 ```
 
 ## Step 4: Share Board Correctly
+
 **IMPORTANT:** The `shared_with_user_id` in `board_shares` must be the **auth0_id**, not the database ID!
 
 ```sql
@@ -36,11 +40,12 @@ INSERT INTO board_shares (board_id, shared_with_user_id, permission_level)
 SELECT 1, u.auth0_id, 'EDIT'
 FROM users u
 WHERE u.email = 'jane@example.com'
-ON CONFLICT (board_id, shared_with_user_id) 
+ON CONFLICT (board_id, shared_with_user_id)
 DO UPDATE SET permission_level = 'EDIT';
 ```
 
 ## Step 5: Verify the Share
+
 ```sql
 SELECT bs.*, u.email, u.auth0_id
 FROM board_shares bs
@@ -49,6 +54,7 @@ WHERE bs.board_id = 1;
 ```
 
 ## Step 6: Test in GraphQL (as the shared user)
+
 Make sure you're logged in as the user who was granted access (jane@example.com), then run:
 
 ```graphql

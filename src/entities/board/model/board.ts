@@ -3,10 +3,18 @@ import { Board, BoardType } from './types';
 export class BoardEntity {
   constructor(private board: Board) {}
 
-  get id() { return this.board.id; }
-  get name() { return this.board.name; }
-  get type() { return this.board.board_type; }
-  get createdAt() { return new Date(this.board.created_at); }
+  get id() {
+    return this.board.id;
+  }
+  get name() {
+    return this.board.name;
+  }
+  get type() {
+    return this.board.board_type;
+  }
+  get createdAt() {
+    return new Date(this.board.created_at);
+  }
 
   // Business logic
   isChecklist(): boolean {
@@ -15,7 +23,7 @@ export class BoardEntity {
 
   getCompletionRate(): number {
     if (!this.board.items || !this.isChecklist()) return 0;
-    const completed = this.board.items.filter(item => item.is_checked).length;
+    const completed = this.board.items.filter((item) => item.is_checked).length;
     return (completed / this.board.items.length) * 100;
   }
 
@@ -33,7 +41,7 @@ export class BoardEntity {
     const now = new Date();
     const created = this.createdAt;
     const diffDays = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;

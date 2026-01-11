@@ -2,18 +2,25 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Box, Button, VStack, Input, createListCollection, Heading } from '@chakra-ui/react';
-import { SelectRoot, SelectTrigger, SelectContent, SelectItem, SelectValueText, SelectLabel } from '@/components/ui/select';
+import {
+  SelectRoot,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValueText,
+  SelectLabel,
+} from '@/components/ui/select';
 import { useCreateItem } from '../api/create-item';
 import { ITEM_CATEGORIES } from '@/src/shared';
 import type { CreateItemFeatureProps } from '../model/types';
 import type { ItemFormData } from '@/src/entities/item';
 
-export function CreateItemForm({ 
-  boardId, 
-  onSuccess, 
-  isOpen, 
+export function CreateItemForm({
+  boardId,
+  onSuccess,
+  isOpen,
   onClose,
-  defaultCategory 
+  defaultCategory,
 }: Readonly<CreateItemFeatureProps>) {
   const [formData, setFormData] = useState<ItemFormData>({
     name: '',
@@ -24,7 +31,7 @@ export function CreateItemForm({
   // Create collection for categories
   const categoryCollection = useMemo(() => {
     return createListCollection({
-      items: ITEM_CATEGORIES.map(category => ({
+      items: ITEM_CATEGORIES.map((category) => ({
         label: category,
         value: category,
       })),
@@ -34,7 +41,7 @@ export function CreateItemForm({
   // Update form when defaultCategory changes
   useEffect(() => {
     if (defaultCategory) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         category: defaultCategory,
       }));
@@ -104,23 +111,21 @@ export function CreateItemForm({
         overflow="auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <Box
-          p={6}
-          borderBottom="1px"
-          borderColor="appPrimary.100"
-          bg="appPrimary.50"
-        >
+        <Box p={6} borderBottom="1px" borderColor="appPrimary.100" bg="appPrimary.50">
           <Heading size="lg" color="appPrimary.700">
             Add New Item
             {defaultCategory && ` to ${defaultCategory}`}
           </Heading>
         </Box>
-        
+
         <form onSubmit={handleSubmit}>
           <Box p={6}>
             <VStack gap={4} align="stretch">
               <Box>
-                <label htmlFor="item-name" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                <label
+                  htmlFor="item-name"
+                  style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}
+                >
                   Item Name *
                 </label>
                 <Input
@@ -134,7 +139,10 @@ export function CreateItemForm({
               </Box>
 
               <Box>
-                <label htmlFor="item-details" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                <label
+                  htmlFor="item-details"
+                  style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}
+                >
                   Details (optional)
                 </label>
                 <Input
@@ -155,7 +163,14 @@ export function CreateItemForm({
                   }}
                   size="sm"
                 >
-                  <SelectLabel htmlFor="item-category" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                  <SelectLabel
+                    htmlFor="item-category"
+                    style={{
+                      display: 'block',
+                      marginBottom: '4px',
+                      fontWeight: 'medium',
+                    }}
+                  >
                     Category (optional)
                   </SelectLabel>
                   <SelectTrigger clearable>

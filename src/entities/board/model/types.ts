@@ -1,8 +1,8 @@
-import { Item } from "@/src/entities/item";
+import { Item } from '@/src/entities/item';
 
 export enum BoardType {
   CHECKLIST = 'CHECKLIST',
-  NOTICE_BOARD = 'NOTICE_BOARD'
+  NOTICE_BOARD = 'NOTICE_BOARD',
 }
 
 export interface Board {

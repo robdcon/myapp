@@ -6,7 +6,7 @@ const config: CodegenConfig = {
   generates: {
     './graphql/generated/': {
       preset: 'client',
-      plugins: ["typescript", "typescript-operations"],
+      plugins: ['typescript', 'typescript-operations'],
       presetConfig: {
         gqlTagName: 'gql',
       },
@@ -18,7 +18,7 @@ const config: CodegenConfig = {
           inputValue: false,
         },
         // Use `unknown` instead of `any` for unconfigured scalars
-        defaultScalarType: "unknown",
+        defaultScalarType: 'unknown',
         // Apollo Client always includes `__typename` fields
         nonOptionalTypename: true,
         // Apollo Client doesn't add the `__typename` field to root types so

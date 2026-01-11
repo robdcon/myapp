@@ -1,0 +1,60 @@
+# GitHub Actions Workflow: Auto Request Copilot Review
+#
+# This workflow automatically adds a reminder comment to pull requests.
+# Note: This workflow adds a comment reminder but does not automatically
+# request a GitHub Copilot review. Copilot reviews must be requested manually
+# using: gh pr review --copilot
+#
+# Learn more about GitHub Actions:
+# https://docs.github.com/en/actions
+
+name: Auto Request Copilot Review
+
+# TRIGGER: When does this workflow run?
+# This workflow runs when pull request events occur
+on:
+  pull_request:
+    types:
+      - opened # When a PR is first created
+      - reopened # When a closed PR is reopened
+      - synchronize # When new commits are pushed to the PR
+
+# PERMISSIONS: What can this workflow do?
+# These permissions are needed to interact with pull requests
+permissions:
+  contents: read # Read repository contents
+  pull-requests: write # Write to PRs (needed to request reviews)
+
+# JOBS: What tasks should run?
+# Jobs run in parallel by default, but we only have one job here
+jobs:
+  request-copilot-review:
+    name: Request Copilot Review
+
+    # RUNNER: Where does this job run?
+    # GitHub provides free hosted runners (Ubuntu, Windows, macOS)
+    runs-on: ubuntu-latest
+
+    # STEPS: Sequential tasks within this job
+    steps:
+      # Step 1: Checkout the repository code
+      # This action (actions/checkout) is provided by GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Request a GitHub Copilot review and add a confirmation comment
+      # This uses the GitHub CLI to trigger a Copilot-powered review on the PR.
+      # A comment is then added to confirm that the request was made.
+      - name: Request GitHub Copilot Review
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr review ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --copilot
+          
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --body "🤖 GitHub Copilot review has been requested automatically for PR #${{ github.event.pull_request.number }}."
+          
+          echo "✅ GitHub Copilot review requested and confirmation comment added for PR #${{ github.event.pull_request.number }}"
