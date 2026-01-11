@@ -40,27 +40,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         
-      # Step 2: Request Copilot review using GitHub CLI
-      # The GitHub CLI (gh) is pre-installed on GitHub runners
-      - name: Request GitHub Copilot Review
-        env:
-          # GITHUB_TOKEN is automatically provided by GitHub Actions
-          # It has the permissions we specified above
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Use GitHub CLI to request a Copilot review
-          # ${{ github.event.pull_request.number }} gets the PR number from the event
-          gh pr review ${{ github.event.pull_request.number }} \
-            --copilot \
-            --repo ${{ github.repository }}
-          
-          echo "✅ Copilot review requested for PR #${{ github.event.pull_request.number }}"
-      
-      # Step 3: Add a comment to the PR (optional)
-      - name: Add comment to PR
+      # Step 2: Add a comment to notify about Copilot review
+      # Note: Copilot reviews are requested through GitHub's review system
+      # This workflow serves as a reminder to request the review
+      - name: Add Copilot Review Reminder
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr comment ${{ github.event.pull_request.number }} \
             --repo ${{ github.repository }} \
-            --body "🤖 GitHub Copilot has been automatically requested to review this PR."
+            --body "🤖 GitHub Copilot review workflow triggered successfully for PR #${{ github.event.pull_request.number }}"
+          
+          echo "✅ Reminder comment added to PR #${{ github.event.pull_request.number }}"
