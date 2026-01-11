@@ -57,9 +57,12 @@ export const boardShareResolvers = {
       const hasAdminAccess = permissionCheck.rows[0]?.has_admin_access === true;
 
       if (!hasAdminAccess) {
-        throw new GraphQLError('You do not have permission to view shares for this board', {
-          extensions: { code: 'FORBIDDEN' },
-        });
+        throw new GraphQLError(
+          'You do not have permission to view shares for this board',
+          {
+            extensions: { code: 'FORBIDDEN' },
+          }
+        );
       }
 
       const result = await pool.query(
@@ -141,10 +144,9 @@ export const boardShareResolvers = {
       }
 
       // Find the user to share with
-      const userResult = await pool.query(
-        'SELECT auth0_id FROM users WHERE email = $1',
-        [email]
-      );
+      const userResult = await pool.query('SELECT auth0_id FROM users WHERE email = $1', [
+        email,
+      ]);
 
       if (userResult.rows.length === 0) {
         throw new GraphQLError('User not found with that email', {
@@ -228,8 +230,9 @@ export const boardShareResolvers = {
         });
       }
 
-      const hasPermission = shareResult.rows[0].user_permission === 'OWNER' || 
-                           shareResult.rows[0].user_permission === 'ADMIN';
+      const hasPermission =
+        shareResult.rows[0].user_permission === 'OWNER' ||
+        shareResult.rows[0].user_permission === 'ADMIN';
 
       if (!hasPermission) {
         throw new GraphQLError('You do not have permission to modify this share', {
@@ -293,8 +296,9 @@ export const boardShareResolvers = {
         });
       }
 
-      const hasPermission = shareResult.rows[0].user_permission === 'OWNER' || 
-                           shareResult.rows[0].user_permission === 'ADMIN';
+      const hasPermission =
+        shareResult.rows[0].user_permission === 'OWNER' ||
+        shareResult.rows[0].user_permission === 'ADMIN';
 
       if (!hasPermission) {
         throw new GraphQLError('You do not have permission to remove this share', {
@@ -468,10 +472,9 @@ export const boardShareResolvers = {
   BoardShare: {
     // Resolver for board field on BoardShare type
     board: async (parent: any) => {
-      const result = await pool.query(
-        'SELECT * FROM boards WHERE id = $1',
-        [parent.board_id]
-      );
+      const result = await pool.query('SELECT * FROM boards WHERE id = $1', [
+        parent.board_id,
+      ]);
       return result.rows[0];
     },
   },

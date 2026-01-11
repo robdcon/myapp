@@ -26,11 +26,7 @@ query GetSharedBoards {
 
 ## 3. Share a Board
 mutation ShareBoard {
-  shareBoard(
-    boardId: "1"
-    email: "jane@example.com"
-    permission: EDIT
-  ) {
+  shareBoard(boardId: "1", email: "jane@example.com", permission: EDIT) {
     id
     shared_with_user_email
     shared_with_user_name
@@ -41,10 +37,7 @@ mutation ShareBoard {
 
 ## 4. Update Share Permission
 mutation UpdateBoardShare {
-  updateBoardShare(
-    shareId: "1"
-    permission: ADMIN
-  ) {
+  updateBoardShare(shareId: "1", permission: ADMIN) {
     id
     permission_level
     updated_at

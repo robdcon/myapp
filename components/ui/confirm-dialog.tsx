@@ -47,9 +47,7 @@ export function ConfirmDialog({
           <DialogCloseTrigger />
         </DialogHeader>
 
-        <DialogBody>
-          {message}
-        </DialogBody>
+        <DialogBody>{message}</DialogBody>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={isLoading}>

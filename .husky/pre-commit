@@ -1,8 +1,10 @@
-# Format staged files with Prettier
+# Format and lint staged files (via lint-staged)
+# This runs ESLint --fix and Prettier on TypeScript files
+# and Prettier only on JSON/Markdown files
 npx lint-staged
 
-# Run TypeScript type checking
-echo "🔍 Running TypeScript type check..."
-npx tsc --noEmit || { echo "❌ TypeScript errors found! Fix them before committing."; exit 1; }
+# Run TypeScript type checking for the entire project (not limited to staged files)
+echo "🔍 Running TypeScript type check for the entire project..."
+npx tsc --noEmit || { echo "❌ TypeScript errors found in the project! Fix them before committing."; exit 1; }
 
 echo "✅ Pre-commit checks passed!"

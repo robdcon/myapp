@@ -2,7 +2,18 @@
 
 import { useQuery } from '@apollo/client/react';
 import Link from 'next/link';
-import { Button, Card, Grid, Heading, Text, Badge, Flex, Spinner, Alert, HStack } from "@chakra-ui/react";
+import {
+  Button,
+  Card,
+  Grid,
+  Heading,
+  Text,
+  Badge,
+  Flex,
+  Spinner,
+  Alert,
+  HStack,
+} from '@chakra-ui/react';
 import { GET_SHARED_BOARDS_QUERY } from '@/src/entities/board-share/api';
 import { BoardType } from '@/src/entities/board';
 import { PermissionLevel } from '@/types/board-share';
@@ -49,21 +60,23 @@ function getPermissionBadge(permission: PermissionLevel) {
 export function SharedBoardsList() {
   const { loading, error, data } = useQuery<SharedBoardsData>(GET_SHARED_BOARDS_QUERY);
 
-  if (loading) return (
-    <Flex justify="center" align="center" minH="200px">
-      <Spinner size="xl" colorPalette="appPrimary" />
-    </Flex>
-  );
-  
-  if (error) return (
-    <Alert.Root status="error">
-      <Alert.Indicator />
-      <Alert.Content>
-        <Alert.Title>Error loading shared boards</Alert.Title>
-        <Alert.Description>{error.message}</Alert.Description>
-      </Alert.Content>
-    </Alert.Root>
-  );
+  if (loading)
+    return (
+      <Flex justify="center" align="center" minH="200px">
+        <Spinner size="xl" colorPalette="appPrimary" />
+      </Flex>
+    );
+
+  if (error)
+    return (
+      <Alert.Root status="error">
+        <Alert.Indicator />
+        <Alert.Content>
+          <Alert.Title>Error loading shared boards</Alert.Title>
+          <Alert.Description>{error.message}</Alert.Description>
+        </Alert.Content>
+      </Alert.Root>
+    );
 
   if (!data?.sharedBoards || data.sharedBoards.length === 0) {
     return (
@@ -80,13 +93,13 @@ export function SharedBoardsList() {
   return (
     <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={6}>
       {data.sharedBoards.map((board) => (
-        <Card.Root 
-          key={board.id} 
-          _hover={{ 
-            transform: 'translateY(-4px)', 
+        <Card.Root
+          key={board.id}
+          _hover={{
+            transform: 'translateY(-4px)',
             shadow: 'xl',
-            borderColor: 'blue.300'
-          }} 
+            borderColor: 'blue.300',
+          }}
           transition="all 0.2s"
           borderColor="blue.200"
           variant="outline"
@@ -103,14 +116,14 @@ export function SharedBoardsList() {
                   Shared
                 </Badge>
               </HStack>
-              
+
               <HStack gap={2} flexWrap="wrap">
                 <Badge colorPalette="blue" width="fit-content" variant="subtle">
                   {getBoardTypeLabel(board.board_type)}
                 </Badge>
                 {getPermissionBadge(board.myPermission)}
               </HStack>
-              
+
               <Text fontSize="xs" color="gray.500" fontWeight="medium">
                 Shared on: {new Date(board.created_at).toLocaleDateString()}
               </Text>
@@ -119,7 +132,9 @@ export function SharedBoardsList() {
           <Card.Footer>
             <Button asChild colorPalette="blue" width="full">
               <Link href={`/boards/${board.id}`}>
-                {board.myPermission === PermissionLevel.VIEW ? 'View Board' : 'Open Board'}
+                {board.myPermission === PermissionLevel.VIEW
+                  ? 'View Board'
+                  : 'Open Board'}
               </Link>
             </Button>
           </Card.Footer>

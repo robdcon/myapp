@@ -11,12 +11,31 @@ import {
   Badge,
   Spinner,
 } from '@chakra-ui/react';
-import { DialogRoot, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter, DialogCloseTrigger } from '@/components/ui/dialog';
+import {
+  DialogRoot,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogBody,
+  DialogFooter,
+  DialogCloseTrigger,
+} from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { SelectRoot, SelectTrigger, SelectContent, SelectItem, SelectValueText } from '@/components/ui/select';
+import {
+  SelectRoot,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValueText,
+} from '@/components/ui/select';
 import { createListCollection } from '@chakra-ui/react';
 import { useQuery, useMutation } from '@apollo/client/react';
-import { GET_BOARD_SHARES_QUERY, SHARE_BOARD_MUTATION, UPDATE_BOARD_SHARE_MUTATION, REMOVE_BOARD_SHARE_MUTATION } from '@/src/entities/board-share/api';
+import {
+  GET_BOARD_SHARES_QUERY,
+  SHARE_BOARD_MUTATION,
+  UPDATE_BOARD_SHARE_MUTATION,
+  REMOVE_BOARD_SHARE_MUTATION,
+} from '@/src/entities/board-share/api';
 import { PermissionLevel, BoardShare } from '@/types/board-share';
 
 interface ShareBoardDialogProps {
@@ -38,7 +57,12 @@ interface BoardSharesData {
   boardShares: BoardShare[];
 }
 
-export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoardDialogProps) {
+export function ShareBoardDialog({
+  open,
+  onClose,
+  boardId,
+  boardName,
+}: ShareBoardDialogProps) {
   const [email, setEmail] = useState('');
   const [permission, setPermission] = useState<string[]>([PermissionLevel.EDIT]);
   const [error, setError] = useState('');
@@ -95,7 +119,10 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
     }
   };
 
-  const handleUpdatePermission = async (shareId: string, newPermission: PermissionLevel) => {
+  const handleUpdatePermission = async (
+    shareId: string,
+    newPermission: PermissionLevel
+  ) => {
     await updateShare({
       variables: {
         shareId,
@@ -224,7 +251,10 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
                             collection={permissionItems}
                             value={[share.permission_level]}
                             onValueChange={(e) =>
-                              handleUpdatePermission(share.id, e.value[0] as PermissionLevel)
+                              handleUpdatePermission(
+                                share.id,
+                                e.value[0] as PermissionLevel
+                              )
                             }
                             disabled={updating}
                             size="sm"
@@ -266,17 +296,29 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
               <Text fontSize="xs" fontWeight="medium" mb={2}>
                 Permission levels:
               </Text>
-              <VStack gap={1} align="stretch" fontSize="xs" color="gray.600" _dark={{ color: 'gray.400' }}>
+              <VStack
+                gap={1}
+                align="stretch"
+                fontSize="xs"
+                color="gray.600"
+                _dark={{ color: 'gray.400' }}
+              >
                 <HStack>
-                  <Badge colorPalette="gray" size="sm">VIEW</Badge>
+                  <Badge colorPalette="gray" size="sm">
+                    VIEW
+                  </Badge>
                   <Text>Can only view the board and items (read-only)</Text>
                 </HStack>
                 <HStack>
-                  <Badge colorPalette="blue" size="sm">EDIT</Badge>
+                  <Badge colorPalette="blue" size="sm">
+                    EDIT
+                  </Badge>
                   <Text>Can view, create, update, and delete items</Text>
                 </HStack>
                 <HStack>
-                  <Badge colorPalette="purple" size="sm">ADMIN</Badge>
+                  <Badge colorPalette="purple" size="sm">
+                    ADMIN
+                  </Badge>
                   <Text>Can do everything including sharing the board</Text>
                 </HStack>
               </VStack>

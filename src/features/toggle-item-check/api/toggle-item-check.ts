@@ -8,62 +8,61 @@ import type { GetBoardData } from '@/src/entities/board';
 export const useToggleItemCheck = (boardId: string) => {
   const client = useApolloClient();
   const [togglingItems, setTogglingItems] = useState<Set<string>>(new Set());
-  
-  const [toggleCheckMutation, { loading: mutationLoading }] = useMutation<ToggleItemCheckData>(TOGGLE_ITEM_CHECK_MUTATION, {
-    onError: (error) => {
-      console.error('Toggle item check failed:', error.message);
-      // On error, remove from toggling state
-      setTogglingItems(prev => new Set());
-    },
-    onCompleted: (data) => {
-      if (data?.toggleItemCheck?.id) {
-        setTogglingItems(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(data.toggleItemCheck.id);
-          return newSet;
-        });
-      }
-    },
-  });
+
+  const [toggleCheckMutation, { loading: mutationLoading }] =
+    useMutation<ToggleItemCheckData>(TOGGLE_ITEM_CHECK_MUTATION, {
+      onError: (error) => {
+        console.error('Toggle item check failed:', error.message);
+        // On error, remove from toggling state
+        setTogglingItems((prev) => new Set());
+      },
+      onCompleted: (data) => {
+        if (data?.toggleItemCheck?.id) {
+          setTogglingItems((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(data.toggleItemCheck.id);
+            return newSet;
+          });
+        }
+      },
+    });
 
   const toggleItemCheck = (itemId: string) => {
     // Set item as toggling immediately for instant feedback
-    setTogglingItems(prev => new Set(prev).add(itemId));
-    
+    setTogglingItems((prev) => new Set(prev).add(itemId));
+
     // Get current state for optimistic response
     const existingData = client.cache.readQuery<GetBoardData>({
       query: GET_BOARD_QUERY,
       variables: { id: boardId },
     });
-    
+
     if (!existingData?.board?.items) {
       // Remove from toggling if no data found
-      setTogglingItems(prev => {
+      setTogglingItems((prev) => {
         const newSet = new Set(prev);
         newSet.delete(itemId);
         return newSet;
       });
       return;
     }
-    
+
     const currentItem = existingData.board.items.find((item: Item) => item.id === itemId);
     if (!currentItem) {
       // Remove from toggling if item not found
-      setTogglingItems(prev => {
+      setTogglingItems((prev) => {
         const newSet = new Set(prev);
         newSet.delete(itemId);
         return newSet;
       });
       return;
     }
-    
+
     const optimisticCheckedState = !currentItem.is_checked;
 
     // Immediately update the cache optimistically
     const updatedItems = existingData.board.items.map((item: Item) =>
-      item.id === itemId
-        ? { ...item, is_checked: optimisticCheckedState }
-        : item
+      item.id === itemId ? { ...item, is_checked: optimisticCheckedState } : item
     );
 
     client.cache.writeQuery({
@@ -83,7 +82,7 @@ export const useToggleItemCheck = (boardId: string) => {
       errorPolicy: 'all',
       update: (cache, { data }) => {
         if (!data?.toggleItemCheck) return;
-        
+
         // Re-read the current board data to ensure we have the latest state
         const latestData = cache.readQuery<GetBoardData>({
           query: GET_BOARD_QUERY,
@@ -115,9 +114,9 @@ export const useToggleItemCheck = (boardId: string) => {
 
   const isItemToggling = (itemId: string) => togglingItems.has(itemId);
 
-  return { 
-    toggleItemCheck, 
-    loading: mutationLoading, 
-    isItemToggling 
+  return {
+    toggleItemCheck,
+    loading: mutationLoading,
+    isItemToggling,
   };
 };

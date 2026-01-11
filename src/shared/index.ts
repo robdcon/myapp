@@ -15,14 +15,14 @@ export { ITEM_CATEGORIES, DEFAULT_CATEGORY } from './config/categories';
 export type { ItemCategory } from './config/categories';
 
 // Types
-export type { 
-  ApiResponse, 
-  PaginatedResponse, 
-  SelectOption, 
-  LoadingState, 
-  User, 
+export type {
+  ApiResponse,
+  PaginatedResponse,
+  SelectOption,
+  LoadingState,
+  User,
   ComponentProps,
-  GraphQLContext
+  GraphQLContext,
 } from './types/common';
 export { UserRole } from './types/common';
 

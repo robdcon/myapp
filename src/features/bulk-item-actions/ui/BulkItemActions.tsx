@@ -3,11 +3,11 @@
 import { Button, HStack } from '@chakra-ui/react';
 import type { BulkItemActionsProps } from '../model/types';
 
-export function BulkItemActions({ 
-  hasCheckedItems, 
-  hasUncheckedItems, 
-  onCheckAll, 
-  onUncheckAll 
+export function BulkItemActions({
+  hasCheckedItems,
+  hasUncheckedItems,
+  onCheckAll,
+  onUncheckAll,
 }: Readonly<BulkItemActionsProps>) {
   if (!hasCheckedItems && !hasUncheckedItems) {
     return null;

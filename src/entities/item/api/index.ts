@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-// Queries  
+// Queries
 export const GET_ITEM_QUERY = gql`
   query GetItem($id: ID!) {
     item(id: $id) {
@@ -18,7 +18,12 @@ export const GET_ITEM_QUERY = gql`
 
 // Mutations
 export const CREATE_ITEM_MUTATION = gql`
-  mutation CreateItem($boardId: ID!, $name: String!, $details: String, $category: String) {
+  mutation CreateItem(
+    $boardId: ID!
+    $name: String!
+    $details: String
+    $category: String
+  ) {
     createItem(boardId: $boardId, name: $name, details: $details, category: $category) {
       id
       name

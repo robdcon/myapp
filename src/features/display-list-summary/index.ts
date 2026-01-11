@@ -1,1 +1,1 @@
-export {UncheckedItemsList} from './ui/UnckeckedItemsList';
+export { UncheckedItemsList } from './ui/UnckeckedItemsList';

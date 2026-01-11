@@ -9,11 +9,10 @@ export const boardResolvers = {
       }
 
       const userEmail = context.user.email;
-      
-      const userResult = await query(
-        'SELECT id FROM users WHERE email = $1',
-        [userEmail]
-      );
+
+      const userResult = await query('SELECT id FROM users WHERE email = $1', [
+        userEmail,
+      ]);
 
       if (userResult.rows.length === 0) {
         return [];
@@ -29,22 +28,18 @@ export const boardResolvers = {
          ORDER BY b.created_at DESC`,
         [userId]
       );
-      
+
       return result.rows;
     },
-    
+
     board: async (_: any, { id }: { id: string }, context: GraphQLContext) => {
       if (!context.user) {
         throw new Error('Not authenticated');
       }
 
       console.log('Fetching board with id:', id);
-      
 
-      const result = await queryOne(
-        'SELECT * FROM boards WHERE id = $1',
-        [id]
-      );
+      const result = await queryOne('SELECT * FROM boards WHERE id = $1', [id]);
 
       return result;
     },
@@ -55,18 +50,18 @@ export const boardResolvers = {
       // console.log('🔍 Parent board object:', parent);
       // console.log('🔍 Parent board ID:', parent.id);
       // console.log('🔍 Parent board ID type:', typeof parent.id);
-      
+
       const result = await query(
         `SELECT * FROM items 
          WHERE board_id = $1 AND deleted_at IS NULL
          ORDER BY category NULLS LAST, created_at ASC`,
         [parent.id]
       );
-      
+
       // console.log('📦 Items query result:', result);
       // console.log('📦 Items rows:', result.rows);
       // console.log('📦 Items row count:', result.rowCount);
-      
+
       return result.rows || [];
     },
   },

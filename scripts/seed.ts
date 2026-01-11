@@ -1,16 +1,16 @@
 import { Pool } from 'pg';
 
 const pool = new Pool({
-    host: '35.214.59.104',
-    port: 5432,
-    database: 'dbajfnsyj3xd5g',
-    user: 'uxcbxdwm5ywui',
-    password: '5h2$@&l@2(I1',
+  host: '35.214.59.104',
+  port: 5432,
+  database: 'dbajfnsyj3xd5g',
+  user: 'uxcbxdwm5ywui',
+  password: '5h2$@&l@2(I1',
 });
 
 async function seed() {
   const client = await pool.connect();
-  
+
   try {
     await client.query('BEGIN');
 
@@ -28,7 +28,7 @@ async function seed() {
       ('Family Shopping List', 'CHECKLIST', 'Shared grocery list for the household')
       RETURNING id
     `);
-    
+
     const boardId = boardResult.rows[0].id;
 
     // Get user IDs
@@ -36,18 +36,22 @@ async function seed() {
       SELECT id FROM users WHERE email IN ('john@example.com', 'jane@example.com')
       ORDER BY email
     `);
-    
-    const [janeId, johnId] = userResult.rows.map(row => row.id);
+
+    const [janeId, johnId] = userResult.rows.map((row) => row.id);
 
     // Insert user-board relationships
-    await client.query(`
+    await client.query(
+      `
       INSERT INTO user_boards (user_id, board_id, role) VALUES
       ($1, $2, 'OWNER'),
       ($3, $2, 'EDITOR')
-    `, [johnId, boardId, janeId]);
+    `,
+      [johnId, boardId, janeId]
+    );
 
     // Insert shopping list items
-    await client.query(`
+    await client.query(
+      `
       INSERT INTO items (board_id, name, details, is_checked, category, created_by) VALUES
       ($1, 'Apples', '2 lbs, Gala or Honeycrisp', false, 'Produce', $2),
       ($1, 'Bananas', '1 bunch', false, 'Produce', $2),
@@ -68,7 +72,9 @@ async function seed() {
       ($1, 'Potato Chips', 'Family size bag', true, 'Snacks', $3),
       ($1, 'Granola Bars', '1 box, variety pack', false, 'Snacks', $2),
       ($1, 'Almonds', '1 lb, roasted unsalted', false, 'Snacks', $3)
-    `, [boardId, johnId, janeId]);
+    `,
+      [boardId, johnId, janeId]
+    );
 
     await client.query('COMMIT');
     // console.log('✅ Database seeded successfully!');

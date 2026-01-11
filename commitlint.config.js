@@ -1,9 +1,9 @@
 /**
  * Commitlint Configuration
- * 
+ *
  * This enforces the Conventional Commits specification for commit messages.
  * Format: <type>(<scope>): <subject>
- * 
+ *
  * Valid types:
  * - feat: A new feature
  * - fix: A bug fix
@@ -15,7 +15,7 @@
  * - build: Changes to build system or dependencies
  * - ci: Changes to CI configuration
  * - chore: Other changes that don't modify src or test files
- * 
+ *
  * Examples:
  * ✅ feat: add board sharing feature
  * ✅ fix(auth): resolve login redirect issue

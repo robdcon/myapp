@@ -1,11 +1,11 @@
-import { Flex, Spinner, Text } from "@chakra-ui/react";
+import { Flex, Spinner, Text } from '@chakra-ui/react';
 
 interface LoadingProps {
   message?: string;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-export function Loading({ message = "Loading...", size = "xl" }: LoadingProps) {
+export function Loading({ message = 'Loading...', size = 'xl' }: LoadingProps) {
   return (
     <Flex justify="center" align="center" minH="200px" direction="column" gap={4}>
       <Spinner size={size} colorPalette="teal" />
