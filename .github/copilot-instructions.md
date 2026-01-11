@@ -1,10 +1,13 @@
 ---
 description: Full-Stack Board Manager App - Architecture & Development Guide
+globs: '**/*'
+alwaysApply: false
 ---
 
 # Architecture Overview
 
 ## Tech Stack
+
 - **Next.js 15.5.9** (App Router) + **React 19** + **TypeScript**
 - **GraphQL API** (Apollo Server + Client) at `/api/graphql`
 - **PostgreSQL** database with direct `pg` connections
@@ -12,7 +15,9 @@ description: Full-Stack Board Manager App - Architecture & Development Guide
 - **Chakra UI v3** for components + custom turquoise theme
 
 ## Feature-Sliced Design (FSD) Structure
+
 Project follows FSD architecture in `src/`:
+
 - `entities/` - Business entities (board, item, board-share)
 - `features/` - User actions (create-item, edit-item, boards, board-sharing)
 - `widgets/` - Complex page sections (board-viewer)
@@ -24,6 +29,7 @@ Project follows FSD architecture in `src/`:
 ## Database Architecture
 
 ### Key Tables
+
 - `users` (id: SERIAL, auth0_id: TEXT) - Auth0 integration
 - `boards` (id: SERIAL, board_type: TEXT, is_public: BOOLEAN, share_token: TEXT)
 - `user_boards` (user_id: INTEGER → users.id, board_id: INTEGER, role: user_role ENUM)
@@ -33,27 +39,33 @@ Project follows FSD architecture in `src/`:
 **Critical:** `user_boards.user_id` is INTEGER (references users.id), but `board_shares.shared_with_user_id` is TEXT (stores auth0_id directly).
 
 ### Running Migrations
+
 ```bash
 tsx database/migrations/run-migration.ts
 ```
+
 Requires `dotenv` loaded BEFORE `pool` import (see run-migration.ts).
 
 ## GraphQL Layer
 
 ### File Structure
+
 - `graphql/schema/index.ts` - Type definitions
 - `graphql/resolvers/*.resolver.ts` - Resolvers by domain
 - `graphql/resolvers/index.ts` - Merged resolvers
 - `graphql/context.ts` - Request context with Auth0 session
 
 ### Permission Checking Pattern
+
 ```typescript
 // Always pass (boardId, userId) - NOT (userId, boardId)!
 const hasPermission = await checkBoardEditPermission(boardId, userId);
 ```
 
 ### Test Mode (Development Only)
+
 Set `ENABLE_TEST_MODE=true` in `.env`, then use header:
+
 ```
 x-test-user-id: google-oauth2|YOUR_AUTH0_ID
 ```
@@ -61,10 +73,12 @@ x-test-user-id: google-oauth2|YOUR_AUTH0_ID
 ## Chakra UI v3 Rules
 
 ### Component Imports
+
 - **From @chakra-ui/react:** Button, Card, Field, Table, Alert, Avatar
 - **From components/ui:** Dialog, Tooltip, Select, ConfirmDialog, CloseButton
 
 ### API Changes from v2
+
 - `isOpen → open`, `isDisabled → disabled`
 - `colorScheme → colorPalette`
 - `useToast() → toaster.create()`
@@ -73,14 +87,23 @@ x-test-user-id: google-oauth2|YOUR_AUTH0_ID
 - **Always use VStack/HStack**, never Stack
 
 ### Theme System
+
 Use semantic colors defined in `theme.ts`:
+
 - `colorPalette="appPrimary"` (dark cyan `#219591`)
 - `colorPalette="appSecondary"` (tropical teal `#27b2b5`)
 - Never hardcode hex colors - use theme tokens or CSS variables
 
 ### Select Component Pattern
+
 ```tsx
-import { SelectRoot, SelectTrigger, SelectContent, SelectItem, SelectValueText } from '@/components/ui/select';
+import {
+  SelectRoot,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValueText,
+} from '@/components/ui/select';
 import { createListCollection } from '@chakra-ui/react';
 
 const items = createListCollection({
@@ -88,16 +111,23 @@ const items = createListCollection({
 });
 
 <SelectRoot collection={items} value={value} onValueChange={(e) => setValue(e.value)}>
-  <SelectTrigger><SelectValueText /></SelectTrigger>
+  <SelectTrigger>
+    <SelectValueText />
+  </SelectTrigger>
   <SelectContent>
-    {items.items.map((item) => <SelectItem key={item.value} item={item}>{item.label}</SelectItem>)}
+    {items.items.map((item) => (
+      <SelectItem key={item.value} item={item}>
+        {item.label}
+      </SelectItem>
+    ))}
   </SelectContent>
-</SelectRoot>
+</SelectRoot>;
 ```
 
 ## Development Workflows
 
 ### Essential Commands
+
 ```bash
 npm run dev              # Start dev server (port 3000)
 npm run build           # Production build with Turbopack
@@ -107,12 +137,15 @@ tsx <script>.ts         # Run TypeScript scripts directly
 ```
 
 ### GraphQL Development
+
 - Playground: `http://localhost:3000/api/graphql`
 - Test queries in `graphql/test-queries/*.graphql`
 - Apollo Client uses `cache-only` for reactive updates after mutations
 
 ### Database Connection
+
 Direct PostgreSQL via `pg` pool (not Prisma/ORM):
+
 ```typescript
 import { pool } from '@/lib/db';
 await pool.query('SELECT ...', [param1, param2]);
@@ -121,7 +154,9 @@ await pool.query('SELECT ...', [param1, param2]);
 ## Common Patterns
 
 ### Form Modals
+
 Forms are **floating modals** (fixed position) to prevent scroll-away issues:
+
 ```tsx
 <Box position="fixed" inset={0} bg="blackAlpha.600" zIndex={1000}>
   <Box position="absolute" top="50%" left="50%" transform="translate(-50%, -50%)">
@@ -131,25 +166,28 @@ Forms are **floating modals** (fixed position) to prevent scroll-away issues:
 ```
 
 ### Confirmation Dialogs
+
 Use `ConfirmDialog` component instead of `window.confirm()`:
+
 ```tsx
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-<ConfirmDialog 
-  open={showConfirm} 
+<ConfirmDialog
+  open={showConfirm}
   onClose={() => setShowConfirm(false)}
   onConfirm={handleAction}
   title="Confirm Action"
   message="Are you sure?"
   confirmColorPalette="red"
-/>
+/>;
 ```
 
 ### Apollo Client Hooks
+
 ```tsx
 import { useQuery, useMutation } from '@apollo/client/react'; // Note /react path
 const { data, loading } = useQuery<TypedData>(QUERY, { variables: { id } });
-const [mutate] = useMutation(MUTATION, { 
-  refetchQueries: [{ query: RELATED_QUERY }] // For cache updates
+const [mutate] = useMutation(MUTATION, {
+  refetchQueries: [{ query: RELATED_QUERY }], // For cache updates
 });
 ```
 

@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     // Verify the request is from Auth0 (optional but recommended)
     const authHeader = request.headers.get('authorization');
     const expectedToken = process.env.AUTH0_WEBHOOK_SECRET;
-    
+
     if (authHeader !== `Bearer ${expectedToken}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     );
 
     console.log('✅ User registered in database:', user.email);
-    
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('❌ Error registering user:', error);

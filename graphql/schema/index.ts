@@ -77,7 +77,7 @@ export const typeDefs = gql`
     createItem(boardId: ID!, name: String!, details: String, category: String): Item!
     updateItem(itemId: ID!, name: String, details: String, category: String): Item!
     deleteItem(itemId: ID!): Boolean!
-    
+
     # Board Sharing Mutations
     shareBoard(boardId: ID!, email: String!, permission: PermissionLevel!): BoardShare!
     updateBoardShare(shareId: ID!, permission: PermissionLevel!): BoardShare!

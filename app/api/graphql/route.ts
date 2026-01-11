@@ -10,9 +10,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   introspection: true,
-  plugins: [
-    ApolloServerPluginLandingPageLocalDefault({ embed: true }),
-  ],
+  plugins: [ApolloServerPluginLandingPageLocalDefault({ embed: true })],
 });
 
 const handler = startServerAndCreateNextHandler<NextRequest>(server as ApolloServer<object>, {

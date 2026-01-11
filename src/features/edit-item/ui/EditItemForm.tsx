@@ -2,19 +2,26 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Box, Button, VStack, Input, createListCollection, Heading } from '@chakra-ui/react';
-import { SelectRoot, SelectTrigger, SelectContent, SelectItem, SelectValueText, SelectLabel } from '@/components/ui/select';
+import {
+  SelectRoot,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValueText,
+  SelectLabel,
+} from '@/components/ui/select';
 import { useEditItem } from '../api/edit-item';
 import { ITEM_CATEGORIES } from '@/src/shared';
 import type { EditItemFeatureProps } from '../model/types';
 import type { ItemFormData } from '@/src/entities/item';
 
-export function EditItemForm({ 
+export function EditItemForm({
   itemId,
-  boardId, 
-  onSuccess, 
-  isOpen, 
+  boardId,
+  onSuccess,
+  isOpen,
   onClose,
-  initialValues 
+  initialValues,
 }: Readonly<EditItemFeatureProps>) {
   const [formData, setFormData] = useState<ItemFormData>({
     name: initialValues?.name || '',
@@ -25,7 +32,7 @@ export function EditItemForm({
   // Create collection for categories
   const categoryCollection = useMemo(() => {
     return createListCollection({
-      items: ITEM_CATEGORIES.map(category => ({
+      items: ITEM_CATEGORIES.map((category) => ({
         label: category,
         value: category,
       })),
@@ -102,22 +109,20 @@ export function EditItemForm({
         overflow="auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <Box
-          p={6}
-          borderBottom="1px"
-          borderColor="appSecondary.100"
-          bg="appSecondary.50"
-        >
+        <Box p={6} borderBottom="1px" borderColor="appSecondary.100" bg="appSecondary.50">
           <Heading size="lg" color="appSecondary.700">
             Edit Item
           </Heading>
         </Box>
-        
+
         <form onSubmit={handleSubmit}>
           <Box p={6}>
             <VStack gap={4} align="stretch">
               <Box>
-                <label htmlFor="edit-item-name" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                <label
+                  htmlFor="edit-item-name"
+                  style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}
+                >
                   Item Name *
                 </label>
                 <Input
@@ -131,7 +136,10 @@ export function EditItemForm({
               </Box>
 
               <Box>
-                <label htmlFor="edit-item-details" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                <label
+                  htmlFor="edit-item-details"
+                  style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}
+                >
                   Details (optional)
                 </label>
                 <Input
@@ -152,7 +160,14 @@ export function EditItemForm({
                   }}
                   size="sm"
                 >
-                  <SelectLabel htmlFor="edit-item-category" style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}>
+                  <SelectLabel
+                    htmlFor="edit-item-category"
+                    style={{
+                      display: 'block',
+                      marginBottom: '4px',
+                      fontWeight: 'medium',
+                    }}
+                  >
                     Category (optional)
                   </SelectLabel>
                   <SelectTrigger clearable>

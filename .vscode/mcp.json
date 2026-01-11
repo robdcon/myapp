@@ -1,22 +1,17 @@
 {
-    "servers": {
-        "chakra-ui": {
-            "command": "npx",
-            "args": [
-                "-y",
-                "@chakra-ui/react-mcp"
-            ]
-        },
-        "github-mcp": {
-            "type": "http",
-            "url": "https://api.githubcopilot.com/mcp"
-        },
-        "design-system": {
-            "command": "node",
-            "args": [
-                "D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js"
-            ],
-            "cwd": "D:\\CODE\\AI\\mcp-servers\\mcp-design-system"
-        }
+  "servers": {
+    "chakra-ui": {
+      "command": "npx",
+      "args": ["-y", "@chakra-ui/react-mcp"]
+    },
+    "github-mcp": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp"
+    },
+    "design-system": {
+      "command": "node",
+      "args": ["D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js"],
+      "cwd": "D:\\CODE\\AI\\mcp-servers\\mcp-design-system"
     }
+  }
 }

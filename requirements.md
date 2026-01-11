@@ -15,4 +15,3 @@ Items in a checklist should be able to be sorted into categories, e.g. an item h
 
 AC6:
 When I log in, I want to be shown a list of links to the boards saved to my profile
-

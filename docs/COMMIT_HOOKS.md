@@ -14,9 +14,10 @@ Git hooks are scripts that Git executes before or after events such as: commit, 
 
 **What it does:**
 
-1. **Runs lint-staged** - Auto-formats staged files with Prettier
+1. **Runs lint-staged** - Auto-fixes and formats staged files only
+   - Runs ESLint with auto-fix on TypeScript files you're committing
    - Applies Prettier formatting to TypeScript, JavaScript, JSON, and Markdown files you're committing
-2. **Runs TypeScript type checking** - Ensures no type errors exist across the entire project
+2. **Runs TypeScript type checking** - Ensures no type errors exist across the entire project (not limited to staged files)
 
 **Why it's helpful:** Catches errors before they get committed, keeps code formatted consistently
 
@@ -153,18 +154,23 @@ Configures code formatting rules:
 - 2 spaces for indentation
 - 100 character line width
 
+**Note:** The printWidth of 100 characters applies to code formatting, which is separate from the commit message header limit (also 100 characters). The commit message limit includes the type, scope, and subject combined.
+
 ### `package.json` - lint-staged configuration
 
 Defines which tools run on which file types:
 
 ```json
 "lint-staged": {
-  "*.{ts,tsx}": ["prettier --write"],
+  "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
   "*.{json,md}": ["prettier --write"]
 }
 ```
 
-**Note:** Currently only Prettier runs on staged files. ESLint is not included in lint-staged due to ESLint 9 compatibility considerations, but TypeScript type checking still runs on the entire project during pre-commit.
+This configuration ensures that:
+
+- TypeScript files get ESLint auto-fixes applied first, then Prettier formatting
+- JSON and Markdown files only get Prettier formatting
 
 ## Troubleshooting
 
@@ -274,21 +280,18 @@ Edit the `lint-staged` section in `package.json`:
 
 ```json
 "lint-staged": {
-  "*.{ts,tsx}": ["prettier --write", "jest --findRelatedTests"],
+  "*.{ts,tsx}": ["eslint --fix", "prettier --write", "jest --findRelatedTests"],
   "*.css": ["stylelint --fix"]
 }
 ```
-
-**Note:** You can add ESLint back if desired: `["eslint --fix", "prettier --write"]`
-
-````
 
 ### Add a new hook
 
 Create a new file in `.husky/`:
 
 ```bash
-npx husky add .husky/pre-push "npm test"
-````
+echo 'npm test' > .husky/pre-push
+chmod +x .husky/pre-push
+```
 
 This creates a `pre-push` hook that runs tests before pushing to remote.

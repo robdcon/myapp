@@ -20,35 +20,35 @@ class MCPClient {
   private pendingRequests = new Map<number, (response: MCPResponse) => void>();
 
   async initialize() {
-    this.server = spawn('node', [
-      'D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'
-    ], {
+    this.server = spawn('node', ['D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'], {
       cwd: 'D:\\CODE\\AI\\mcp-servers\\mcp-design-system',
-      stdio: 'pipe'
+      stdio: 'pipe',
     });
 
     this.server.stdout?.on('data', (data) => {
       const responses = data.toString().trim().split('\n');
-    responses.forEach((response: string) => {
-      if (!response) return;
-      try {
-        const parsed: MCPResponse = JSON.parse(response);
-        const callback: ((response: MCPResponse) => void) | undefined = this.pendingRequests.get(parsed.id);
-        if (callback) {
-        callback(parsed);
-        this.pendingRequests.delete(parsed.id);
+      responses.forEach((response: string) => {
+        if (!response) return;
+        try {
+          const parsed: MCPResponse = JSON.parse(response);
+          const callback: ((response: MCPResponse) => void) | undefined = this.pendingRequests.get(
+            parsed.id
+          );
+          if (callback) {
+            callback(parsed);
+            this.pendingRequests.delete(parsed.id);
+          }
+        } catch (e: unknown) {
+          console.error('Failed to parse MCP response:', e);
         }
-      } catch (e: unknown) {
-        console.error('Failed to parse MCP response:', e);
-      }
-    });
+      });
     });
 
     // Initialize the server
     await this.sendRequest('initialize', {
-      protocolVersion: "2024-11-05",
+      protocolVersion: '2024-11-05',
       capabilities: { tools: {} },
-      clientInfo: { name: "chakra-app", version: "1.0.0" }
+      clientInfo: { name: 'chakra-app', version: '1.0.0' },
     });
   }
 
@@ -56,10 +56,10 @@ class MCPClient {
     return new Promise((resolve) => {
       const id = ++this.requestId;
       const request: MCPRequest = {
-        jsonrpc: "2.0",
+        jsonrpc: '2.0',
         id,
         method,
-        params
+        params,
       };
 
       this.pendingRequests.set(id, resolve);
