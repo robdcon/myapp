@@ -14,9 +14,9 @@ Git hooks are scripts that Git executes before or after events such as: commit, 
 
 **What it does:**
 
-1. **Runs lint-staged** - Auto-formats staged files with Prettier (does not run linting on staged files)
+1. **Runs lint-staged** - Auto-formats staged files with Prettier
    - Applies Prettier formatting to TypeScript, JavaScript, JSON, and Markdown files you're committing
-2. **Runs TypeScript type checking** - Ensures no type errors exist across the entire project (not just staged files)
+2. **Runs TypeScript type checking** - Ensures no type errors exist across the entire project
 
 **Why it's helpful:** Catches errors before they get committed, keeps code formatted consistently
 
