@@ -58,9 +58,7 @@ export async function queryMany<T extends QueryResultRow = any>(
 }
 
 // Transaction helper
-export async function transaction<T>(
-  callback: (client: PoolClient) => Promise<T>
-): Promise<T> {
+export async function transaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

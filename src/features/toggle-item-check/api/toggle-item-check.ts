@@ -9,8 +9,9 @@ export const useToggleItemCheck = (boardId: string) => {
   const client = useApolloClient();
   const [togglingItems, setTogglingItems] = useState<Set<string>>(new Set());
 
-  const [toggleCheckMutation, { loading: mutationLoading }] =
-    useMutation<ToggleItemCheckData>(TOGGLE_ITEM_CHECK_MUTATION, {
+  const [toggleCheckMutation, { loading: mutationLoading }] = useMutation<ToggleItemCheckData>(
+    TOGGLE_ITEM_CHECK_MUTATION,
+    {
       onError: (error) => {
         console.error('Toggle item check failed:', error.message);
         // On error, remove from toggling state
@@ -25,7 +26,8 @@ export const useToggleItemCheck = (boardId: string) => {
           });
         }
       },
-    });
+    }
+  );
 
   const toggleItemCheck = (itemId: string) => {
     // Set item as toggling immediately for instant feedback

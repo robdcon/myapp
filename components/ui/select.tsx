@@ -23,16 +23,15 @@ export const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerPr
   }
 );
 
-const SelectClearTrigger = React.forwardRef<
-  HTMLButtonElement,
-  ChakraSelect.ClearTriggerProps
->(function SelectClearTrigger(props, ref) {
-  return (
-    <ChakraSelect.ClearTrigger {...props} ref={ref}>
-      ✕
-    </ChakraSelect.ClearTrigger>
-  );
-});
+const SelectClearTrigger = React.forwardRef<HTMLButtonElement, ChakraSelect.ClearTriggerProps>(
+  function SelectClearTrigger(props, ref) {
+    return (
+      <ChakraSelect.ClearTrigger {...props} ref={ref}>
+        ✕
+      </ChakraSelect.ClearTrigger>
+    );
+  }
+);
 
 interface SelectContentProps extends ChakraSelect.ContentProps {
   portalled?: boolean;

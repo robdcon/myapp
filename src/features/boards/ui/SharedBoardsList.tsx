@@ -132,9 +132,7 @@ export function SharedBoardsList() {
           <Card.Footer>
             <Button asChild colorPalette="blue" width="full">
               <Link href={`/boards/${board.id}`}>
-                {board.myPermission === PermissionLevel.VIEW
-                  ? 'View Board'
-                  : 'Open Board'}
+                {board.myPermission === PermissionLevel.VIEW ? 'View Board' : 'Open Board'}
               </Link>
             </Button>
           </Card.Footer>

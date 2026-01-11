@@ -89,17 +89,12 @@ export class DesignTokenService {
     return response.json();
   }
 
-  static async getTokens(
-    layer: 'settings' | 'tokens' | 'all' = 'tokens',
-    category?: string
-  ) {
+  static async getTokens(layer: 'settings' | 'tokens' | 'all' = 'tokens', category?: string) {
     const response = await this.callMCP('get_design_tokens', {
       layer,
       category,
     });
-    return response.result?.content?.[0]?.text
-      ? JSON.parse(response.result.content[0].text)
-      : {};
+    return response.result?.content?.[0]?.text ? JSON.parse(response.result.content[0].text) : {};
   }
 
   static async getColorTokens(layer: 'settings' | 'tokens' = 'tokens') {
@@ -118,16 +113,12 @@ export class DesignTokenService {
     const response = await this.callMCP('get_component_guidelines', {
       componentName,
     });
-    return response.result?.content?.[0]?.text
-      ? JSON.parse(response.result.content[0].text)
-      : null;
+    return response.result?.content?.[0]?.text ? JSON.parse(response.result.content[0].text) : null;
   }
 
   static async listComponents() {
     const response = await this.callMCP('list_available_components');
-    return response.result?.content?.[0]?.text
-      ? JSON.parse(response.result.content[0].text)
-      : [];
+    return response.result?.content?.[0]?.text ? JSON.parse(response.result.content[0].text) : [];
   }
 
   static async generateComponent(

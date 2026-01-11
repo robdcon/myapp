@@ -1,14 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  VStack,
-  Input,
-  createListCollection,
-  Heading,
-} from '@chakra-ui/react';
+import { Box, Button, VStack, Input, createListCollection, Heading } from '@chakra-ui/react';
 import {
   SelectRoot,
   SelectTrigger,

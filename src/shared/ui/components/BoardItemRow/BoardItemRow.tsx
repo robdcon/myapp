@@ -29,9 +29,7 @@ export const BoardItemRow = React.memo(function BoardItemRow({
     (e: React.MouseEvent) => {
       // Don't trigger row click if clicking on the edit button or delete button
       if (
-        (e.target as HTMLElement).closest(
-          'button[data-edit-button], button[data-delete-button]'
-        )
+        (e.target as HTMLElement).closest('button[data-edit-button], button[data-delete-button]')
       ) {
         return;
       }

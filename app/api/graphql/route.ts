@@ -13,12 +13,9 @@ const server = new ApolloServer({
   plugins: [ApolloServerPluginLandingPageLocalDefault({ embed: true })],
 });
 
-const handler = startServerAndCreateNextHandler<NextRequest>(
-  server as ApolloServer<object>,
-  {
-    context: createContext,
-  }
-);
+const handler = startServerAndCreateNextHandler<NextRequest>(server as ApolloServer<object>, {
+  context: createContext,
+});
 
 export async function GET(request: NextRequest) {
   return handler(request);

@@ -40,9 +40,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
-  const [highlightedCategory, setHighlightedCategory] = useState<string | undefined>(
-    undefined
-  );
+  const [highlightedCategory, setHighlightedCategory] = useState<string | undefined>(undefined);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   // Refs to store category section elements
@@ -58,8 +56,10 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const board = data?.board;
   const items = board?.items || [];
 
-  const { checkAllItems, uncheckAllItems, hasCheckedItems, hasUncheckedItems } =
-    useBulkItemActions(boardId, items);
+  const { checkAllItems, uncheckAllItems, hasCheckedItems, hasUncheckedItems } = useBulkItemActions(
+    boardId,
+    items
+  );
 
   // Scroll to category section
   const scrollToCategory = useCallback((category: string) => {
@@ -137,12 +137,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         <VStack align="stretch" gap={6} mb={8}>
           <Button asChild variant="ghost" size="sm" width="fit-content">
             <Link href="/">
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -166,12 +161,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                 size="sm"
                 onClick={() => setIsShareDialogOpen(true)}
               >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -191,9 +181,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
 
             <HStack gap={3}>
               <Badge colorPalette="appPrimary" size="lg">
-                {board?.board_type === BoardType.CHECKLIST
-                  ? '✓ Checklist'
-                  : '📋 Notice Board'}
+                {board?.board_type === BoardType.CHECKLIST ? '✓ Checklist' : '📋 Notice Board'}
               </Badge>
 
               {board?.board_type === BoardType.CHECKLIST && totalCount > 0 && (
@@ -250,9 +238,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                   {category}
                   <Badge
                     ml={2}
-                    colorPalette={
-                      highlightedCategory === category ? 'white' : 'appPrimary'
-                    }
+                    colorPalette={highlightedCategory === category ? 'white' : 'appPrimary'}
                     variant="subtle"
                     fontSize="xs"
                   >
@@ -303,82 +289,69 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         ) : (
           <VStack align="stretch" gap={6}>
             <UncheckedItemsList boardId={boardId} />
-            {Object.entries(itemsByCategory).map(
-              ([category, categoryItems]: [string, Item[]]) => (
-                <Card.Root
-                  key={category}
-                  ref={(el) => {
-                    categoryRefs.current[category] = el;
-                  }}
-                  variant="outline"
-                  borderColor={
-                    highlightedCategory === category ? 'appPrimary.400' : 'appPrimary.200'
-                  }
-                  borderWidth={highlightedCategory === category ? '3px' : '1px'}
-                  _hover={{
-                    shadow: 'lg',
-                    transform: 'translateY(-2px)',
-                    borderColor: 'appPrimary.300',
-                  }}
-                  transition="all 0.3s ease"
-                  bg={highlightedCategory === category ? 'appPrimary.50' : 'white'}
-                >
-                  <Card.Header
-                    bg="appPrimary.50"
-                    borderBottom="1px"
-                    borderColor="appPrimary.100"
-                  >
-                    <Flex justify="space-between" align="center">
-                      <Heading size="lg" color="appPrimary.700">
-                        {category}
-                      </Heading>
-                      <IconButton
-                        onClick={() => handleQuickAdd(category)}
-                        variant="ghost"
-                        colorPalette="appPrimary"
-                        aria-label={`Add item to ${category}`}
-                        size="sm"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4v16m8-8H4"
-                          />
-                        </svg>
-                      </IconButton>
-                    </Flex>
-                  </Card.Header>
-
-                  <Card.Body p={0} className="BoardItems">
-                    <VStack
-                      align="stretch"
-                      gap={0}
-                      divideY="1px"
-                      divideColor="appPrimary.100"
+            {Object.entries(itemsByCategory).map(([category, categoryItems]: [string, Item[]]) => (
+              <Card.Root
+                key={category}
+                ref={(el) => {
+                  categoryRefs.current[category] = el;
+                }}
+                variant="outline"
+                borderColor={highlightedCategory === category ? 'appPrimary.400' : 'appPrimary.200'}
+                borderWidth={highlightedCategory === category ? '3px' : '1px'}
+                _hover={{
+                  shadow: 'lg',
+                  transform: 'translateY(-2px)',
+                  borderColor: 'appPrimary.300',
+                }}
+                transition="all 0.3s ease"
+                bg={highlightedCategory === category ? 'appPrimary.50' : 'white'}
+              >
+                <Card.Header bg="appPrimary.50" borderBottom="1px" borderColor="appPrimary.100">
+                  <Flex justify="space-between" align="center">
+                    <Heading size="lg" color="appPrimary.700">
+                      {category}
+                    </Heading>
+                    <IconButton
+                      onClick={() => handleQuickAdd(category)}
+                      variant="ghost"
+                      colorPalette="appPrimary"
+                      aria-label={`Add item to ${category}`}
+                      size="sm"
                     >
-                      {categoryItems.map((item: Item) => (
-                        <BoardItemRow
-                          key={item.id}
-                          item={item}
-                          boardType={board?.board_type ?? BoardType.CHECKLIST}
-                          onToggleCheck={toggleItemCheck}
-                          onEdit={setEditingItemId}
-                          onDelete={deleteItem}
-                          isToggling={isItemToggling(item.id)}
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4v16m8-8H4"
                         />
-                      ))}
-                    </VStack>
-                  </Card.Body>
-                </Card.Root>
-              )
-            )}
+                      </svg>
+                    </IconButton>
+                  </Flex>
+                </Card.Header>
+
+                <Card.Body p={0} className="BoardItems">
+                  <VStack align="stretch" gap={0} divideY="1px" divideColor="appPrimary.100">
+                    {categoryItems.map((item: Item) => (
+                      <BoardItemRow
+                        key={item.id}
+                        item={item}
+                        boardType={board?.board_type ?? BoardType.CHECKLIST}
+                        onToggleCheck={toggleItemCheck}
+                        onEdit={setEditingItemId}
+                        onDelete={deleteItem}
+                        isToggling={isItemToggling(item.id)}
+                      />
+                    ))}
+                  </VStack>
+                </Card.Body>
+              </Card.Root>
+            ))}
           </VStack>
         )}
       </Container>

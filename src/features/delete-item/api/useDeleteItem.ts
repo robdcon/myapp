@@ -10,17 +10,14 @@ interface UseDeleteItemOptions {
 }
 
 export function useDeleteItem({ boardId }: UseDeleteItemOptions) {
-  const [deleteItemMutation, { loading }] = useMutation<DeleteItemData>(
-    DELETE_ITEM_MUTATION,
-    {
-      refetchQueries: [
-        {
-          query: GET_BOARD_QUERY,
-          variables: { id: boardId },
-        },
-      ],
-    }
-  );
+  const [deleteItemMutation, { loading }] = useMutation<DeleteItemData>(DELETE_ITEM_MUTATION, {
+    refetchQueries: [
+      {
+        query: GET_BOARD_QUERY,
+        variables: { id: boardId },
+      },
+    ],
+  });
 
   const deleteItem = async (itemId: string) => {
     try {

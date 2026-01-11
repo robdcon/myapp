@@ -1,14 +1,10 @@
 const { spawn } = require('child_process');
 
 // Test the MCP server directly
-const mcpServer = spawn(
-  'node',
-  ['D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'],
-  {
-    cwd: 'D:\\CODE\\AI\\mcp-servers\\mcp-design-system',
-    stdio: 'pipe',
-  }
-);
+const mcpServer = spawn('node', ['D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'], {
+  cwd: 'D:\\CODE\\AI\\mcp-servers\\mcp-design-system',
+  stdio: 'pipe',
+});
 
 // First, send initialization request
 const initRequest = {

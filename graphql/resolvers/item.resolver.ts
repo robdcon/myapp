@@ -4,10 +4,7 @@ import { pool } from '@/lib/db';
 import { GraphQLError } from 'graphql';
 
 // Helper function to check if user has edit permission on a board
-async function checkBoardEditPermission(
-  boardId: string,
-  userId: string
-): Promise<boolean> {
+async function checkBoardEditPermission(boardId: string, userId: string): Promise<boolean> {
   const result = await pool.query(
     `SELECT EXISTS (
        SELECT 1
@@ -36,11 +33,7 @@ async function getBoardIdFromItem(itemId: string): Promise<string | null> {
 
 export const itemResolvers = {
   Mutation: {
-    toggleItemCheck: async (
-      _: any,
-      { itemId }: { itemId: string },
-      context: GraphQLContext
-    ) => {
+    toggleItemCheck: async (_: any, { itemId }: { itemId: string }, context: GraphQLContext) => {
       if (!context.user) {
         throw new GraphQLError('Not authenticated', {
           extensions: { code: 'UNAUTHENTICATED' },
@@ -106,9 +99,7 @@ export const itemResolvers = {
 
       try {
         // Get the database user ID for created_by field
-        const userResult = await pool.query('SELECT id FROM users WHERE auth0_id = $1', [
-          userId,
-        ]);
+        const userResult = await pool.query('SELECT id FROM users WHERE auth0_id = $1', [userId]);
 
         const dbUserId = userResult.rows[0]?.id;
 
@@ -213,11 +204,7 @@ export const itemResolvers = {
       }
     },
 
-    deleteItem: async (
-      _: any,
-      { itemId }: { itemId: string },
-      context: GraphQLContext
-    ) => {
+    deleteItem: async (_: any, { itemId }: { itemId: string }, context: GraphQLContext) => {
       if (!context.user) {
         throw new GraphQLError('Not authenticated', {
           extensions: { code: 'UNAUTHENTICATED' },
@@ -235,17 +222,12 @@ export const itemResolvers = {
 
       const hasPermission = await checkBoardEditPermission(boardId, userId);
       if (!hasPermission) {
-        throw new GraphQLError(
-          'You do not have permission to delete items on this board',
-          {
-            extensions: { code: 'FORBIDDEN' },
-          }
-        );
+        throw new GraphQLError('You do not have permission to delete items on this board', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
-      await query(`UPDATE items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1`, [
-        itemId,
-      ]);
+      await query(`UPDATE items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1`, [itemId]);
 
       return true;
     },
@@ -276,11 +258,7 @@ export const itemResolvers = {
       return result.rows || [];
     },
 
-    uncheckedItems: async (
-      _: any,
-      { boardId }: { boardId: string },
-      context: GraphQLContext
-    ) => {
+    uncheckedItems: async (_: any, { boardId }: { boardId: string }, context: GraphQLContext) => {
       if (!context.user) {
         throw new Error('Not authenticated');
       }

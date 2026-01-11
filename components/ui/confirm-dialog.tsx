@@ -53,11 +53,7 @@ export function ConfirmDialog({
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
             {cancelText}
           </Button>
-          <Button
-            colorPalette={confirmColorPalette}
-            onClick={handleConfirm}
-            loading={isLoading}
-          >
+          <Button colorPalette={confirmColorPalette} onClick={handleConfirm} loading={isLoading}>
             {confirmText}
           </Button>
         </DialogFooter>

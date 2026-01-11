@@ -32,14 +32,10 @@ class ServerMCPClient {
   async initialize() {
     if (this.initialized) return;
 
-    this.server = spawn(
-      'node',
-      ['D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'],
-      {
-        cwd: 'D:\\CODE\\AI\\mcp-servers\\mcp-design-system',
-        stdio: 'pipe',
-      }
-    );
+    this.server = spawn('node', ['D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'], {
+      cwd: 'D:\\CODE\\AI\\mcp-servers\\mcp-design-system',
+      stdio: 'pipe',
+    });
 
     this.server.stdout?.on('data', (data: Buffer) => {
       const responses = data.toString().trim().split('\n');

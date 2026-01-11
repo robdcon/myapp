@@ -152,7 +152,9 @@ Configures code formatting rules:
 - Single quotes instead of double quotes
 - Semicolons at end of statements
 - 2 spaces for indentation
-- 90 character line width (reduced from 100 to avoid confusion with commit message header limit)
+- 100 character line width
+
+**Note:** The printWidth of 100 characters applies to code formatting, which is separate from the commit message header limit (also 100 characters). The commit message limit includes the type, scope, and subject combined.
 
 ### `package.json` - lint-staged configuration
 

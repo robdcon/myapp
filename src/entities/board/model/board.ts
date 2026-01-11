@@ -40,9 +40,7 @@ export class BoardEntity {
   getRelativeCreatedDate(): string {
     const now = new Date();
     const created = this.createdAt;
-    const diffDays = Math.floor(
-      (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const diffDays = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';

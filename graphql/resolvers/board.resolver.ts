@@ -10,9 +10,7 @@ export const boardResolvers = {
 
       const userEmail = context.user.email;
 
-      const userResult = await query('SELECT id FROM users WHERE email = $1', [
-        userEmail,
-      ]);
+      const userResult = await query('SELECT id FROM users WHERE email = $1', [userEmail]);
 
       if (userResult.rows.length === 0) {
         return [];

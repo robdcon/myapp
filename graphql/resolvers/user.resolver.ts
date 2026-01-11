@@ -14,19 +14,17 @@ export const userResolvers = {
 
   Mutation: {
     createUser: async (_: any, { name, email }: { name: string; email: string }) => {
-      const result = await queryOne(
-        'INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *',
-        [name, email]
-      );
+      const result = await queryOne('INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *', [
+        name,
+        email,
+      ]);
       return result;
     },
   },
 
   User: {
     boards: async (parent: any) => {
-      const result = await query('SELECT * FROM user_boards WHERE user_id = $1', [
-        parent.id,
-      ]);
+      const result = await query('SELECT * FROM user_boards WHERE user_id = $1', [parent.id]);
       return result.rows.map((row) => row.board_id);
     },
   },
