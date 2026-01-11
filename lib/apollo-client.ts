@@ -6,6 +6,10 @@ export const { getClient } = registerApolloClient(() => {
     cache: new InMemoryCache(),
     link: new HttpLink({
       uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:3000/api/graphql',
+      credentials: 'same-origin', // This ensures cookies are sent with requests
+      fetchOptions: {
+        cache: 'no-store', // Disable fetch cache to ensure fresh data
+      },
     }),
   });
 });
