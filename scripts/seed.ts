@@ -1,12 +1,5 @@
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  host: '35.214.59.104',
-  port: 5432,
-  database: 'dbajfnsyj3xd5g',
-  user: 'uxcbxdwm5ywui',
-  password: '5h2$@&l@2(I1',
-});
+import 'dotenv/config';
+import { pool } from '../lib/db';
 
 async function seed() {
   const client = await pool.connect();

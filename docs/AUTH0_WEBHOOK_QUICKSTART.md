@@ -7,7 +7,13 @@ Follow these steps to enable automatic user registration:
 Add this line to your `.env` file:
 
 ```bash
-AUTH0_WEBHOOK_SECRET=c0a965375b67d9ae3dbac61b18879b9fdee1759d3b5a5804cc942b4120c15345
+AUTH0_WEBHOOK_SECRET=your-generated-secret-here-change-this-before-use
+```
+
+Generate a strong random secret:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 > ⚠️ **Important:** Use the SAME secret in both your `.env` file AND Auth0 Action secrets!
@@ -89,7 +95,7 @@ Click the **Secrets** icon (🔑) and add:
    - Value: `https://your-domain.com/api/auth/register-user`
 
 2. **WEBHOOK_SECRET**
-   - Value: `c0a965375b67d9ae3dbac61b18879b9fdee1759d3b5a5804cc942b4120c15345`
+   - Value: (paste the same secret you generated and added to your `.env` file)
 
 ## ✅ Step 6: Deploy Action to Flow
 
