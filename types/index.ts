@@ -3,6 +3,7 @@
 export enum BoardType {
   NOTICE_BOARD = 'NOTICE_BOARD',
   CHECKLIST = 'CHECKLIST',
+  EVENTS = 'EVENTS',
 }
 
 export enum UserRole {

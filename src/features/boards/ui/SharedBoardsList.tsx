@@ -36,6 +36,8 @@ function getBoardTypeLabel(boardType: string): string {
       return '✓ Checklist';
     case BoardType.NOTICE_BOARD:
       return '📋 Notice Board';
+    case BoardType.EVENTS:
+      return '📅 Events';
     default:
       return boardType.replace('_', ' ');
   }
@@ -132,7 +134,9 @@ export function SharedBoardsList() {
           <Card.Footer>
             <Button asChild colorPalette="blue" width="full">
               <Link href={`/boards/${board.id}`}>
-                {board.myPermission === PermissionLevel.VIEW ? 'View Board' : 'Open Board'}
+                {board.myPermission === PermissionLevel.VIEW
+                  ? 'View Board'
+                  : 'Open Board'}
               </Link>
             </Button>
           </Card.Footer>

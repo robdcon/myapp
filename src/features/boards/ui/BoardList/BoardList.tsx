@@ -24,6 +24,8 @@ function getBoardTypeLabel(boardType: string): string {
       return '✓ Checklist';
     case BoardType.NOTICE_BOARD:
       return '📋 Notice Board';
+    case BoardType.EVENTS:
+      return '📅 Events';
     default:
       return boardType.replace('_', ' ');
   }

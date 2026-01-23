@@ -8,6 +8,54 @@ globs: "*.tsx"
 alwaysApply: false
 ---
 
+# Development Workflow Rules
+
+## Feature Development Process
+
+**CRITICAL:** Before implementing any new feature or integration, you MUST:
+
+1. **Create a Requirements File** - Never start implementation directly
+   - Name: `[FEATURE_NAME]_REQUIREMENTS.md` (e.g., `GOOGLE_CALENDAR_REQUIREMENTS.md`)
+   - Location: Project root
+   - Content must include:
+     - Overview and scope
+     - Task breakdown with checkboxes
+     - Data model changes needed
+     - API/integration details
+     - UI/UX requirements
+     - Security considerations
+     - Questions to answer before implementation
+     - Edge cases and error handling
+
+2. **Refine Tasks** - Work with user to clarify requirements
+   - Answer all questions in the requirements file
+   - Define MVP scope vs future phases
+   - Get user approval on approach
+   - Update requirements file with decisions
+
+3. **Create Technical Design** - Only after refinement complete
+   - Architecture diagram
+   - API contracts
+   - Database schema
+   - Component hierarchy
+
+4. **Implement** - Only after design is approved
+   - Follow FSD architecture
+   - Write tests
+   - Update documentation
+
+**Example:**
+
+```bash
+❌ User: "Add Google Calendar integration"
+❌ AI: *starts writing code immediately*
+
+✅ User: "Add Google Calendar integration"
+✅ AI: *creates GOOGLE_CALENDAR_REQUIREMENTS.md with tasks to refine*
+✅ User & AI: *refine requirements together*
+✅ AI: *then implements after approval*
+```
+
 # Chakra UI v3 Rules
 
 This project uses Chakra UI v3. Follow these rules:
@@ -22,6 +70,7 @@ This project uses Chakra UI v3. Follow these rules:
 8. Always use `VStack`/`HStack`, not `Stack`.
 9. Use compound components for complex components.
 10. Check the Chakra UI v3 migration guide for component-specific changes.
+
 # Architecture Overview
 
 ## Tech Stack
