@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@apollo/client/react';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
@@ -18,7 +18,16 @@ import {
   Alert,
   IconButton,
 } from '@chakra-ui/react';
-import { GET_BOARD_QUERY, BoardType } from '@/src/entities/board';
+import {
+  GET_BOARD_QUERY,
+  BoardType,
+  CALENDAR_STATUS_QUERY,
+  SYNC_CALENDAR_MUTATION,
+  DISCONNECT_CALENDAR_MUTATION,
+  type GetBoardData,
+  type CalendarStatusData,
+  type SyncCalendarData,
+} from '@/src/entities/board';
 import { ItemEntity } from '@/src/entities/item';
 import { CreateItemForm } from '@/src/features/create-item';
 import { EditItemForm } from '@/src/features/edit-item';
@@ -26,11 +35,17 @@ import { BulkItemActions, useBulkItemActions } from '@/src/features/bulk-item-ac
 import { useToggleItemCheck } from '@/src/features/toggle-item-check';
 import { useDeleteItem } from '@/src/features/delete-item';
 import { StickyFooter, BoardItemRow } from '@/src/shared';
-import type { GetBoardData } from '@/src/entities/board';
 import type { Item } from '@/src/entities/item';
 import type { BoardViewerWidgetProps } from '../model/types';
 import { UncheckedItemsList } from '@/src/features/display-list-summary';
 import { ShareBoardDialog } from '@/src/features/boards/ui/ShareBoardDialog';
+import {
+  CalendarConnectionStatus,
+  ConnectCalendarButton,
+  CalendarSelectorModal,
+  CalendarEventItem,
+} from '@/src/features/calendar-integration';
+import { toaster } from '@/components/ui/toaster';
 
 // UI Constants
 const HIGHLIGHT_ANIMATION_DURATION = 2000; // milliseconds
@@ -44,12 +59,70 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
     undefined
   );
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isCalendarSelectorOpen, setIsCalendarSelectorOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Refs to store category section elements
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { loading, error, data } = useQuery<GetBoardData>(GET_BOARD_QUERY, {
     variables: { id: boardId },
+  });
+
+  // Query calendar status for EVENTS boards
+  const {
+    data: calendarData,
+    loading: calendarLoading,
+    refetch: refetchCalendarStatus,
+  } = useQuery<CalendarStatusData>(CALENDAR_STATUS_QUERY, {
+    variables: { boardId },
+    skip: data?.board?.board_type !== BoardType.EVENTS,
+  });
+
+  // Sync calendar mutation
+  const [syncCalendar] = useMutation<SyncCalendarData>(SYNC_CALENDAR_MUTATION, {
+    onCompleted: (result) => {
+      setIsSyncing(false);
+      const { itemsCreated, itemsUpdated, itemsDeleted } = result.syncBoardCalendar;
+      toaster.create({
+        title: 'Calendar Synced',
+        description: `Created: ${itemsCreated}, Updated: ${itemsUpdated}, Deleted: ${itemsDeleted}`,
+        type: 'success',
+        duration: 5000,
+      });
+      refetchCalendarStatus();
+    },
+    onError: (err) => {
+      setIsSyncing(false);
+      toaster.create({
+        title: 'Sync Failed',
+        description: err.message || 'Failed to sync calendar',
+        type: 'error',
+        duration: 7000,
+      });
+    },
+    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
+  });
+
+  // Disconnect calendar mutation
+  const [disconnectCalendar] = useMutation(DISCONNECT_CALENDAR_MUTATION, {
+    onCompleted: () => {
+      toaster.create({
+        title: 'Calendar Disconnected',
+        description: 'Google Calendar has been disconnected from this board',
+        type: 'info',
+        duration: 5000,
+      });
+      refetchCalendarStatus();
+    },
+    onError: (err) => {
+      toaster.create({
+        title: 'Disconnect Failed',
+        description: err.message || 'Failed to disconnect calendar',
+        type: 'error',
+        duration: 7000,
+      });
+    },
   });
 
   const { toggleItemCheck, isItemToggling } = useToggleItemCheck(boardId);
@@ -204,6 +277,54 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
             </HStack>
           </Box>
         </VStack>
+
+        {/* Calendar Integration for EVENTS boards */}
+        {board?.board_type === BoardType.EVENTS && (
+          <Box mb={6}>
+            {!calendarLoading && !calendarData?.calendarSyncStatus?.isConnected ? (
+              <Card.Root p={6} bg="blue.50" borderColor="blue.200" borderWidth="1px">
+                <VStack gap={4}>
+                  <ConnectCalendarButton
+                    boardId={boardId}
+                    onConnectionSuccess={() => {
+                      setIsCalendarSelectorOpen(true);
+                      refetchCalendarStatus();
+                    }}
+                  />
+                </VStack>
+              </Card.Root>
+            ) : (
+              calendarData?.calendarSyncStatus?.isConnected && (
+                <CalendarConnectionStatus
+                  boardId={boardId}
+                  isConnected={true}
+                  calendarName={calendarData.calendarSyncStatus.calendarName}
+                  lastSyncAt={calendarData.calendarSyncStatus.lastSyncAt}
+                  syncRangeDays={calendarData.calendarSyncStatus.syncRangeDays}
+                  onConnect={() => {}}
+                  onDisconnect={() => {
+                    disconnectCalendar({ variables: { boardId } });
+                  }}
+                  onSync={() => {
+                    setIsSyncing(true);
+                    syncCalendar({ variables: { boardId } });
+                  }}
+                  isSyncing={isSyncing}
+                />
+              )
+            )}
+          </Box>
+        )}
+
+        {/* Calendar Selector Modal */}
+        <CalendarSelectorModal
+          boardId={boardId}
+          open={isCalendarSelectorOpen}
+          onClose={() => setIsCalendarSelectorOpen(false)}
+          onCalendarSelected={() => {
+            refetchCalendarStatus();
+          }}
+        />
 
         {/* Sticky Category Navigation */}
         {Object.keys(itemsByCategory).length > 0 && (
@@ -363,17 +484,32 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                       divideY="1px"
                       divideColor="appPrimary.100"
                     >
-                      {categoryItems.map((item: Item) => (
-                        <BoardItemRow
-                          key={item.id}
-                          item={item}
-                          boardType={board?.board_type ?? BoardType.CHECKLIST}
-                          onToggleCheck={toggleItemCheck}
-                          onEdit={setEditingItemId}
-                          onDelete={deleteItem}
-                          isToggling={isItemToggling(item.id)}
-                        />
-                      ))}
+                      {categoryItems.map((item: Item) => {
+                        // Render CalendarEventItem for items with google_event_id
+                        if (item.google_event_id) {
+                          return (
+                            <CalendarEventItem
+                              key={item.id}
+                              item={item}
+                              onEdit={setEditingItemId}
+                              onDelete={deleteItem}
+                            />
+                          );
+                        }
+
+                        // Render normal BoardItemRow for regular items
+                        return (
+                          <BoardItemRow
+                            key={item.id}
+                            item={item}
+                            boardType={board?.board_type ?? BoardType.CHECKLIST}
+                            onToggleCheck={toggleItemCheck}
+                            onEdit={setEditingItemId}
+                            onDelete={deleteItem}
+                            isToggling={isItemToggling(item.id)}
+                          />
+                        );
+                      })}
                     </VStack>
                   </Card.Body>
                 </Card.Root>

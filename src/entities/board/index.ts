@@ -8,6 +8,14 @@ export type {
   CreateBoardData,
   UpdateBoardData,
   DeleteBoardData,
+  CalendarStatus,
+  GoogleCalendar,
+  CalendarSyncResult,
+  CalendarStatusData,
+  AvailableCalendarsData,
+  SyncCalendarData,
+  DisconnectCalendarData,
+  UpdateSyncRangeData,
 } from './model/types';
 export { BoardType } from './model/types';
 export {
@@ -16,4 +24,10 @@ export {
   CREATE_BOARD_MUTATION,
   UPDATE_BOARD_MUTATION,
   DELETE_BOARD_MUTATION,
+  CALENDAR_STATUS_QUERY,
+  AVAILABLE_CALENDARS_QUERY,
+  SELECT_CALENDAR_MUTATION,
+  SYNC_CALENDAR_MUTATION,
+  DISCONNECT_CALENDAR_MUTATION,
+  UPDATE_SYNC_RANGE_MUTATION,
 } from './api';

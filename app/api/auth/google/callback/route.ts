@@ -84,14 +84,71 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ Calendar OAuth completed for board ${boardId}`);
 
-    // Redirect back to board with success message
-    const successUrl = new URL(`/boards/${boardId}`, request.url);
-    successUrl.searchParams.set('calendar_connected', 'true');
-    return NextResponse.redirect(successUrl);
+    // Return HTML that sends message to opener window (for popup flow)
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Calendar Connected</title>
+        </head>
+        <body>
+          <script>
+            // Send success message to opener window
+            if (window.opener) {
+              window.opener.postMessage({
+                type: 'oauth-callback',
+                success: true,
+                boardId: '${boardId}'
+              }, window.location.origin);
+              // Close popup after sending message
+              setTimeout(() => window.close(), 500);
+            } else {
+              // Fallback for non-popup flow
+              window.location.href = '/boards/${boardId}?calendar_connected=true';
+            }
+          </script>
+          <p style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+            ✅ Calendar connected! Closing window...
+          </p>
+        </body>
+      </html>
+    `;
+
+    return new NextResponse(html, {
+      headers: { 'Content-Type': 'text/html' },
+    });
   } catch (error) {
     console.error('Error handling Google Calendar callback:', error);
-    return NextResponse.redirect(
-      new URL('/?calendar_error=callback_failed', request.url)
-    );
+
+    // Return error HTML for popup flow
+    const errorHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Connection Failed</title>
+        </head>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage({
+                type: 'oauth-callback',
+                success: false,
+                error: 'Failed to connect calendar'
+              }, window.location.origin);
+              setTimeout(() => window.close(), 500);
+            } else {
+              window.location.href = '/?calendar_error=callback_failed';
+            }
+          </script>
+          <p style="text-align: center; margin-top: 50px; font-family: sans-serif; color: red;">
+            ❌ Connection failed. Closing window...
+          </p>
+        </body>
+      </html>
+    `;
+
+    return new NextResponse(errorHtml, {
+      headers: { 'Content-Type': 'text/html' },
+    });
   }
 }

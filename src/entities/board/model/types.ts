@@ -54,3 +54,48 @@ export interface UpdateBoardData {
 export interface DeleteBoardData {
   deleteBoard: boolean;
 }
+
+// Calendar Types
+export interface CalendarStatus {
+  isConnected: boolean;
+  calendarId?: string | null;
+  calendarName?: string | null;
+  lastSyncAt?: string | null;
+  syncRangeDays?: number;
+}
+
+export interface GoogleCalendar {
+  id: string;
+  name: string;
+  description?: string | null;
+  primary: boolean;
+}
+
+export interface CalendarSyncResult {
+  success: boolean;
+  message: string;
+  itemsCreated: number;
+  itemsUpdated: number;
+  itemsDeleted: number;
+}
+
+// Calendar GraphQL Response Types
+export interface CalendarStatusData {
+  calendarSyncStatus: CalendarStatus;
+}
+
+export interface AvailableCalendarsData {
+  availableCalendars: GoogleCalendar[];
+}
+
+export interface SyncCalendarData {
+  syncBoardCalendar: CalendarSyncResult;
+}
+
+export interface DisconnectCalendarData {
+  disconnectBoardCalendar: boolean;
+}
+
+export interface UpdateSyncRangeData {
+  updateCalendarSyncRange: boolean;
+}
