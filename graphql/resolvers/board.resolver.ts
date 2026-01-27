@@ -10,7 +10,9 @@ export const boardResolvers = {
 
       const userEmail = context.user.email;
 
-      const userResult = await query('SELECT id FROM users WHERE email = $1', [userEmail]);
+      const userResult = await query('SELECT id FROM users WHERE email = $1', [
+        userEmail,
+      ]);
 
       if (userResult.rows.length === 0) {
         return [];
@@ -45,22 +47,37 @@ export const boardResolvers = {
 
   Board: {
     items: async (parent: any) => {
-      // console.log('🔍 Parent board object:', parent);
-      // console.log('🔍 Parent board ID:', parent.id);
-      // console.log('🔍 Parent board ID type:', typeof parent.id);
-
       const result = await query(
-        `SELECT * FROM items 
+        `SELECT 
+           id,
+           board_id,
+           name,
+           details,
+           is_checked,
+           category,
+           created_at,
+           updated_at,
+           google_event_id,
+           EXTRACT(EPOCH FROM event_start_time)::bigint * 1000 as event_start_time,
+           EXTRACT(EPOCH FROM event_end_time)::bigint * 1000 as event_end_time,
+           event_description,
+           google_calendar_link,
+           deleted_at
+         FROM items 
          WHERE board_id = $1 AND deleted_at IS NULL
          ORDER BY category NULLS LAST, created_at ASC`,
         [parent.id]
       );
 
-      // console.log('📦 Items query result:', result);
-      // console.log('📦 Items rows:', result.rows);
-      // console.log('📦 Items row count:', result.rowCount);
+      // Convert timestamps to ISO strings for proper serialization
+      const items = result.rows.map((item: any) => ({
+        ...item,
+        // Keep numeric timestamps as strings for GraphQL
+        event_start_time: item.event_start_time ? String(item.event_start_time) : null,
+        event_end_time: item.event_end_time ? String(item.event_end_time) : null,
+      }));
 
-      return result.rows || [];
+      return items;
     },
   },
 };

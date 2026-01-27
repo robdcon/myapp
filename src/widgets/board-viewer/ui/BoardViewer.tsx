@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@apollo/client/react';
+import { useQuery, useMutation } from '@apollo/client/react';
 import { useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import {
@@ -18,7 +18,16 @@ import {
   Alert,
   IconButton,
 } from '@chakra-ui/react';
-import { GET_BOARD_QUERY, BoardType } from '@/src/entities/board';
+import {
+  GET_BOARD_QUERY,
+  BoardType,
+  CALENDAR_STATUS_QUERY,
+  SYNC_CALENDAR_MUTATION,
+  DISCONNECT_CALENDAR_MUTATION,
+  type GetBoardData,
+  type CalendarStatusData,
+  type SyncCalendarData,
+} from '@/src/entities/board';
 import { ItemEntity } from '@/src/entities/item';
 import { CreateItemForm } from '@/src/features/create-item';
 import { EditItemForm } from '@/src/features/edit-item';
@@ -26,11 +35,17 @@ import { BulkItemActions, useBulkItemActions } from '@/src/features/bulk-item-ac
 import { useToggleItemCheck } from '@/src/features/toggle-item-check';
 import { useDeleteItem } from '@/src/features/delete-item';
 import { StickyFooter, BoardItemRow } from '@/src/shared';
-import type { GetBoardData } from '@/src/entities/board';
 import type { Item } from '@/src/entities/item';
 import type { BoardViewerWidgetProps } from '../model/types';
 import { UncheckedItemsList } from '@/src/features/display-list-summary';
 import { ShareBoardDialog } from '@/src/features/boards/ui/ShareBoardDialog';
+import {
+  CalendarConnectionStatus,
+  ConnectCalendarButton,
+  CalendarSelectorModal,
+  CalendarEventItem,
+} from '@/src/features/calendar-integration';
+import { toaster } from '@/components/ui/toaster';
 
 // UI Constants
 const HIGHLIGHT_ANIMATION_DURATION = 2000; // milliseconds
@@ -40,8 +55,12 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
-  const [highlightedCategory, setHighlightedCategory] = useState<string | undefined>(undefined);
+  const [highlightedCategory, setHighlightedCategory] = useState<string | undefined>(
+    undefined
+  );
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isCalendarSelectorOpen, setIsCalendarSelectorOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Refs to store category section elements
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -50,16 +69,70 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
     variables: { id: boardId },
   });
 
+  // Query calendar status for EVENTS boards
+  const {
+    data: calendarData,
+    loading: calendarLoading,
+    refetch: refetchCalendarStatus,
+  } = useQuery<CalendarStatusData>(CALENDAR_STATUS_QUERY, {
+    variables: { boardId },
+    skip: data?.board?.board_type !== BoardType.EVENTS,
+  });
+
+  // Sync calendar mutation
+  const [syncCalendar] = useMutation<SyncCalendarData>(SYNC_CALENDAR_MUTATION, {
+    onCompleted: (result) => {
+      setIsSyncing(false);
+      const { itemsCreated, itemsUpdated, itemsDeleted } = result.syncBoardCalendar;
+      toaster.create({
+        title: 'Calendar Synced',
+        description: `Created: ${itemsCreated}, Updated: ${itemsUpdated}, Deleted: ${itemsDeleted}`,
+        type: 'success',
+        duration: 5000,
+      });
+      refetchCalendarStatus();
+    },
+    onError: (err) => {
+      setIsSyncing(false);
+      toaster.create({
+        title: 'Sync Failed',
+        description: err.message || 'Failed to sync calendar',
+        type: 'error',
+        duration: 7000,
+      });
+    },
+    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
+  });
+
+  // Disconnect calendar mutation
+  const [disconnectCalendar] = useMutation(DISCONNECT_CALENDAR_MUTATION, {
+    onCompleted: () => {
+      toaster.create({
+        title: 'Calendar Disconnected',
+        description: 'Google Calendar has been disconnected from this board',
+        type: 'info',
+        duration: 5000,
+      });
+      refetchCalendarStatus();
+    },
+    onError: (err) => {
+      toaster.create({
+        title: 'Disconnect Failed',
+        description: err.message || 'Failed to disconnect calendar',
+        type: 'error',
+        duration: 7000,
+      });
+    },
+  });
+
   const { toggleItemCheck, isItemToggling } = useToggleItemCheck(boardId);
   const { deleteItem } = useDeleteItem({ boardId });
 
   const board = data?.board;
   const items = board?.items || [];
 
-  const { checkAllItems, uncheckAllItems, hasCheckedItems, hasUncheckedItems } = useBulkItemActions(
-    boardId,
-    items
-  );
+  const { checkAllItems, uncheckAllItems, hasCheckedItems, hasUncheckedItems } =
+    useBulkItemActions(boardId, items);
 
   // Scroll to category section
   const scrollToCategory = useCallback((category: string) => {
@@ -137,7 +210,12 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         <VStack align="stretch" gap={6} mb={8}>
           <Button asChild variant="ghost" size="sm" width="fit-content">
             <Link href="/">
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-4 h-4 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -161,7 +239,12 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                 size="sm"
                 onClick={() => setIsShareDialogOpen(true)}
               >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -181,7 +264,9 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
 
             <HStack gap={3}>
               <Badge colorPalette="appPrimary" size="lg">
-                {board?.board_type === BoardType.CHECKLIST ? '✓ Checklist' : '📋 Notice Board'}
+                {board?.board_type === BoardType.CHECKLIST && '✓ Checklist'}
+                {board?.board_type === BoardType.NOTICE_BOARD && '📋 Notice Board'}
+                {board?.board_type === BoardType.EVENTS && '📅 Events'}
               </Badge>
 
               {board?.board_type === BoardType.CHECKLIST && totalCount > 0 && (
@@ -192,6 +277,54 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
             </HStack>
           </Box>
         </VStack>
+
+        {/* Calendar Integration for EVENTS boards */}
+        {board?.board_type === BoardType.EVENTS && (
+          <Box mb={6}>
+            {!calendarLoading && !calendarData?.calendarSyncStatus?.isConnected ? (
+              <Card.Root p={6} bg="blue.50" borderColor="blue.200" borderWidth="1px">
+                <VStack gap={4}>
+                  <ConnectCalendarButton
+                    boardId={boardId}
+                    onConnectionSuccess={() => {
+                      setIsCalendarSelectorOpen(true);
+                      refetchCalendarStatus();
+                    }}
+                  />
+                </VStack>
+              </Card.Root>
+            ) : (
+              calendarData?.calendarSyncStatus?.isConnected && (
+                <CalendarConnectionStatus
+                  boardId={boardId}
+                  isConnected={true}
+                  calendarName={calendarData.calendarSyncStatus.calendarName}
+                  lastSyncAt={calendarData.calendarSyncStatus.lastSyncAt}
+                  syncRangeDays={calendarData.calendarSyncStatus.syncRangeDays}
+                  onConnect={() => {}}
+                  onDisconnect={() => {
+                    disconnectCalendar({ variables: { boardId } });
+                  }}
+                  onSync={() => {
+                    setIsSyncing(true);
+                    syncCalendar({ variables: { boardId } });
+                  }}
+                  isSyncing={isSyncing}
+                />
+              )
+            )}
+          </Box>
+        )}
+
+        {/* Calendar Selector Modal */}
+        <CalendarSelectorModal
+          boardId={boardId}
+          open={isCalendarSelectorOpen}
+          onClose={() => setIsCalendarSelectorOpen(false)}
+          onCalendarSelected={() => {
+            refetchCalendarStatus();
+          }}
+        />
 
         {/* Sticky Category Navigation */}
         {Object.keys(itemsByCategory).length > 0 && (
@@ -238,7 +371,9 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                   {category}
                   <Badge
                     ml={2}
-                    colorPalette={highlightedCategory === category ? 'white' : 'appPrimary'}
+                    colorPalette={
+                      highlightedCategory === category ? 'white' : 'appPrimary'
+                    }
                     variant="subtle"
                     fontSize="xs"
                   >
@@ -289,69 +424,97 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
         ) : (
           <VStack align="stretch" gap={6}>
             <UncheckedItemsList boardId={boardId} />
-            {Object.entries(itemsByCategory).map(([category, categoryItems]: [string, Item[]]) => (
-              <Card.Root
-                key={category}
-                ref={(el) => {
-                  categoryRefs.current[category] = el;
-                }}
-                variant="outline"
-                borderColor={highlightedCategory === category ? 'appPrimary.400' : 'appPrimary.200'}
-                borderWidth={highlightedCategory === category ? '3px' : '1px'}
-                _hover={{
-                  shadow: 'lg',
-                  transform: 'translateY(-2px)',
-                  borderColor: 'appPrimary.300',
-                }}
-                transition="all 0.3s ease"
-                bg={highlightedCategory === category ? 'appPrimary.50' : 'white'}
-              >
-                <Card.Header bg="appPrimary.50" borderBottom="1px" borderColor="appPrimary.100">
-                  <Flex justify="space-between" align="center">
-                    <Heading size="lg" color="appPrimary.700">
-                      {category}
-                    </Heading>
-                    <IconButton
-                      onClick={() => handleQuickAdd(category)}
-                      variant="ghost"
-                      colorPalette="appPrimary"
-                      aria-label={`Add item to ${category}`}
-                      size="sm"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+            {Object.entries(itemsByCategory).map(
+              ([category, categoryItems]: [string, Item[]]) => (
+                <Card.Root
+                  key={category}
+                  ref={(el) => {
+                    categoryRefs.current[category] = el;
+                  }}
+                  variant="outline"
+                  borderColor={
+                    highlightedCategory === category ? 'appPrimary.400' : 'appPrimary.200'
+                  }
+                  borderWidth={highlightedCategory === category ? '3px' : '1px'}
+                  _hover={{
+                    shadow: 'lg',
+                    transform: 'translateY(-2px)',
+                    borderColor: 'appPrimary.300',
+                  }}
+                  transition="all 0.3s ease"
+                  bg={highlightedCategory === category ? 'appPrimary.50' : 'white'}
+                >
+                  <Card.Header
+                    bg="appPrimary.50"
+                    borderBottom="1px"
+                    borderColor="appPrimary.100"
+                  >
+                    <Flex justify="space-between" align="center">
+                      <Heading size="lg" color="appPrimary.700">
+                        {category}
+                      </Heading>
+                      <IconButton
+                        onClick={() => handleQuickAdd(category)}
+                        variant="ghost"
+                        colorPalette="appPrimary"
+                        aria-label={`Add item to ${category}`}
+                        size="sm"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </svg>
-                    </IconButton>
-                  </Flex>
-                </Card.Header>
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                      </IconButton>
+                    </Flex>
+                  </Card.Header>
 
-                <Card.Body p={0} className="BoardItems">
-                  <VStack align="stretch" gap={0} divideY="1px" divideColor="appPrimary.100">
-                    {categoryItems.map((item: Item) => (
-                      <BoardItemRow
-                        key={item.id}
-                        item={item}
-                        boardType={board?.board_type ?? BoardType.CHECKLIST}
-                        onToggleCheck={toggleItemCheck}
-                        onEdit={setEditingItemId}
-                        onDelete={deleteItem}
-                        isToggling={isItemToggling(item.id)}
-                      />
-                    ))}
-                  </VStack>
-                </Card.Body>
-              </Card.Root>
-            ))}
+                  <Card.Body p={0} className="BoardItems">
+                    <VStack
+                      align="stretch"
+                      gap={0}
+                      divideY="1px"
+                      divideColor="appPrimary.100"
+                    >
+                      {categoryItems.map((item: Item) => {
+                        // Render CalendarEventItem for items with google_event_id
+                        if (item.google_event_id) {
+                          return (
+                            <CalendarEventItem
+                              key={item.id}
+                              item={item}
+                              onEdit={setEditingItemId}
+                              onDelete={deleteItem}
+                            />
+                          );
+                        }
+
+                        // Render normal BoardItemRow for regular items
+                        return (
+                          <BoardItemRow
+                            key={item.id}
+                            item={item}
+                            boardType={board?.board_type ?? BoardType.CHECKLIST}
+                            onToggleCheck={toggleItemCheck}
+                            onEdit={setEditingItemId}
+                            onDelete={deleteItem}
+                            isToggling={isItemToggling(item.id)}
+                          />
+                        );
+                      })}
+                    </VStack>
+                  </Card.Body>
+                </Card.Root>
+              )
+            )}
           </VStack>
         )}
       </Container>

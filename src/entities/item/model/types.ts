@@ -7,6 +7,11 @@ export interface Item {
   category?: string;
   created_at: string;
   updated_at: string;
+  google_event_id?: string | null;
+  event_start_time?: string | null;
+  event_end_time?: string | null;
+  event_description?: string | null;
+  google_calendar_link?: string | null;
 }
 
 export interface CreateItemInput {

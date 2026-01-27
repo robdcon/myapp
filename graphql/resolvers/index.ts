@@ -2,6 +2,7 @@ import { userResolvers } from './user.resolver';
 import { boardResolvers } from './board.resolver';
 import { itemResolvers } from './item.resolver';
 import { boardShareResolvers } from './board-share.resolver';
+import { calendarResolvers } from './calendar.resolver';
 
 export const resolvers = {
   Query: {
@@ -9,17 +10,20 @@ export const resolvers = {
     ...boardResolvers.Query,
     ...itemResolvers.Query,
     ...boardShareResolvers.Query,
+    ...calendarResolvers.Query,
   },
   Mutation: {
     ...userResolvers.Mutation,
     // ...boardResolvers.Mutation,
     ...itemResolvers.Mutation,
     ...boardShareResolvers.Mutation,
+    ...calendarResolvers.Mutation,
   },
   User: userResolvers.User,
   Board: {
     ...boardResolvers.Board,
     ...boardShareResolvers.Board,
+    ...calendarResolvers.Board,
   },
   BoardShare: boardShareResolvers.BoardShare,
   // Post: boardResolvers.Post,

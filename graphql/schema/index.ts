@@ -22,6 +22,15 @@ export const typeDefs = gql`
     myPermission: PermissionLevel
     shareToken: String
     isPublic: Boolean!
+    calendarStatus: CalendarStatus
+  }
+
+  type CalendarStatus {
+    isConnected: Boolean!
+    calendarId: String
+    calendarName: String
+    lastSyncAt: String
+    syncRangeDays: Int!
   }
 
   type BoardShare {
@@ -52,11 +61,32 @@ export const typeDefs = gql`
     category: String
     created_at: String!
     updated_at: String!
+    google_event_id: String
+    event_start_time: String
+    event_end_time: String
+    event_description: String
+    google_calendar_link: String
   }
 
   enum BoardType {
     NOTICE_BOARD
     CHECKLIST
+    EVENTS
+  }
+
+  type GoogleCalendar {
+    id: String!
+    name: String!
+    description: String
+    primary: Boolean!
+  }
+
+  type CalendarSyncResult {
+    success: Boolean!
+    message: String
+    itemsCreated: Int!
+    itemsUpdated: Int!
+    itemsDeleted: Int!
   }
 
   type Query {
@@ -69,6 +99,8 @@ export const typeDefs = gql`
     items(boardId: ID!): [Item!]!
     item(id: ID!): Item
     uncheckedItems(boardId: ID!): [Item!]!
+    availableCalendars(boardId: ID!): [GoogleCalendar!]!
+    calendarSyncStatus(boardId: ID!): CalendarStatus
   }
 
   type Mutation {
@@ -84,5 +116,15 @@ export const typeDefs = gql`
     removeBoardShare(shareId: ID!): Boolean!
     generateShareLink(boardId: ID!): String!
     revokeShareLink(boardId: ID!): Boolean!
+
+    # Calendar Mutations
+    selectBoardCalendar(
+      boardId: ID!
+      calendarId: String!
+      calendarName: String!
+    ): Boolean!
+    syncBoardCalendar(boardId: ID!): CalendarSyncResult!
+    disconnectBoardCalendar(boardId: ID!): Boolean!
+    updateCalendarSyncRange(boardId: ID!, days: Int!): Boolean!
   }
 `;
