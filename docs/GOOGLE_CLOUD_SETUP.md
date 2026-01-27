@@ -98,7 +98,7 @@ For development, add yourself as a test user:
 
 4. **Authorized redirect URIs**: ⚠️ **IMPORTANT**
    - Click **+ ADD URI**
-   - Enter EXACTLY: `http://localhost:3000/api/google/auth/callback`
+   - Enter EXACTLY: `http://localhost:3000/api/auth/google/callback`
    - Make sure there's no trailing slash!
 
 5. Click **CREATE**

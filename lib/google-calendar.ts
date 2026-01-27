@@ -3,8 +3,14 @@ import crypto from 'crypto';
 
 // Encryption key for storing tokens (use environment variable in production)
 // Key must be exactly 32 characters for AES-256
+const rawEncryptionKey = process.env.TOKEN_ENCRYPTION_KEY;
+
+if (!rawEncryptionKey && process.env.NODE_ENV === 'production') {
+  throw new Error('TOKEN_ENCRYPTION_KEY environment variable must be set in production.');
+}
+
 const ENCRYPTION_KEY = (
-  process.env.TOKEN_ENCRYPTION_KEY || 'your-32-char-encryption-key!!'
+  rawEncryptionKey ?? crypto.randomBytes(32).toString('hex').slice(0, 32)
 )
   .padEnd(32, '0')
   .slice(0, 32);

@@ -149,7 +149,7 @@ npm run build
    - Go to: https://console.cloud.google.com/apis/credentials
    - Edit OAuth 2.0 Client
    - Add authorized redirect URI: `http://localhost:3000/api/auth/google/callback`
-   - ⚠️ **IMPORTANT:** Currently set to `/api/google/auth/callback` but should be `/api/auth/google/callback`
+   - ⚠️ **IMPORTANT:** Ensure the authorized redirect URI matches `/api/auth/google/callback`
 
 2. **Build Calendar Sync Logic** (`lib/calendar-sync.ts`)
    - Function to sync events from Google Calendar to board items
