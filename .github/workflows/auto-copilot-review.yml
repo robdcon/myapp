@@ -40,7 +40,7 @@ jobs:
       # Step 1: Checkout the repository code
       # This action (actions/checkout) is provided by GitHub
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Step 2: Request a GitHub Copilot review and add a confirmation comment
       # This uses the GitHub CLI to trigger a Copilot-powered review on the PR.
