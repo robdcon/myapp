@@ -34,6 +34,8 @@ import { EditItemForm } from '@/src/features/edit-item';
 import { BulkItemActions, useBulkItemActions } from '@/src/features/bulk-item-actions';
 import { useToggleItemCheck } from '@/src/features/toggle-item-check';
 import { useDeleteItem } from '@/src/features/delete-item';
+import { BarcodeScannerModal, ScanButton } from '@/src/features/barcode-scanner';
+import { useCreateItem } from '@/src/features/create-item';
 import { StickyFooter, BoardItemRow } from '@/src/shared';
 import type { Item } from '@/src/entities/item';
 import type { BoardViewerWidgetProps } from '../model/types';
@@ -61,6 +63,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isCalendarSelectorOpen, setIsCalendarSelectorOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   // Refs to store category section elements
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -128,6 +131,9 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const { toggleItemCheck, isItemToggling } = useToggleItemCheck(boardId);
   const { deleteItem } = useDeleteItem({ boardId });
 
+  // Create item hook for barcode scanner
+  const { createItem: createScannedItem } = useCreateItem(boardId);
+
   const board = data?.board;
   const items = board?.items || [];
 
@@ -173,6 +179,23 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
     } else {
       // If no category, scroll to top to see all items
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  // Handler for adding item from barcode scanner
+  const handleAddScannedItem = async (
+    name: string,
+    details: string,
+    category: string
+  ) => {
+    createScannedItem({
+      name,
+      details: details || undefined,
+      category: category || undefined,
+    });
+    // Scroll to the category after a delay
+    if (category) {
+      setTimeout(() => scrollToCategory(category), SCROLL_DELAY);
     }
   };
 
@@ -525,13 +548,23 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
       {/* Sticky Footer */}
       <StickyFooter>
         <Flex justify="space-between" align="center">
-          <Button
-            onClick={() => (isAddingItem ? handleCloseAddForm() : handleQuickAdd())}
-            colorPalette="appPrimary"
-            size="lg"
-          >
-            {isAddingItem ? 'Cancel' : 'Add Item'}
-          </Button>
+          <HStack gap={2}>
+            <Button
+              onClick={() => (isAddingItem ? handleCloseAddForm() : handleQuickAdd())}
+              colorPalette="appPrimary"
+              size="lg"
+            >
+              {isAddingItem ? 'Cancel' : 'Add Item'}
+            </Button>
+
+            {/* Barcode Scanner - only for CHECKLIST boards */}
+            {board?.board_type === BoardType.CHECKLIST && (
+              <ScanButton
+                onClick={() => setIsScannerOpen(true)}
+                disabled={isAddingItem}
+              />
+            )}
+          </HStack>
 
           {board?.board_type === BoardType.CHECKLIST && (
             <BulkItemActions
@@ -543,6 +576,15 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           )}
         </Flex>
       </StickyFooter>
+
+      {/* Barcode Scanner Modal */}
+      {board?.board_type === BoardType.CHECKLIST && (
+        <BarcodeScannerModal
+          open={isScannerOpen}
+          onClose={() => setIsScannerOpen(false)}
+          onAddItem={handleAddScannedItem}
+        />
+      )}
 
       {/* Share Board Dialog */}
       {board && (
