@@ -8,10 +8,9 @@
       "type": "http",
       "url": "https://api.githubcopilot.com/mcp"
     },
-    "design-system": {
-      "command": "node",
-      "args": ["D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js"],
-      "cwd": "D:\\CODE\\AI\\mcp-servers\\mcp-design-system"
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
     }
   }
 }

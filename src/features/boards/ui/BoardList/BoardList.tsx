@@ -17,6 +17,8 @@ import {
 import { MY_BOARDS_QUERY } from '../../api/queries';
 import { MyBoardsData } from '../../model/types';
 import { BoardType } from '@/src/entities/board';
+import { CreateBoardButton } from '../CreateBoardButton';
+import { useRouter } from 'next/navigation';
 
 function getBoardTypeLabel(boardType: string): string {
   switch (boardType) {
@@ -33,6 +35,12 @@ function getBoardTypeLabel(boardType: string): string {
 
 export default function BoardList() {
   const { loading, error, data } = useQuery<MyBoardsData>(MY_BOARDS_QUERY);
+  const router = useRouter();
+
+  const handleBoardCreated = (boardId: string) => {
+    // Navigate to the newly created board
+    router.push(`/boards/${boardId}`);
+  };
 
   if (loading)
     return (
@@ -54,9 +62,12 @@ export default function BoardList() {
 
   return (
     <Box>
-      <Heading size="2xl" mb={6} color="appPrimary.700">
-        My Boards
-      </Heading>
+      <Flex justify="space-between" align="center" mb={6}>
+        <Heading size="2xl" color="appPrimary.700">
+          My Boards
+        </Heading>
+        <CreateBoardButton onBoardCreated={handleBoardCreated} size="lg" />
+      </Flex>
 
       {data?.myBoards.length === 0 ? (
         <Card.Root>

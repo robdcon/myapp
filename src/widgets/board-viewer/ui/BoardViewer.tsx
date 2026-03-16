@@ -323,6 +323,9 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           onClose={() => setIsCalendarSelectorOpen(false)}
           onCalendarSelected={() => {
             refetchCalendarStatus();
+            // Auto-sync calendar events after selecting a calendar
+            setIsSyncing(true);
+            syncCalendar({ variables: { boardId } });
           }}
         />
 

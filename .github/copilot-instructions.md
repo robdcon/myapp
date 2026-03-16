@@ -1,11 +1,6 @@
 ---
 description: Full-Stack Board Manager App - Architecture & Development Guide
-globs: "**/*"
-alwaysApply: false
-globs: '**/*'
-description: Chakra UI v3 Development Rules
-globs: "*.tsx"
-alwaysApply: false
+applyTo: '**/*'
 ---
 
 # Development Workflow Rules

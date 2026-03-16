@@ -66,10 +66,10 @@ export function CalendarSelectorModal({
   const [selectCalendar, { loading: selecting }] = useMutation(SELECT_CALENDAR_MUTATION, {
     onCompleted: () => {
       toaster.create({
-        title: 'Calendar Selected',
-        description: 'Your Google Calendar is now connected to this board',
+        title: 'Calendar Connected',
+        description: 'Syncing events from your Google Calendar...',
         type: 'success',
-        duration: 5000,
+        duration: 3000,
       });
       onCalendarSelected();
       onClose();
