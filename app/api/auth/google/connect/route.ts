@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
-import { getAuthUrl } from '@/lib/google-calendar';
-import { pool } from '@/lib/db';
+import { auth0 } from '@/src/shared/lib/auth0';
+import { getAuthUrl } from '@/src/shared/lib/google-calendar';
+import { pool } from '@/src/shared/lib/db';
 
 /**
  * Start Google Calendar OAuth flow

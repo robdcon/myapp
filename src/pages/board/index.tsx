@@ -1,8 +1,10 @@
-import { auth0 } from '@/lib/auth0';
+import { auth0 } from '@/src/shared/lib/auth0';
 import { redirect } from 'next/navigation';
 import { BoardViewer } from '@/src/widgets/board-viewer';
 
-export async function BoardPage({ params }: Readonly<{ params: Promise<{ id: string }> }>) {
+export async function BoardPage({
+  params,
+}: Readonly<{ params: Promise<{ id: string }> }>) {
   const session = await auth0.getSession();
 
   if (!session) {

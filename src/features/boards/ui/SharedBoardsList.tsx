@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react';
 import { GET_SHARED_BOARDS_QUERY } from '@/src/entities/board-share/api';
 import { BoardType } from '@/src/entities/board';
-import { PermissionLevel } from '@/types/board-share';
+import { PermissionLevel } from '@/src/shared/types/board-share';
 
 interface SharedBoard {
   id: string;

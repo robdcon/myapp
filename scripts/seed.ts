@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { pool } from '../lib/db';
+import { pool } from '@/src/shared/lib/db';
 
 async function seed() {
   const client = await pool.connect();

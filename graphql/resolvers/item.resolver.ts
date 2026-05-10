@@ -1,38 +1,21 @@
-import { query, queryOne } from '@/lib/db';
 import { GraphQLContext } from '@/graphql/context';
-import { pool } from '@/lib/db';
 import { GraphQLError } from 'graphql';
-
-// Helper function to check if user has edit permission on a board
-async function checkBoardEditPermission(
-  boardId: string,
-  userId: string
-): Promise<boolean> {
-  const result = await pool.query(
-    `SELECT EXISTS (
-       SELECT 1
-       FROM user_boards ub
-       WHERE ub.board_id = $1
-         AND ub.user_id = (SELECT id FROM users WHERE auth0_id = $2)
-     )
-     OR EXISTS (
-       SELECT 1
-       FROM board_shares bs
-       WHERE bs.board_id = $1
-         AND bs.shared_with_user_id = $2
-         AND bs.permission_level IN ('EDIT', 'ADMIN')
-     ) AS has_permission`,
-    [boardId, userId]
-  );
-
-  return Boolean(result.rows[0]?.has_permission);
-}
-
-// Helper function to get board_id from item_id
-async function getBoardIdFromItem(itemId: string): Promise<string | null> {
-  const result = await pool.query('SELECT board_id FROM items WHERE id = $1', [itemId]);
-  return result.rows[0]?.board_id || null;
-}
+import {
+  checkBoardEditPermission,
+  checkBoardViewPermission,
+} from '@/graphql/resolvers/permissions';
+import { validateId, validateStringField } from '@/src/shared/lib';
+import {
+  getBoardIdFromItemId,
+  getUserIdByAuth0Id,
+  getItemById,
+  getItemsByBoardId,
+  getUncheckedItemsByBoardId,
+  toggleItemChecked,
+  createItem,
+  updateItem,
+  softDeleteItem,
+} from '@/src/entities/item/api/itemRepository';
 
 export const itemResolvers = {
   Mutation: {
@@ -47,8 +30,10 @@ export const itemResolvers = {
         });
       }
 
+      validateId(itemId, 'itemId');
+
       const userId = context.user.sub;
-      const boardId = await getBoardIdFromItem(itemId);
+      const boardId = await getBoardIdFromItemId(itemId);
 
       if (!boardId) {
         throw new GraphQLError('Item not found', {
@@ -63,15 +48,7 @@ export const itemResolvers = {
         });
       }
 
-      const result = await queryOne(
-        `UPDATE items 
-         SET is_checked = NOT is_checked, updated_at = CURRENT_TIMESTAMP
-         WHERE id = $1 
-         RETURNING *`,
-        [itemId]
-      );
-
-      return result;
+      return toggleItemChecked(itemId);
     },
 
     createItem: async (
@@ -95,10 +72,14 @@ export const itemResolvers = {
         });
       }
 
+      validateId(boardId, 'boardId');
+      validateStringField(name, 'name', { required: true, maxLength: 255 });
+      validateStringField(details, 'details', { maxLength: 2000 });
+      validateStringField(category, 'category', { maxLength: 100 });
+
       const userId = context.user.sub;
 
       const hasPermission = await checkBoardEditPermission(boardId, userId);
-
       if (!hasPermission) {
         throw new GraphQLError('You do not have permission to add items to this board', {
           extensions: { code: 'FORBIDDEN' },
@@ -106,21 +87,9 @@ export const itemResolvers = {
       }
 
       try {
-        // Get the database user ID for created_by field
-        const userResult = await pool.query('SELECT id FROM users WHERE auth0_id = $1', [
-          userId,
-        ]);
+        const createdByUserId = await getUserIdByAuth0Id(userId);
 
-        const dbUserId = userResult.rows[0]?.id;
-
-        const result = await queryOne(
-          `INSERT INTO items (board_id, name, details, category, created_by, is_checked)
-                     VALUES ($1, $2, $3, $4, $5, false)
-                     RETURNING *`,
-          [boardId, name, details, category, dbUserId]
-        );
-
-        return result;
+        return createItem({ boardId, name, details, category, createdByUserId });
       } catch (error: any) {
         if (error.code === '23505') {
           throw new GraphQLError(`Item "${name}" already exists on this board`, {
@@ -152,8 +121,16 @@ export const itemResolvers = {
         });
       }
 
+      validateId(itemId, 'itemId');
+      // Validate each field only when the caller explicitly supplies it.
+      if (name !== undefined) {
+        validateStringField(name, 'name', { required: true, maxLength: 255 });
+      }
+      validateStringField(details, 'details', { maxLength: 2000 });
+      validateStringField(category, 'category', { maxLength: 100 });
+
       const userId = context.user.sub;
-      const boardId = await getBoardIdFromItem(itemId);
+      const boardId = await getBoardIdFromItemId(itemId);
 
       if (!boardId) {
         throw new GraphQLError('Item not found', {
@@ -168,42 +145,15 @@ export const itemResolvers = {
         });
       }
 
-      const updates: string[] = [];
-      const values: any[] = [];
-      let paramCount = 1;
-
-      if (name !== undefined) {
-        updates.push(`name = $${paramCount++}`);
-        values.push(name);
-      }
-      if (details !== undefined) {
-        updates.push(`details = $${paramCount++}`);
-        values.push(details);
-      }
-      if (category !== undefined) {
-        updates.push(`category = $${paramCount++}`);
-        values.push(category);
-      }
-
-      if (updates.length === 0) {
+      // Validate that at least one field is being changed before hitting the DB
+      if (name === undefined && details === undefined && category === undefined) {
         throw new GraphQLError('No fields to update', {
           extensions: { code: 'BAD_REQUEST' },
         });
       }
 
-      updates.push(`updated_at = CURRENT_TIMESTAMP`);
-      values.push(itemId);
-
       try {
-        const result = await queryOne(
-          `UPDATE items 
-                 SET ${updates.join(', ')}
-                 WHERE id = $${paramCount}
-                 RETURNING *`,
-          values
-        );
-
-        return result;
+        return updateItem({ itemId, name, details, category });
       } catch (error: any) {
         if (error.code === '23505') {
           throw new GraphQLError(`Item "${name}" already exists on this board`, {
@@ -225,8 +175,10 @@ export const itemResolvers = {
         });
       }
 
+      validateId(itemId, 'itemId');
+
       const userId = context.user.sub;
-      const boardId = await getBoardIdFromItem(itemId);
+      const boardId = await getBoardIdFromItemId(itemId);
 
       if (!boardId) {
         throw new GraphQLError('Item not found', {
@@ -244,10 +196,7 @@ export const itemResolvers = {
         );
       }
 
-      await query(`UPDATE items SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1`, [
-        itemId,
-      ]);
-
+      await softDeleteItem(itemId);
       return true;
     },
   },
@@ -258,23 +207,30 @@ export const itemResolvers = {
         throw new Error('Not authenticated');
       }
 
-      const result = await queryOne('SELECT * FROM items WHERE id = $1', [id]);
+      const boardId = await getBoardIdFromItemId(id);
+      if (!boardId) {
+        return null;
+      }
 
-      return result;
+      const hasPermission = await checkBoardViewPermission(boardId, context.user.sub);
+      if (!hasPermission) {
+        throw new Error('Forbidden');
+      }
+
+      return getItemById(id);
     },
+
     items: async (_: any, { boardId }: { boardId: string }, context: GraphQLContext) => {
       if (!context.user) {
         throw new Error('Not authenticated');
       }
 
-      const result = await query(
-        `SELECT * FROM items 
-                WHERE board_id = $1 AND deleted_at IS NULL
-                ORDER BY category NULLS LAST, created_at ASC`,
-        [boardId]
-      );
+      const hasPermission = await checkBoardViewPermission(boardId, context.user.sub);
+      if (!hasPermission) {
+        throw new Error('Forbidden');
+      }
 
-      return result.rows || [];
+      return getItemsByBoardId(boardId);
     },
 
     uncheckedItems: async (
@@ -285,13 +241,13 @@ export const itemResolvers = {
       if (!context.user) {
         throw new Error('Not authenticated');
       }
-      const result = await query(
-        `SELECT * FROM items 
-                WHERE board_id = $1 AND is_checked = false AND deleted_at IS NULL
-                ORDER BY category NULLS LAST, created_at ASC`,
-        [boardId]
-      );
-      return result.rows || [];
+
+      const hasPermission = await checkBoardViewPermission(boardId, context.user.sub);
+      if (!hasPermission) {
+        throw new Error('Forbidden');
+      }
+
+      return getUncheckedItemsByBoardId(boardId);
     },
   },
 

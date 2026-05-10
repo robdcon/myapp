@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { pool } from '@/lib/db';
+import { pool } from '@/src/shared/lib/db';
 
 // ANSI color codes
 const colors = {

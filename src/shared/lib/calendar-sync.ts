@@ -1,10 +1,10 @@
-import { pool } from '@/lib/db';
+import { pool } from './db/db';
 import {
   listEvents,
   decryptToken,
   getValidAccessToken,
   encryptToken,
-} from '@/lib/google-calendar';
+} from './google-calendar';
 
 /**
  * Calendar Sync Logic

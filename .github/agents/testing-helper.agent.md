@@ -1,7 +1,7 @@
 ---
 name: testing-helper
 description: This custom agent helps with testing and quality assurance for the project features.
-model: Claude Opus 4.5 (copilot)
+model: claude-sonnet-4.6
 tools: [execute, read, edit, search, web, agent, todo]
 handoffs:
   - label: Start Testing

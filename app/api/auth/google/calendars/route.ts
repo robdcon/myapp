@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
-import { pool } from '@/lib/db';
-import { decryptToken, listCalendars, getValidAccessToken } from '@/lib/google-calendar';
+import { auth0 } from '@/src/shared/lib/auth0';
+import { pool } from '@/src/shared/lib/db';
+import {
+  decryptToken,
+  listCalendars,
+  getValidAccessToken,
+} from '@/src/shared/lib/google-calendar';
 
 /**
  * Get available Google Calendars for a board
@@ -66,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     // If token was refreshed, update database
     if (wasRefreshed) {
-      const { encryptToken } = await import('@/lib/google-calendar');
+      const { encryptToken } = await import('@/src/shared/lib/google-calendar');
       const encryptedToken = encryptToken(validToken);
 
       await pool.query(

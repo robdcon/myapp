@@ -1,5 +1,7 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { mcpClient } from '@/lib/mcp-client';
+import { mcpClient } from '../lib/mcp-client';
 
 export function useMCP() {
   const [isInitialized, setIsInitialized] = useState(false);
