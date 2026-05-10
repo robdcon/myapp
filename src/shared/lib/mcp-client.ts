@@ -20,10 +20,14 @@ class MCPClient {
   private pendingRequests = new Map<number, (response: MCPResponse) => void>();
 
   async initialize() {
-    this.server = spawn('node', ['D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'], {
-      cwd: 'D:\\CODE\\AI\\mcp-servers\\mcp-design-system',
-      stdio: 'pipe',
-    });
+    this.server = spawn(
+      'node',
+      ['D:\\CODE\\AI\\mcp-servers\\mcp-design-system\\build\\index.js'],
+      {
+        cwd: 'D:\\CODE\\AI\\mcp-servers\\mcp-design-system',
+        stdio: 'pipe',
+      }
+    );
 
     this.server.stdout?.on('data', (data) => {
       const responses = data.toString().trim().split('\n');
@@ -31,9 +35,8 @@ class MCPClient {
         if (!response) return;
         try {
           const parsed: MCPResponse = JSON.parse(response);
-          const callback: ((response: MCPResponse) => void) | undefined = this.pendingRequests.get(
-            parsed.id
-          );
+          const callback: ((response: MCPResponse) => void) | undefined =
+            this.pendingRequests.get(parsed.id);
           if (callback) {
             callback(parsed);
             this.pendingRequests.delete(parsed.id);

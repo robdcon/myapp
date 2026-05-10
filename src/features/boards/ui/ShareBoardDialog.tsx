@@ -1,7 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Input, Button, VStack, HStack, Text, Badge, Spinner } from '@chakra-ui/react';
+import {
+  Box,
+  Input,
+  Button,
+  VStack,
+  HStack,
+  Text,
+  Badge,
+  Spinner,
+} from '@chakra-ui/react';
 import {
   DialogRoot,
   DialogContent,
@@ -27,7 +36,7 @@ import {
   UPDATE_BOARD_SHARE_MUTATION,
   REMOVE_BOARD_SHARE_MUTATION,
 } from '@/src/entities/board-share/api';
-import { PermissionLevel, BoardShare } from '@/types/board-share';
+import { PermissionLevel, BoardShare } from '@/src/shared/types/board-share';
 
 interface ShareBoardDialogProps {
   open: boolean;
@@ -48,7 +57,12 @@ interface BoardSharesData {
   boardShares: BoardShare[];
 }
 
-export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoardDialogProps) {
+export function ShareBoardDialog({
+  open,
+  onClose,
+  boardId,
+  boardName,
+}: ShareBoardDialogProps) {
   const [email, setEmail] = useState('');
   const [permission, setPermission] = useState<string[]>([PermissionLevel.EDIT]);
   const [error, setError] = useState('');
@@ -105,7 +119,10 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
     }
   };
 
-  const handleUpdatePermission = async (shareId: string, newPermission: PermissionLevel) => {
+  const handleUpdatePermission = async (
+    shareId: string,
+    newPermission: PermissionLevel
+  ) => {
     await updateShare({
       variables: {
         shareId,
@@ -234,7 +251,10 @@ export function ShareBoardDialog({ open, onClose, boardId, boardName }: ShareBoa
                             collection={permissionItems}
                             value={[share.permission_level]}
                             onValueChange={(e) =>
-                              handleUpdatePermission(share.id, e.value[0] as PermissionLevel)
+                              handleUpdatePermission(
+                                share.id,
+                                e.value[0] as PermissionLevel
+                              )
                             }
                             disabled={updating}
                             size="sm"

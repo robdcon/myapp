@@ -15,7 +15,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { pool } from '@/lib/db';
+import { pool } from '@/src/shared/lib/db';
 import {
   listCalendars,
   listEvents,
@@ -23,12 +23,12 @@ import {
   decryptToken,
   getValidAccessToken,
   isTokenExpired,
-} from '@/lib/google-calendar';
+} from '@/src/shared/lib/google-calendar';
 import {
   syncBoardCalendar,
   getBoardSyncStatus,
   updateSyncRange,
-} from '@/lib/calendar-sync';
+} from '@/src/shared/lib/calendar-sync';
 
 // ANSI color codes for pretty output
 const colors = {

@@ -1,16 +1,16 @@
 import { GraphQLContext } from '../context';
-import { pool } from '@/lib/db';
+import { pool } from '@/src/shared/lib/db';
 import {
   syncBoardCalendar,
   getBoardSyncStatus,
   updateSyncRange,
-} from '@/lib/calendar-sync';
+} from '@/src/shared/lib/calendar-sync';
 import {
   listCalendars,
   decryptToken,
   getValidAccessToken,
   encryptToken,
-} from '@/lib/google-calendar';
+} from '@/src/shared/lib/google-calendar';
 import { checkBoardEditPermission } from './permissions';
 
 export const calendarResolvers = {

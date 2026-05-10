@@ -3,6 +3,7 @@ export { Loading } from './ui/components/Loading/Loading';
 export { ErrorAlert } from './ui/components/ErrorAlert/ErrorAlert';
 export { StickyFooter } from './ui/components/StickyFooter';
 export { BoardItemRow } from './ui/components/BoardItemRow';
+export { ErrorBoundary } from './ui/error-boundary/ErrorBoundary';
 
 // Utils
 export { formatRelativeDate, isValidDate } from './lib/utils/date';
@@ -28,3 +29,4 @@ export { UserRole } from './types/common';
 
 // Hooks
 export { useDebounce } from './hooks/useDebounce';
+// Note: useMCP is server-only (uses child_process) — import directly from '@/src/shared/hooks/useMCP'

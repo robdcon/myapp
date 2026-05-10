@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
-import { pool } from '@/lib/db';
-import { syncBoardCalendar, getBoardSyncStatus } from '@/lib/calendar-sync';
+import { auth0 } from '@/src/shared/lib/auth0';
+import { pool } from '@/src/shared/lib/db';
+import { syncBoardCalendar, getBoardSyncStatus } from '@/src/shared/lib/calendar-sync';
 
 /**
  * Get calendar sync status for a board

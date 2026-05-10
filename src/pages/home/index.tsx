@@ -1,4 +1,4 @@
-import { auth0 } from '@/lib/auth0';
+import { auth0 } from '@/src/shared/lib/auth0';
 import { BoardList, SharedBoardsList } from '@/src/features/boards';
 import { Button, VStack, Box, Heading, Container, Flex } from '@chakra-ui/react';
 import Link from 'next/link';
@@ -17,7 +17,13 @@ export async function Home() {
             <Button asChild colorPalette="appPrimary" size="lg" width="200px">
               <Link href="/auth/login?screen_hint=signup">Sign up</Link>
             </Button>
-            <Button asChild colorPalette="appSecondary" variant="outline" size="lg" width="200px">
+            <Button
+              asChild
+              colorPalette="appSecondary"
+              variant="outline"
+              size="lg"
+              width="200px"
+            >
               <Link href="/auth/login">Log in</Link>
             </Button>
           </VStack>

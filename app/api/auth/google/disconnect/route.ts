@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
-import { pool } from '@/lib/db';
+import { auth0 } from '@/src/shared/lib/auth0';
+import { pool } from '@/src/shared/lib/db';
 
 /**
  * Disconnect Google Calendar from a board

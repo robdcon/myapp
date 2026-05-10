@@ -1,6 +1,7 @@
 ---
 name: security-helper
 description: Security specialist for Next JS projects using Auth0 and Google APIs.
+model: claude-sonnet-4.6
 tools: ['read', 'edit', 'search', 'execute']
 ---
 

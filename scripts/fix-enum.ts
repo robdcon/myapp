@@ -2,7 +2,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { pool } from '@/lib/db';
+import { pool } from '@/src/shared/lib/db';
 
 async function checkEnumValues() {
   try {

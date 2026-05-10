@@ -5,7 +5,7 @@ import * as path from 'path';
 // Load .env file before importing pool
 config();
 
-import { pool } from '@/lib/db';
+import { pool } from '@/src/shared/lib/db';
 
 async function runMigration() {
   // Debug: Check if environment variables are loaded

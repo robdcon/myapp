@@ -36,7 +36,7 @@ import { useToggleItemCheck } from '@/src/features/toggle-item-check';
 import { useDeleteItem } from '@/src/features/delete-item';
 import { BarcodeScannerModal, ScanButton } from '@/src/features/barcode-scanner';
 import { useCreateItem } from '@/src/features/create-item';
-import { StickyFooter, BoardItemRow } from '@/src/shared';
+import { StickyFooter, BoardItemRow, ErrorBoundary } from '@/src/shared';
 import type { Item } from '@/src/entities/item';
 import type { BoardViewerWidgetProps } from '../model/types';
 import { UncheckedItemsList } from '@/src/features/display-list-summary';
@@ -227,41 +227,13 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50" pb={24} className="board-viewer">
-      <Container maxW="container.lg" py={8}>
-        {/* Header */}
-        <VStack align="stretch" gap={6} mb={8}>
-          <Button asChild variant="ghost" size="sm" width="fit-content">
-            <Link href="/">
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-              Back to boards
-            </Link>
-          </Button>
-
-          {/* Board Info */}
-          <Box>
-            <HStack justify="space-between" align="flex-start" mb={3}>
-              <Heading size="4xl" color="appPrimary.800">
-                {board?.name}
-              </Heading>
-
-              <Button
-                colorPalette="appPrimary"
-                size="sm"
-                onClick={() => setIsShareDialogOpen(true)}
-              >
+    <ErrorBoundary>
+      <Box minH="100vh" bg="gray.50" pb={24} className="board-viewer">
+        <Container maxW="container.lg" py={8}>
+          {/* Header */}
+          <VStack align="stretch" gap={6} mb={8}>
+            <Button asChild variant="ghost" size="sm" width="fit-content">
+              <Link href="/">
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="none"
@@ -272,329 +244,361 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    d="M15 19l-7-7 7-7"
                   />
                 </svg>
-                Share
-              </Button>
-            </HStack>
-
-            {board?.description && (
-              <Text fontSize="lg" color="gray.600" mb={4}>
-                {board.description}
-              </Text>
-            )}
-
-            <HStack gap={3}>
-              <Badge colorPalette="appPrimary" size="lg">
-                {board?.board_type === BoardType.CHECKLIST && '✓ Checklist'}
-                {board?.board_type === BoardType.NOTICE_BOARD && '📋 Notice Board'}
-                {board?.board_type === BoardType.EVENTS && '📅 Events'}
-              </Badge>
-
-              {board?.board_type === BoardType.CHECKLIST && totalCount > 0 && (
-                <Text fontSize="sm" color="gray.600">
-                  {checkedCount} / {totalCount} completed
-                </Text>
-              )}
-            </HStack>
-          </Box>
-        </VStack>
-
-        {/* Calendar Integration for EVENTS boards */}
-        {board?.board_type === BoardType.EVENTS && (
-          <Box mb={6}>
-            {!calendarLoading && !calendarData?.calendarSyncStatus?.isConnected ? (
-              <Card.Root p={6} bg="blue.50" borderColor="blue.200" borderWidth="1px">
-                <VStack gap={4}>
-                  <ConnectCalendarButton
-                    boardId={boardId}
-                    onConnectionSuccess={() => {
-                      setIsCalendarSelectorOpen(true);
-                      refetchCalendarStatus();
-                    }}
-                  />
-                </VStack>
-              </Card.Root>
-            ) : (
-              calendarData?.calendarSyncStatus?.isConnected && (
-                <CalendarConnectionStatus
-                  boardId={boardId}
-                  isConnected={true}
-                  calendarName={calendarData.calendarSyncStatus.calendarName}
-                  lastSyncAt={calendarData.calendarSyncStatus.lastSyncAt}
-                  syncRangeDays={calendarData.calendarSyncStatus.syncRangeDays}
-                  onConnect={() => {}}
-                  onDisconnect={() => {
-                    disconnectCalendar({ variables: { boardId } });
-                  }}
-                  onSync={() => {
-                    setIsSyncing(true);
-                    syncCalendar({ variables: { boardId } });
-                  }}
-                  isSyncing={isSyncing}
-                />
-              )
-            )}
-          </Box>
-        )}
-
-        {/* Calendar Selector Modal */}
-        <CalendarSelectorModal
-          boardId={boardId}
-          open={isCalendarSelectorOpen}
-          onClose={() => setIsCalendarSelectorOpen(false)}
-          onCalendarSelected={() => {
-            refetchCalendarStatus();
-            // Auto-sync calendar events after selecting a calendar
-            setIsSyncing(true);
-            syncCalendar({ variables: { boardId } });
-          }}
-        />
-
-        {/* Sticky Category Navigation */}
-        {Object.keys(itemsByCategory).length > 0 && (
-          <Box
-            position="sticky"
-            top="0"
-            zIndex="sticky"
-            bg="white"
-            borderBottom="2px"
-            borderColor="appPrimary.200"
-            py={3}
-            mb={6}
-            shadow="sm"
-          >
-            <HStack
-              gap={2}
-              overflowX="auto"
-              css={{
-                '&::-webkit-scrollbar': {
-                  height: '6px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: 'gray.100',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  background: 'var(--chakra-colors-app-primary-500)',
-                  borderRadius: '3px',
-                },
-                '&::-webkit-scrollbar-thumb:hover': {
-                  background: 'var(--chakra-colors-app-primary-600)',
-                },
-              }}
-            >
-              {Object.entries(itemsByCategory).map(([category, items]) => (
-                <Button
-                  key={category}
-                  onClick={() => scrollToCategory(category)}
-                  size="sm"
-                  variant={highlightedCategory === category ? 'solid' : 'outline'}
-                  colorPalette="appPrimary"
-                  flexShrink={0}
-                  fontWeight="medium"
-                >
-                  {category}
-                  <Badge
-                    ml={2}
-                    colorPalette={
-                      highlightedCategory === category ? 'white' : 'appPrimary'
-                    }
-                    variant="subtle"
-                    fontSize="xs"
-                  >
-                    {items.length}
-                  </Badge>
-                </Button>
-              ))}
-            </HStack>
-          </Box>
-        )}
-
-        {/* Add Item Form */}
-        <CreateItemForm
-          boardId={boardId}
-          onSuccess={(category) => handleItemCreated(category)}
-          isOpen={isAddingItem}
-          onClose={handleCloseAddForm}
-          defaultCategory={selectedCategory}
-        />
-
-        {/* Edit Item Form */}
-        <EditItemForm
-          itemId={editingItemId}
-          boardId={boardId}
-          onSuccess={() => setEditingItemId(null)}
-          isOpen={!!editingItemId && !!editingItem}
-          onClose={() => setEditingItemId(null)}
-          initialValues={
-            editingItem
-              ? {
-                  name: editingItem.name,
-                  details: editingItem.details || '',
-                  category: editingItem.category || '',
-                }
-              : undefined
-          }
-        />
-
-        {/* Items by Category */}
-        {Object.entries(itemsByCategory).length === 0 ? (
-          <Card.Root>
-            <Card.Body textAlign="center" py={12}>
-              <Text color="gray.500" fontSize="lg" mb={4} fontWeight="medium">
-                No items yet. Start adding items to your board!
-              </Text>
-            </Card.Body>
-          </Card.Root>
-        ) : (
-          <VStack align="stretch" gap={6}>
-            <UncheckedItemsList boardId={boardId} />
-            {Object.entries(itemsByCategory).map(
-              ([category, categoryItems]: [string, Item[]]) => (
-                <Card.Root
-                  key={category}
-                  ref={(el) => {
-                    categoryRefs.current[category] = el;
-                  }}
-                  variant="outline"
-                  borderColor={
-                    highlightedCategory === category ? 'appPrimary.400' : 'appPrimary.200'
-                  }
-                  borderWidth={highlightedCategory === category ? '3px' : '1px'}
-                  _hover={{
-                    shadow: 'lg',
-                    transform: 'translateY(-2px)',
-                    borderColor: 'appPrimary.300',
-                  }}
-                  transition="all 0.3s ease"
-                  bg={highlightedCategory === category ? 'appPrimary.50' : 'white'}
-                >
-                  <Card.Header
-                    bg="appPrimary.50"
-                    borderBottom="1px"
-                    borderColor="appPrimary.100"
-                  >
-                    <Flex justify="space-between" align="center">
-                      <Heading size="lg" color="appPrimary.700">
-                        {category}
-                      </Heading>
-                      <IconButton
-                        onClick={() => handleQuickAdd(category)}
-                        variant="ghost"
-                        colorPalette="appPrimary"
-                        aria-label={`Add item to ${category}`}
-                        size="sm"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4v16m8-8H4"
-                          />
-                        </svg>
-                      </IconButton>
-                    </Flex>
-                  </Card.Header>
-
-                  <Card.Body p={0} className="BoardItems">
-                    <VStack
-                      align="stretch"
-                      gap={0}
-                      divideY="1px"
-                      divideColor="appPrimary.100"
-                    >
-                      {categoryItems.map((item: Item) => {
-                        // Render CalendarEventItem for items with google_event_id
-                        if (item.google_event_id) {
-                          return (
-                            <CalendarEventItem
-                              key={item.id}
-                              item={item}
-                              onEdit={setEditingItemId}
-                              onDelete={deleteItem}
-                            />
-                          );
-                        }
-
-                        // Render normal BoardItemRow for regular items
-                        return (
-                          <BoardItemRow
-                            key={item.id}
-                            item={item}
-                            boardType={board?.board_type ?? BoardType.CHECKLIST}
-                            onToggleCheck={toggleItemCheck}
-                            onEdit={setEditingItemId}
-                            onDelete={deleteItem}
-                            isToggling={isItemToggling(item.id)}
-                          />
-                        );
-                      })}
-                    </VStack>
-                  </Card.Body>
-                </Card.Root>
-              )
-            )}
-          </VStack>
-        )}
-      </Container>
-
-      {/* Sticky Footer */}
-      <StickyFooter>
-        <Flex justify="space-between" align="center">
-          <HStack gap={2}>
-            <Button
-              onClick={() => (isAddingItem ? handleCloseAddForm() : handleQuickAdd())}
-              colorPalette="appPrimary"
-              size="lg"
-            >
-              {isAddingItem ? 'Cancel' : 'Add Item'}
+                Back to boards
+              </Link>
             </Button>
 
-            {/* Barcode Scanner - only for CHECKLIST boards */}
+            {/* Board Info */}
+            <Box>
+              <HStack justify="space-between" align="flex-start" mb={3}>
+                <Heading size="4xl" color="appPrimary.800">
+                  {board?.name}
+                </Heading>
+
+                <Button
+                  colorPalette="appPrimary"
+                  size="sm"
+                  onClick={() => setIsShareDialogOpen(true)}
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                    />
+                  </svg>
+                  Share
+                </Button>
+              </HStack>
+
+              {board?.description && (
+                <Text fontSize="lg" color="gray.600" mb={4}>
+                  {board.description}
+                </Text>
+              )}
+
+              <HStack gap={3}>
+                <Badge colorPalette="appPrimary" size="lg">
+                  {board?.board_type === BoardType.CHECKLIST && '✓ Checklist'}
+                  {board?.board_type === BoardType.NOTICE_BOARD && '📋 Notice Board'}
+                  {board?.board_type === BoardType.EVENTS && '📅 Events'}
+                </Badge>
+
+                {board?.board_type === BoardType.CHECKLIST && totalCount > 0 && (
+                  <Text fontSize="sm" color="gray.600">
+                    {checkedCount} / {totalCount} completed
+                  </Text>
+                )}
+              </HStack>
+            </Box>
+          </VStack>
+
+          {/* Calendar Integration for EVENTS boards */}
+          {board?.board_type === BoardType.EVENTS && (
+            <Box mb={6}>
+              {!calendarLoading && !calendarData?.calendarSyncStatus?.isConnected ? (
+                <Card.Root p={6} bg="blue.50" borderColor="blue.200" borderWidth="1px">
+                  <VStack gap={4}>
+                    <ConnectCalendarButton
+                      boardId={boardId}
+                      onConnectionSuccess={() => {
+                        setIsCalendarSelectorOpen(true);
+                        refetchCalendarStatus();
+                      }}
+                    />
+                  </VStack>
+                </Card.Root>
+              ) : (
+                calendarData?.calendarSyncStatus?.isConnected && (
+                  <CalendarConnectionStatus
+                    boardId={boardId}
+                    isConnected={true}
+                    calendarName={calendarData.calendarSyncStatus.calendarName}
+                    lastSyncAt={calendarData.calendarSyncStatus.lastSyncAt}
+                    syncRangeDays={calendarData.calendarSyncStatus.syncRangeDays}
+                    onConnect={() => {}}
+                    onDisconnect={() => {
+                      disconnectCalendar({ variables: { boardId } });
+                    }}
+                    onSync={() => {
+                      setIsSyncing(true);
+                      syncCalendar({ variables: { boardId } });
+                    }}
+                    isSyncing={isSyncing}
+                  />
+                )
+              )}
+            </Box>
+          )}
+
+          {/* Calendar Selector Modal */}
+          <CalendarSelectorModal
+            boardId={boardId}
+            open={isCalendarSelectorOpen}
+            onClose={() => setIsCalendarSelectorOpen(false)}
+            onCalendarSelected={() => {
+              refetchCalendarStatus();
+              // Auto-sync calendar events after selecting a calendar
+              setIsSyncing(true);
+              syncCalendar({ variables: { boardId } });
+            }}
+          />
+
+          {/* Sticky Category Navigation */}
+          {Object.keys(itemsByCategory).length > 0 && (
+            <Box
+              position="sticky"
+              top="0"
+              zIndex="sticky"
+              bg="white"
+              borderBottom="2px"
+              borderColor="appPrimary.200"
+              py={3}
+              mb={6}
+              shadow="sm"
+            >
+              <HStack
+                gap={2}
+                overflowX="auto"
+                css={{
+                  '&::-webkit-scrollbar': {
+                    height: '6px',
+                  },
+                  '&::-webkit-scrollbar-track': {
+                    background: 'gray.100',
+                  },
+                  '&::-webkit-scrollbar-thumb': {
+                    background: 'var(--chakra-colors-app-primary-500)',
+                    borderRadius: '3px',
+                  },
+                  '&::-webkit-scrollbar-thumb:hover': {
+                    background: 'var(--chakra-colors-app-primary-600)',
+                  },
+                }}
+              >
+                {Object.entries(itemsByCategory).map(([category, items]) => (
+                  <Button
+                    key={category}
+                    onClick={() => scrollToCategory(category)}
+                    size="sm"
+                    variant={highlightedCategory === category ? 'solid' : 'outline'}
+                    colorPalette="appPrimary"
+                    flexShrink={0}
+                    fontWeight="medium"
+                  >
+                    {category}
+                    <Badge
+                      ml={2}
+                      colorPalette={
+                        highlightedCategory === category ? 'white' : 'appPrimary'
+                      }
+                      variant="subtle"
+                      fontSize="xs"
+                    >
+                      {items.length}
+                    </Badge>
+                  </Button>
+                ))}
+              </HStack>
+            </Box>
+          )}
+
+          {/* Add Item Form */}
+          <CreateItemForm
+            boardId={boardId}
+            onSuccess={(category) => handleItemCreated(category)}
+            isOpen={isAddingItem}
+            onClose={handleCloseAddForm}
+            defaultCategory={selectedCategory}
+          />
+
+          {/* Edit Item Form */}
+          <EditItemForm
+            itemId={editingItemId}
+            boardId={boardId}
+            onSuccess={() => setEditingItemId(null)}
+            isOpen={!!editingItemId && !!editingItem}
+            onClose={() => setEditingItemId(null)}
+            initialValues={
+              editingItem
+                ? {
+                    name: editingItem.name,
+                    details: editingItem.details || '',
+                    category: editingItem.category || '',
+                  }
+                : undefined
+            }
+          />
+
+          {/* Items by Category */}
+          {Object.entries(itemsByCategory).length === 0 ? (
+            <Card.Root>
+              <Card.Body textAlign="center" py={12}>
+                <Text color="gray.500" fontSize="lg" mb={4} fontWeight="medium">
+                  No items yet. Start adding items to your board!
+                </Text>
+              </Card.Body>
+            </Card.Root>
+          ) : (
+            <VStack align="stretch" gap={6}>
+              <UncheckedItemsList boardId={boardId} />
+              {Object.entries(itemsByCategory).map(
+                ([category, categoryItems]: [string, Item[]]) => (
+                  <Card.Root
+                    key={category}
+                    ref={(el) => {
+                      categoryRefs.current[category] = el;
+                    }}
+                    variant="outline"
+                    borderColor={
+                      highlightedCategory === category
+                        ? 'appPrimary.400'
+                        : 'appPrimary.200'
+                    }
+                    borderWidth={highlightedCategory === category ? '3px' : '1px'}
+                    _hover={{
+                      shadow: 'lg',
+                      transform: 'translateY(-2px)',
+                      borderColor: 'appPrimary.300',
+                    }}
+                    transition="all 0.3s ease"
+                    bg={highlightedCategory === category ? 'appPrimary.50' : 'white'}
+                  >
+                    <Card.Header
+                      bg="appPrimary.50"
+                      borderBottom="1px"
+                      borderColor="appPrimary.100"
+                    >
+                      <Flex justify="space-between" align="center">
+                        <Heading size="lg" color="appPrimary.700">
+                          {category}
+                        </Heading>
+                        <IconButton
+                          onClick={() => handleQuickAdd(category)}
+                          variant="ghost"
+                          colorPalette="appPrimary"
+                          aria-label={`Add item to ${category}`}
+                          size="sm"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 4v16m8-8H4"
+                            />
+                          </svg>
+                        </IconButton>
+                      </Flex>
+                    </Card.Header>
+
+                    <Card.Body p={0} className="BoardItems">
+                      <VStack
+                        align="stretch"
+                        gap={0}
+                        divideY="1px"
+                        divideColor="appPrimary.100"
+                      >
+                        {categoryItems.map((item: Item) => {
+                          // Render CalendarEventItem for items with google_event_id
+                          if (item.google_event_id) {
+                            return (
+                              <CalendarEventItem
+                                key={item.id}
+                                item={item}
+                                onEdit={setEditingItemId}
+                                onDelete={deleteItem}
+                              />
+                            );
+                          }
+
+                          // Render normal BoardItemRow for regular items
+                          return (
+                            <BoardItemRow
+                              key={item.id}
+                              item={item}
+                              boardType={board?.board_type ?? BoardType.CHECKLIST}
+                              onToggleCheck={toggleItemCheck}
+                              onEdit={setEditingItemId}
+                              onDelete={deleteItem}
+                              isToggling={isItemToggling(item.id)}
+                            />
+                          );
+                        })}
+                      </VStack>
+                    </Card.Body>
+                  </Card.Root>
+                )
+              )}
+            </VStack>
+          )}
+        </Container>
+
+        {/* Sticky Footer */}
+        <StickyFooter>
+          <Flex justify="space-between" align="center">
+            <HStack gap={2}>
+              <Button
+                onClick={() => (isAddingItem ? handleCloseAddForm() : handleQuickAdd())}
+                colorPalette="appPrimary"
+                size="lg"
+              >
+                {isAddingItem ? 'Cancel' : 'Add Item'}
+              </Button>
+
+              {/* Barcode Scanner - only for CHECKLIST boards */}
+              {board?.board_type === BoardType.CHECKLIST && (
+                <ScanButton
+                  onClick={() => setIsScannerOpen(true)}
+                  disabled={isAddingItem}
+                />
+              )}
+            </HStack>
+
             {board?.board_type === BoardType.CHECKLIST && (
-              <ScanButton
-                onClick={() => setIsScannerOpen(true)}
-                disabled={isAddingItem}
+              <BulkItemActions
+                hasCheckedItems={hasCheckedItems}
+                hasUncheckedItems={hasUncheckedItems}
+                onCheckAll={checkAllItems}
+                onUncheckAll={uncheckAllItems}
               />
             )}
-          </HStack>
+          </Flex>
+        </StickyFooter>
 
-          {board?.board_type === BoardType.CHECKLIST && (
-            <BulkItemActions
-              hasCheckedItems={hasCheckedItems}
-              hasUncheckedItems={hasUncheckedItems}
-              onCheckAll={checkAllItems}
-              onUncheckAll={uncheckAllItems}
-            />
-          )}
-        </Flex>
-      </StickyFooter>
+        {/* Barcode Scanner Modal */}
+        {board?.board_type === BoardType.CHECKLIST && (
+          <BarcodeScannerModal
+            open={isScannerOpen}
+            onClose={() => setIsScannerOpen(false)}
+            onAddItem={handleAddScannedItem}
+          />
+        )}
 
-      {/* Barcode Scanner Modal */}
-      {board?.board_type === BoardType.CHECKLIST && (
-        <BarcodeScannerModal
-          open={isScannerOpen}
-          onClose={() => setIsScannerOpen(false)}
-          onAddItem={handleAddScannedItem}
-        />
-      )}
-
-      {/* Share Board Dialog */}
-      {board && (
-        <ShareBoardDialog
-          open={isShareDialogOpen}
-          onClose={() => setIsShareDialogOpen(false)}
-          boardId={boardId}
-          boardName={board.name}
-        />
-      )}
-    </Box>
+        {/* Share Board Dialog */}
+        {board && (
+          <ShareBoardDialog
+            open={isShareDialogOpen}
+            onClose={() => setIsShareDialogOpen(false)}
+            boardId={boardId}
+            boardName={board.name}
+          />
+        )}
+      </Box>
+    </ErrorBoundary>
   );
 }

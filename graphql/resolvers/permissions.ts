@@ -1,4 +1,4 @@
-import { pool } from '@/lib/db';
+import { pool } from '@/src/shared/lib/db';
 
 /**
  * Check if user has edit permission on a board
@@ -30,6 +30,11 @@ export async function checkBoardEditPermission(
 
 /**
  * Check if user has view permission on a board
+ *
+ * Note on shared_with_user_id type: the board_shares table stores Auth0 IDs
+ * directly as TEXT (see migration 001_add_board_sharing.sql), so $2 (context.user.sub)
+ * is the correct value to compare — no integer-ID conversion is needed here,
+ * unlike the user_boards branch which joins via the users table.
  */
 export async function checkBoardViewPermission(
   boardId: string,

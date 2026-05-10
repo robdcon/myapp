@@ -1,3 +1,4 @@
+import 'server-only';
 import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 
 // Pool configuration interface
@@ -15,10 +16,12 @@ interface PoolConfig {
 // Create a connection pool
 const pool = new Pool({
   user: process.env.PGUSER,
-  password: process.env.PGPASSWORD,
+  password: process.env.PGPASSWORD ? String(process.env.PGPASSWORD) : undefined,
   host: process.env.PGHOST,
   port: parseInt(process.env.PGPORT || '5432'),
   database: process.env.PGDATABASE,
+  max: 10,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
 });
 
 // Main query function
@@ -40,13 +43,13 @@ export async function query<T extends QueryResultRow = any>(
 }
 
 // Get a single row
-export const queryOne = async (text: string, params?: any[]) => {
-  const start = Date.now();
-  const result = await pool.query(text, params);
-  const duration = Date.now() - start;
-  // console.log('🔍 queryOne executed', { duration, rows: result.rowCount, hasResult: !!result.rows[0] });
-  return result.rows[0];
-};
+export async function queryOne<T extends QueryResultRow = any>(
+  text: string,
+  params?: any[]
+): Promise<T | null> {
+  const result = await query<T>(text, params);
+  return result.rows[0] ?? null;
+}
 
 // Get all rows
 export async function queryMany<T extends QueryResultRow = any>(
@@ -58,7 +61,9 @@ export async function queryMany<T extends QueryResultRow = any>(
 }
 
 // Transaction helper
-export async function transaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T> {
+export async function transaction<T>(
+  callback: (client: PoolClient) => Promise<T>
+): Promise<T> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');

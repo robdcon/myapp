@@ -10,7 +10,10 @@
     "codegen": "graphql-codegen --config codegen.ts",
     "push": "git push -u origin $(git branch --show-current)",
     "seed": "tsx scripts/seed.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@apollo/client": "^4.0.7",
@@ -34,7 +37,9 @@
     "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "rxjs": "^7.8.2",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",
@@ -42,22 +47,29 @@
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/pg": "^8.15.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.1",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

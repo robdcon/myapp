@@ -1,25 +1,27 @@
-// Common GraphQL types and interfaces
+// Re-export all common/utility types
+export type {
+  User,
+  ComponentProps,
+  GraphQLContext,
+  ApiResponse,
+  PaginatedResponse,
+  SelectOption,
+  LoadingState,
+} from './common';
+export { UserRole } from './common';
+
+// Re-export board-share types
+export * from './board-share';
+
+// Domain types (from root types/index.ts)
+// These complement the common types above with app-specific domain models.
+
+import { UserRole } from './common';
 
 export enum BoardType {
   NOTICE_BOARD = 'NOTICE_BOARD',
   CHECKLIST = 'CHECKLIST',
   EVENTS = 'EVENTS',
-}
-
-export enum UserRole {
-  OWNER = 'OWNER',
-  EDITOR = 'EDITOR',
-  VIEWER = 'VIEWER',
-}
-
-export interface User {
-  id: string;
-  auth0_id: string;
-  email: string;
-  name?: string;
-  picture?: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Board {
@@ -130,11 +132,4 @@ export interface BoardActionsProps {
 
 export interface StickyFooterProps {
   children: React.ReactNode;
-}
-
-// GraphQL Context
-export interface GraphQLContext {
-  req: Request;
-  user: object | null;
-  dbUser?: User | null;
 }
