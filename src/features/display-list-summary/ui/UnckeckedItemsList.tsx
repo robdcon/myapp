@@ -1,5 +1,11 @@
+import { useState } from 'react';
 import { useDisplayUncheckedItems } from '../api/display-unchecked-items';
 import { Box, Heading, VStack, Text, Card, Spinner } from '@chakra-ui/react';
+import { useToggleItemCheck } from '@/src/features/toggle-item-check';
+import { useDeleteItem } from '@/src/features/delete-item';
+import { BoardItemRow } from '@/src/shared';
+import { BoardType } from '@/src/entities/board';
+import { EditItemForm } from '@/src/features/edit-item';
 
 interface UncheckedItemsListProps {
   boardId: string;
@@ -8,6 +14,9 @@ interface UncheckedItemsListProps {
 export const UncheckedItemsList = ({ boardId }: UncheckedItemsListProps) => {
   const { uncheckedItems, totalUnchecked, hasUncheckedItems, loading, error } =
     useDisplayUncheckedItems(boardId);
+  const { toggleItemCheck, isItemToggling } = useToggleItemCheck(boardId);
+  const { deleteItem } = useDeleteItem({ boardId });
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -47,25 +56,35 @@ export const UncheckedItemsList = ({ boardId }: UncheckedItemsListProps) => {
         </Heading>
       </Card.Header>
       <Card.Body>
+        <EditItemForm
+          itemId={editingItemId}
+          boardId={boardId}
+          onSuccess={() => setEditingItemId(null)}
+          isOpen={!!editingItemId}
+          onClose={() => setEditingItemId(null)}
+          initialValues={
+            editingItemId
+              ? {
+                  name: uncheckedItems.find((i) => i.id === editingItemId)?.name || '',
+                  details:
+                    uncheckedItems.find((i) => i.id === editingItemId)?.details || '',
+                  category:
+                    uncheckedItems.find((i) => i.id === editingItemId)?.category || '',
+                }
+              : undefined
+          }
+        />
         <VStack align="stretch" gap={2}>
           {uncheckedItems.map((item) => (
-            <Box
+            <BoardItemRow
               key={item.id}
-              p={3}
-              bg="gray.50"
-              rounded="md"
-              borderLeft="3px solid"
-              borderColor="appPrimary.500"
-              _hover={{ bg: 'appPrimary.50' }}
-              transition="background 0.2s"
-            >
-              <Text fontWeight="medium">{item.name}</Text>
-              {item.details && (
-                <Text fontSize="sm" color="gray.600" mt={1}>
-                  {item.details}
-                </Text>
-              )}
-            </Box>
+              item={item}
+              boardType={BoardType.CHECKLIST}
+              onToggleCheck={toggleItemCheck}
+              onEdit={(itemId) => setEditingItemId(itemId)}
+              onDelete={deleteItem}
+              isToggling={isItemToggling(item.id)}
+            />
           ))}
         </VStack>
       </Card.Body>
