@@ -13,6 +13,21 @@ interface PoolConfig {
   connectionTimeoutMillis?: number;
 }
 
+function getSslConfig(): boolean | { rejectUnauthorized: boolean; ca?: string } {
+  const sslMode = process.env.PGSSLMODE;
+  if (sslMode === 'disable') return false;
+
+  const ca = process.env.PG_CA_CERT?.replace(/\\n/g, '\n');
+
+  if (sslMode === 'no-verify') return { rejectUnauthorized: false };
+  if (sslMode === 'require') return { rejectUnauthorized: true, ...(ca && { ca }) };
+
+  if (process.env.NODE_ENV === 'production') {
+    return { rejectUnauthorized: !!ca, ...(ca && { ca }) };
+  }
+  return false;
+}
+
 // Create a connection pool
 const pool = new Pool({
   user: process.env.PGUSER,
@@ -21,7 +36,7 @@ const pool = new Pool({
   port: parseInt(process.env.PGPORT || '5432'),
   database: process.env.PGDATABASE,
   max: 10,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : false,
+  ssl: getSslConfig(),
 });
 
 // Main query function
