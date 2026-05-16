@@ -1,6 +1,15 @@
 import { auth0 } from '@/src/shared/lib/auth0';
 import { BoardList, SharedBoardsList } from '@/src/features/boards';
-import { Button, VStack, Box, Heading, Container, Flex } from '@chakra-ui/react';
+import {
+  Button,
+  VStack,
+  Box,
+  Heading,
+  Container,
+  Flex,
+  Text,
+  Badge,
+} from '@chakra-ui/react';
 import Link from 'next/link';
 
 export async function Home() {
@@ -10,16 +19,30 @@ export async function Home() {
     return (
       <Container maxW="container.sm" centerContent py={20}>
         <Box textAlign="center">
+          <Badge
+            colorPalette="appPrimary"
+            size="lg"
+            mb={4}
+            px={3}
+            py={1}
+            borderRadius="full"
+          >
+            Collaborative Board Manager
+          </Badge>
           <Heading size="3xl" mb={4} color="appPrimary.700">
-            Welcome to Board Manager
+            Organise Everything Together
           </Heading>
-          <VStack gap={4} mt={8}>
+          <Text color="gray.600" fontSize="lg" mb={8} maxW="380px" mx="auto">
+            Create shared checklists, notice boards, and event boards. Check items off in
+            real time — perfect for families, teams, and projects.
+          </Text>
+          <VStack gap={4}>
             <Button asChild colorPalette="appPrimary" size="lg" width="200px">
-              <Link href="/auth/login?screen_hint=signup">Sign up</Link>
+              <Link href="/auth/login?screen_hint=signup">Sign up free</Link>
             </Button>
             <Button
               asChild
-              colorPalette="appSecondary"
+              colorPalette="appPrimary"
               variant="outline"
               size="lg"
               width="200px"
@@ -40,7 +63,7 @@ export async function Home() {
             <Heading size="xl" color="appPrimary.700">
               Welcome, {session.user.name}!
             </Heading>
-            <Button asChild colorPalette="red" variant="ghost">
+            <Button asChild colorPalette="gray" variant="ghost">
               <Link href="/auth/logout">Logout</Link>
             </Button>
           </Flex>
@@ -51,7 +74,7 @@ export async function Home() {
           <BoardList />
 
           <Box>
-            <Heading size="2xl" mb={6} color="blue.700">
+            <Heading size="2xl" mb={6} color="appPrimary.700">
               Shared with Me
             </Heading>
             <SharedBoardsList />

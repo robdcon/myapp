@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Box, Button, VStack, Input, createListCollection, Heading } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  VStack,
+  Input,
+  createListCollection,
+  Heading,
+  Field,
+} from '@chakra-ui/react';
 import {
   SelectRoot,
   SelectTrigger,
@@ -29,7 +37,6 @@ export function EditItemForm({
     category: initialValues?.category || '',
   });
 
-  // Create collection for categories
   const categoryCollection = useMemo(() => {
     return createListCollection({
       items: ITEM_CATEGORIES.map((category) => ({
@@ -49,22 +56,13 @@ export function EditItemForm({
     }
   }, [initialValues]);
 
-  // Handle escape key
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
+    if (!isOpen) return;
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
-
     document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
   const { editItem, loading } = useEditItem(boardId, () => {
@@ -118,37 +116,28 @@ export function EditItemForm({
         <form onSubmit={handleSubmit}>
           <Box p={6}>
             <VStack gap={4} align="stretch">
-              <Box>
-                <label
-                  htmlFor="edit-item-name"
-                  style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}
-                >
-                  Item Name *
-                </label>
+              <Field.Root required>
+                <Field.Label>
+                  Item Name <Field.RequiredIndicator />
+                </Field.Label>
                 <Input
                   id="edit-item-name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Strawberries"
                   autoFocus
-                  required
                 />
-              </Box>
+              </Field.Root>
 
-              <Box>
-                <label
-                  htmlFor="edit-item-details"
-                  style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}
-                >
-                  Details (optional)
-                </label>
+              <Field.Root>
+                <Field.Label>Details (optional)</Field.Label>
                 <Input
                   id="edit-item-details"
                   value={formData.details}
                   onChange={(e) => setFormData({ ...formData, details: e.target.value })}
                   placeholder="e.g., 2 packs"
                 />
-              </Box>
+              </Field.Root>
 
               <Box>
                 <SelectRoot
@@ -160,16 +149,7 @@ export function EditItemForm({
                   }}
                   size="sm"
                 >
-                  <SelectLabel
-                    htmlFor="edit-item-category"
-                    style={{
-                      display: 'block',
-                      marginBottom: '4px',
-                      fontWeight: 'medium',
-                    }}
-                  >
-                    Category (optional)
-                  </SelectLabel>
+                  <SelectLabel>Category (optional)</SelectLabel>
                   <SelectTrigger clearable>
                     <SelectValueText placeholder="Select a category" />
                   </SelectTrigger>

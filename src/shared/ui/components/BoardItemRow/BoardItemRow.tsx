@@ -29,7 +29,9 @@ export const BoardItemRow = React.memo(function BoardItemRow({
     (e: React.MouseEvent) => {
       // Don't trigger row click if clicking on the edit button or delete button
       if (
-        (e.target as HTMLElement).closest('button[data-edit-button], button[data-delete-button]')
+        (e.target as HTMLElement).closest(
+          'button[data-edit-button], button[data-delete-button]'
+        )
       ) {
         return;
       }
@@ -88,18 +90,41 @@ export const BoardItemRow = React.memo(function BoardItemRow({
       <Flex justify="space-between" align="center">
         <Flex align="center" gap={3} flex={1}>
           {boardType === BoardType.CHECKLIST && (
-            <Box onClick={handleCheckboxClick} className="checkbox-container">
+            <Box
+              as="span"
+              role="checkbox"
+              aria-checked={item.is_checked}
+              tabIndex={0}
+              onClick={handleCheckboxClick}
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === ' ' || e.key === 'Enter') {
+                  e.preventDefault();
+                  onToggleCheck(item.id);
+                }
+              }}
+              className="checkbox-container"
+              display="inline-flex"
+              alignItems="center"
+              cursor="pointer"
+              _focusVisible={{
+                outline: '2px solid',
+                outlineColor: 'appPrimary.500',
+                borderRadius: '2px',
+              }}
+            >
               <input
                 type="checkbox"
                 checked={item.is_checked}
-                onChange={() => {}} // Controlled by click handlers
+                onChange={() => {}}
+                tabIndex={-1}
+                aria-hidden="true"
                 style={{
                   transform: 'scale(1.3)',
                   cursor: 'pointer',
-                  accentColor: '#219591', // Dark cyan color from your turquoise palette
+                  accentColor: '#219591',
                   filter: isToggling ? 'brightness(0.8)' : 'none',
+                  pointerEvents: 'none',
                 }}
-                tabIndex={-1} // Remove from tab order since row is clickable
               />
             </Box>
           )}

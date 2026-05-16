@@ -16,6 +16,7 @@ export function StickyFooter({ children }: Readonly<StickyFooterProps>) {
       bg="white"
       borderTop="1px"
       borderColor="gray.200"
+      boxShadow="0 -2px 8px rgba(0,0,0,0.06)"
       p={4}
       zIndex={10}
     >
