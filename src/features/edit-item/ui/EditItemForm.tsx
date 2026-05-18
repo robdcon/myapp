@@ -121,7 +121,6 @@ export function EditItemForm({
                   Item Name <Field.RequiredIndicator />
                 </Field.Label>
                 <Input
-                  id="edit-item-name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Strawberries"
@@ -132,7 +131,6 @@ export function EditItemForm({
               <Field.Root>
                 <Field.Label>Details (optional)</Field.Label>
                 <Input
-                  id="edit-item-details"
                   value={formData.details}
                   onChange={(e) => setFormData({ ...formData, details: e.target.value })}
                   placeholder="e.g., 2 packs"
