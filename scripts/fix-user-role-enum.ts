@@ -4,6 +4,27 @@ dotenv.config();
 
 import { pool } from '@/src/shared/lib/db';
 
+async function normalizeRoleAndPermissionData() {
+  const userRoleUpdate = await pool.query(`
+    UPDATE user_boards
+    SET role = lower(trim(role))
+    WHERE role IS NOT NULL
+      AND lower(trim(role)) <> role;
+  `);
+
+  const sharePermissionUpdate = await pool.query(`
+    UPDATE board_shares
+    SET permission_level = upper(trim(permission_level))
+    WHERE permission_level IS NOT NULL
+      AND upper(trim(permission_level)) <> permission_level;
+  `);
+
+  console.log(`✅ Normalized ${userRoleUpdate.rowCount ?? 0} user_boards role values.`);
+  console.log(
+    `✅ Normalized ${sharePermissionUpdate.rowCount ?? 0} board_shares permission values.`
+  );
+}
+
 async function fixUserRoleEnum() {
   try {
     console.log('🔍 Checking user_role enum values...\n');
@@ -35,6 +56,7 @@ async function fixUserRoleEnum() {
       }
     }
 
+    await normalizeRoleAndPermissionData();
     await pool.end();
   } catch (error) {
     console.error('Error:', error);
