@@ -17,6 +17,7 @@ import {
   Spinner,
   Alert,
   IconButton,
+  Progress,
 } from '@chakra-ui/react';
 import {
   GET_BOARD_QUERY,
@@ -294,9 +295,22 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                 </Badge>
 
                 {board?.board_type === BoardType.CHECKLIST && totalCount > 0 && (
-                  <Text fontSize="sm" color="gray.600">
-                    {checkedCount} / {totalCount} completed
-                  </Text>
+                  <HStack gap={3} align="center">
+                    <Text fontSize="sm" color="gray.600">
+                      {checkedCount} / {totalCount} completed
+                    </Text>
+                    <Progress.Root
+                      value={(checkedCount / totalCount) * 100}
+                      size="sm"
+                      colorPalette="appPrimary"
+                      width="120px"
+                      borderRadius="full"
+                    >
+                      <Progress.Track borderRadius="full">
+                        <Progress.Range />
+                      </Progress.Track>
+                    </Progress.Root>
+                  </HStack>
                 )}
               </HStack>
             </Box>

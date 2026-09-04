@@ -1,7 +1,15 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Box, Button, VStack, Input, createListCollection, Heading } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  VStack,
+  Input,
+  createListCollection,
+  Heading,
+  Field,
+} from '@chakra-ui/react';
 import {
   SelectRoot,
   SelectTrigger,
@@ -28,7 +36,6 @@ export function CreateItemForm({
     category: defaultCategory || '',
   });
 
-  // Create collection for categories
   const categoryCollection = useMemo(() => {
     return createListCollection({
       items: ITEM_CATEGORIES.map((category) => ({
@@ -38,39 +45,25 @@ export function CreateItemForm({
     });
   }, []);
 
-  // Update form when defaultCategory changes
   useEffect(() => {
     if (defaultCategory) {
-      setFormData((prev) => ({
-        ...prev,
-        category: defaultCategory,
-      }));
+      setFormData((prev) => ({ ...prev, category: defaultCategory }));
     }
   }, [defaultCategory]);
 
-  // Reset form when closed
   useEffect(() => {
     if (!isOpen) {
       setFormData({ name: '', details: '', category: defaultCategory || '' });
     }
   }, [isOpen, defaultCategory]);
 
-  // Handle escape key
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
+    if (!isOpen) return;
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
-
     document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
   const { createItem, loading } = useCreateItem(boardId, () => {
@@ -121,37 +114,26 @@ export function CreateItemForm({
         <form onSubmit={handleSubmit}>
           <Box p={6}>
             <VStack gap={4} align="stretch">
-              <Box>
-                <label
-                  htmlFor="item-name"
-                  style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}
-                >
-                  Item Name *
-                </label>
+              <Field.Root required>
+                <Field.Label>
+                  Item Name <Field.RequiredIndicator />
+                </Field.Label>
                 <Input
-                  id="item-name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Strawberries"
                   autoFocus
-                  required
                 />
-              </Box>
+              </Field.Root>
 
-              <Box>
-                <label
-                  htmlFor="item-details"
-                  style={{ display: 'block', marginBottom: '4px', fontWeight: 'medium' }}
-                >
-                  Details (optional)
-                </label>
+              <Field.Root>
+                <Field.Label>Details (optional)</Field.Label>
                 <Input
-                  id="item-details"
                   value={formData.details}
                   onChange={(e) => setFormData({ ...formData, details: e.target.value })}
                   placeholder="e.g., 2 packs"
                 />
-              </Box>
+              </Field.Root>
 
               <Box>
                 <SelectRoot
@@ -163,16 +145,7 @@ export function CreateItemForm({
                   }}
                   size="sm"
                 >
-                  <SelectLabel
-                    htmlFor="item-category"
-                    style={{
-                      display: 'block',
-                      marginBottom: '4px',
-                      fontWeight: 'medium',
-                    }}
-                  >
-                    Category (optional)
-                  </SelectLabel>
+                  <SelectLabel>Category (optional)</SelectLabel>
                   <SelectTrigger clearable>
                     <SelectValueText placeholder="Select a category" />
                   </SelectTrigger>
