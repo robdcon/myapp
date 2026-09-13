@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['@chakra-ui/react'],
   },
   webpack: (config, { isServer }) => {
+    config.ignoreWarnings = [
+      ...(config.ignoreWarnings || []),
+      { module: /@auth0\/nextjs-auth0/ },
+    ];
+
     if (!isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
