@@ -105,6 +105,12 @@ export const typeDefs = gql`
 
   type Mutation {
     createUser(name: String!, email: String!): User!
+
+    # Board Mutations
+    createBoard(name: String!, board_type: BoardType!, description: String): Board!
+    updateBoard(id: ID!, name: String, description: String): Board!
+    deleteBoard(id: ID!): Boolean!
+
     toggleItemCheck(itemId: ID!): Item!
     createItem(boardId: ID!, name: String!, details: String, category: String): Item!
     updateItem(itemId: ID!, name: String, details: String, category: String): Item!

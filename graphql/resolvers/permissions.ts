@@ -14,13 +14,14 @@ export async function checkBoardEditPermission(
        FROM user_boards ub
        WHERE ub.board_id = $1
          AND ub.user_id = (SELECT id FROM users WHERE auth0_id = $2)
+         AND LOWER(ub.role) IN ('owner', 'editor')
      )
      OR EXISTS (
        SELECT 1
        FROM board_shares bs
        WHERE bs.board_id = $1
          AND bs.shared_with_user_id = $2
-         AND bs.permission_level IN ('EDIT', 'ADMIN')
+         AND LOWER(bs.permission_level) IN ('edit', 'admin')
      ) AS has_permission`,
     [boardId, userId]
   );
@@ -52,9 +53,52 @@ export async function checkBoardViewPermission(
        FROM board_shares bs
        WHERE bs.board_id = $1
          AND bs.shared_with_user_id = $2
+         AND LOWER(bs.permission_level) IN ('view', 'edit', 'admin')
      ) AS has_permission`,
     [boardId, userId]
   );
 
   return Boolean(result.rows[0]?.has_permission);
+}
+
+/**
+ * Check if user is the OWNER of a board via user_boards.
+ * Used for destructive actions (e.g. deleting a board) that should not
+ * be available to editors or shared ADMIN-permission users.
+ */
+export async function checkBoardOwnerPermission(
+  boardId: string,
+  userId: string
+): Promise<boolean> {
+  const result = await pool.query(
+    `SELECT EXISTS (
+       SELECT 1
+       FROM user_boards ub
+       WHERE ub.board_id = $1
+         AND ub.user_id = (SELECT id FROM users WHERE auth0_id = $2)
+         AND LOWER(ub.role) = 'owner'
+     ) AS has_permission`,
+    [boardId, userId]
+  );
+
+  return Boolean(result.rows[0]?.has_permission);
+}
+
+/**
+ * Get a member's board role normalized to lowercase.
+ */
+export async function getBoardRoleForUser(
+  boardId: string,
+  userId: string
+): Promise<string | null> {
+  const result = await pool.query(
+    `SELECT LOWER(ub.role) AS role
+     FROM user_boards ub
+     WHERE ub.board_id = $1
+       AND ub.user_id = (SELECT id FROM users WHERE auth0_id = $2)`,
+    [boardId, userId]
+  );
+
+  const role = result.rows[0]?.role;
+  return typeof role === 'string' ? role.toLowerCase() : null;
 }

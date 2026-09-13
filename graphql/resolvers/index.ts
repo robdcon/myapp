@@ -14,7 +14,7 @@ export const resolvers = {
   },
   Mutation: {
     ...userResolvers.Mutation,
-    // ...boardResolvers.Mutation,
+    ...boardResolvers.Mutation,
     ...itemResolvers.Mutation,
     ...boardShareResolvers.Mutation,
     ...calendarResolvers.Mutation,

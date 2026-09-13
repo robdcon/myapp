@@ -37,7 +37,7 @@ export const MY_BOARDS_QUERY = gql`
 
 // Mutations
 export const CREATE_BOARD_MUTATION = gql`
-  mutation CreateBoard($name: String!, $board_type: String!, $description: String) {
+  mutation CreateBoard($name: String!, $board_type: BoardType!, $description: String) {
     createBoard(name: $name, board_type: $board_type, description: $description) {
       id
       name
