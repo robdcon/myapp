@@ -1,10 +1,31 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { BarcodeScanner } from './BarcodeScanner';
+import dynamic from 'next/dynamic';
+import { Box, Spinner } from '@chakra-ui/react';
 import { ScannedProductPreview } from './ScannedProductPreview';
 import { toaster } from '@/components/ui/toaster';
 import type { ProductLookupResult } from '../api/product-lookup';
+
+const BarcodeScanner = dynamic(
+  () => import('./BarcodeScanner').then((mod) => mod.BarcodeScanner),
+  {
+    ssr: false,
+    loading: () => (
+      <Box
+        position="fixed"
+        inset={0}
+        bg="black"
+        zIndex={1000}
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
+        <Spinner size="xl" color="white" />
+      </Box>
+    ),
+  }
+);
 
 type ScannerState = 'idle' | 'scanning' | 'looking_up' | 'preview';
 
