@@ -10,7 +10,7 @@ import {
 
 function makeClient() {
   const httpLink = new HttpLink({
-    uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:3000/api/graphql',
+    uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || '/api/graphql',
     credentials: 'same-origin', // Include cookies in requests
     fetchOptions: {
       cache: 'no-store', // Disable fetch cache

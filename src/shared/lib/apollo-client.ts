@@ -5,7 +5,7 @@ export const { getClient } = registerApolloClient(() => {
   return new ApolloClient({
     cache: new InMemoryCache(),
     link: new HttpLink({
-      uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:3000/api/graphql',
+      uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || '/api/graphql',
       credentials: 'same-origin', // This ensures cookies are sent with requests
       fetchOptions: {
         cache: 'no-store', // Disable fetch cache to ensure fresh data
