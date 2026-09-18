@@ -1,4 +1,5 @@
 import { query, queryOne } from '@/src/shared/lib/db';
+import { getBoardsByUserId } from '@/src/entities/board/api/boardRepository';
 
 export const userResolvers = {
   Query: {
@@ -7,7 +8,6 @@ export const userResolvers = {
       return result.rows;
     },
     user: async (_: any, { email }: { email: string }) => {
-      // console.log('Fetching user with email:', email);
       return await queryOne('SELECT * FROM users WHERE email = $1', [email]);
     },
   },
@@ -24,10 +24,7 @@ export const userResolvers = {
 
   User: {
     boards: async (parent: any) => {
-      const result = await query('SELECT * FROM user_boards WHERE user_id = $1', [
-        parent.id,
-      ]);
-      return result.rows.map((row) => row.board_id);
+      return getBoardsByUserId(parent.id);
     },
   },
 };

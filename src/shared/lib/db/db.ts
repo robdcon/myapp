@@ -13,6 +13,17 @@ interface PoolConfig {
   connectionTimeoutMillis?: number;
 }
 
+/**
+ * Builds the PostgreSQL SSL configuration based on runtime environment variables.
+ *
+ * Supported modes:
+ * - disable: disable SSL entirely
+ * - no-verify: connect with SSL enabled but skip certificate verification
+ * - require: require SSL and validate certs when a CA is provided
+ *
+ * In production, SSL is enabled opportunistically when a CA certificate is configured.
+ * In non-production environments, SSL is disabled by default unless explicitly requested.
+ */
 function getSslConfig(): boolean | { rejectUnauthorized: boolean; ca?: string } {
   const sslMode = process.env.PGSSLMODE;
   if (sslMode === 'disable') return false;
@@ -33,7 +44,7 @@ const pool = new Pool({
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD ? String(process.env.PGPASSWORD) : undefined,
   host: process.env.PGHOST,
-  port: parseInt(process.env.PGPORT || '5432'),
+  port: Number.parseInt(process.env.PGPORT || '5432'),
   database: process.env.PGDATABASE,
   max: 10,
   ssl: getSslConfig(),
@@ -48,7 +59,7 @@ export async function query<T extends QueryResultRow = any>(
   try {
     const res = await pool.query<T>(text, params);
     const duration = Date.now() - start;
-    // console.log('Executed query', { text, duration, rows: res.rowCount });
+    console.log('Executed query', { text, duration, rows: res.rowCount });
     return res;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

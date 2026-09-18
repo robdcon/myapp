@@ -35,6 +35,8 @@ function getBoardTypeLabel(boardType: string): string {
 
 export default function BoardList() {
   const { loading, error, data } = useQuery<MyBoardsData>(MY_BOARDS_QUERY);
+  console.log(data, error);
+  
   const router = useRouter();
 
   const handleBoardCreated = (boardId: string) => {

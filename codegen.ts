@@ -2,11 +2,14 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
   schema: './graphql/schema/index.ts',
-  documents: ['/**/*.tsx', '/**/*.ts'],
+  documents: [
+    './src/**/*.{ts,tsx}',
+    '!./graphql/generated/**',
+    '!./graphql/test-queries/**',
+  ],
   generates: {
     './graphql/generated/': {
       preset: 'client',
-      plugins: ['typescript', 'typescript-operations'],
       presetConfig: {
         gqlTagName: 'gql',
       },

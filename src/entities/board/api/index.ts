@@ -14,11 +14,6 @@ export const GET_BOARD_QUERY = gql`
         details
         is_checked
         category
-        google_event_id
-        event_start_time
-        event_end_time
-        event_description
-        google_calendar_link
       }
     }
   }

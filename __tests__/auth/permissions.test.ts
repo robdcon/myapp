@@ -27,7 +27,7 @@ describe('board permission checks', () => {
     await expect(checkBoardEditPermission('42', 'auth0|user-1')).resolves.toBe(true);
 
     expect(mockPoolQuery).toHaveBeenCalledWith(
-      expect.stringContaining("LOWER(ub.role) IN ('owner', 'editor')"),
+      expect.stringContaining("LOWER(ub.role::text) IN ('owner', 'editor')"),
       ['42', 'auth0|user-1']
     );
   });
@@ -48,7 +48,7 @@ describe('board permission checks', () => {
 
     await expect(checkBoardEditPermission('42', 'auth0|user-1')).resolves.toBe(true);
 
-    expect(mockPoolQuery.mock.calls[0][0]).toContain("LOWER(ub.role) IN ('owner', 'editor')");
+    expect(mockPoolQuery.mock.calls[0][0]).toContain("LOWER(ub.role::text) IN ('owner', 'editor')");
   });
 
   it('normalizes membership roles before returning them', async () => {
@@ -70,7 +70,7 @@ describe('board share authorization', () => {
       boardShareResolvers.Mutation.shareBoard(
         {},
         { boardId: '42', email: 'friend@example.com', permission: 'EDIT' },
-        { user: { sub: 'auth0|user-1' } }
+        { user: { sub: 'auth0|user-1' } } as any
       )
     ).rejects.toMatchObject({
       message: 'You do not have permission to share this board',
@@ -103,7 +103,7 @@ describe('board share authorization', () => {
       boardShareResolvers.Mutation.shareBoard(
         {},
         { boardId: '42', email: 'friend@example.com', permission: 'EDIT' },
-        { user: { sub: 'auth0|user-1' } }
+        { user: { sub: 'auth0|user-1' } } as any
       )
     ).resolves.toMatchObject({
       board_id: '42',
@@ -122,7 +122,7 @@ describe('board share authorization', () => {
       boardShareResolvers.Board.myPermission(
         { id: '42' },
         {},
-        { user: { sub: 'auth0|user-1' } }
+        { user: { sub: 'auth0|user-1' }, loaders: { permissionByBoardAndUser: { load: vi.fn().mockResolvedValue('EDIT') } } } as any
       )
     ).resolves.toBe('EDIT');
   });

@@ -4,7 +4,7 @@ import {
   checkBoardEditPermission,
   checkBoardViewPermission,
 } from '@/graphql/resolvers/permissions';
-import { validateId, validateStringField } from '@/src/shared/lib';
+
 import {
   getBoardIdFromItemId,
   getUserIdByAuth0Id,
@@ -29,8 +29,6 @@ export const itemResolvers = {
           extensions: { code: 'UNAUTHENTICATED' },
         });
       }
-
-      validateId(itemId, 'itemId');
 
       const userId = context.user.sub;
       const boardId = await getBoardIdFromItemId(itemId);
@@ -72,11 +70,6 @@ export const itemResolvers = {
         });
       }
 
-      validateId(boardId, 'boardId');
-      validateStringField(name, 'name', { required: true, maxLength: 255 });
-      validateStringField(details, 'details', { maxLength: 2000 });
-      validateStringField(category, 'category', { maxLength: 100 });
-
       const userId = context.user.sub;
 
       const hasPermission = await checkBoardEditPermission(boardId, userId);
@@ -87,7 +80,8 @@ export const itemResolvers = {
       }
 
       try {
-        const createdByUserId = await getUserIdByAuth0Id(userId);
+        const createdByUserId =
+          context.dbUser?.id ?? (await getUserIdByAuth0Id(userId));
 
         return createItem({ boardId, name, details, category, createdByUserId });
       } catch (error: any) {
@@ -120,14 +114,6 @@ export const itemResolvers = {
           extensions: { code: 'UNAUTHENTICATED' },
         });
       }
-
-      validateId(itemId, 'itemId');
-      // Validate each field only when the caller explicitly supplies it.
-      if (name !== undefined) {
-        validateStringField(name, 'name', { required: true, maxLength: 255 });
-      }
-      validateStringField(details, 'details', { maxLength: 2000 });
-      validateStringField(category, 'category', { maxLength: 100 });
 
       const userId = context.user.sub;
       const boardId = await getBoardIdFromItemId(itemId);
@@ -175,8 +161,6 @@ export const itemResolvers = {
         });
       }
 
-      validateId(itemId, 'itemId');
-
       const userId = context.user.sub;
       const boardId = await getBoardIdFromItemId(itemId);
 
@@ -204,7 +188,9 @@ export const itemResolvers = {
   Query: {
     item: async (_: any, { id }: { id: string }, context: GraphQLContext) => {
       if (!context.user) {
-        throw new Error('Not authenticated');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       const boardId = await getBoardIdFromItemId(id);
@@ -214,7 +200,9 @@ export const itemResolvers = {
 
       const hasPermission = await checkBoardViewPermission(boardId, context.user.sub);
       if (!hasPermission) {
-        throw new Error('Forbidden');
+        throw new GraphQLError('Forbidden', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
       return getItemById(id);
@@ -222,12 +210,16 @@ export const itemResolvers = {
 
     items: async (_: any, { boardId }: { boardId: string }, context: GraphQLContext) => {
       if (!context.user) {
-        throw new Error('Not authenticated');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       const hasPermission = await checkBoardViewPermission(boardId, context.user.sub);
       if (!hasPermission) {
-        throw new Error('Forbidden');
+        throw new GraphQLError('Forbidden', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
       return getItemsByBoardId(boardId);
@@ -239,12 +231,16 @@ export const itemResolvers = {
       context: GraphQLContext
     ) => {
       if (!context.user) {
-        throw new Error('Not authenticated');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       const hasPermission = await checkBoardViewPermission(boardId, context.user.sub);
       if (!hasPermission) {
-        throw new Error('Forbidden');
+        throw new GraphQLError('Forbidden', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
       return getUncheckedItemsByBoardId(boardId);

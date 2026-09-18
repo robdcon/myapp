@@ -5,6 +5,7 @@ dotenv.config();
 import { pool } from '@/src/shared/lib/db';
 
 async function normalizeRoleAndPermissionData() {
+
   const userRoleUpdate = await pool.query(`
     UPDATE user_boards
     SET role = lower(trim(role))

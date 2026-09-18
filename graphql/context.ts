@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { auth0 } from '@/src/shared/lib/auth0';
 import { queryOne } from '@/src/shared/lib/db';
+import { createLoaders, GraphQLDataLoaders } from './dataloaders';
 
 /**
  * Fallback registration path.
@@ -40,6 +41,7 @@ export interface GraphQLContext {
   req: NextRequest;
   user: any | null;
   dbUser?: any | null; // Optional database user info
+  loaders: GraphQLDataLoaders;
 }
 
 export async function createContext(req: NextRequest): Promise<GraphQLContext> {
@@ -53,10 +55,14 @@ export async function createContext(req: NextRequest): Promise<GraphQLContext> {
       throw new Error('CRITICAL: ENABLE_TEST_MODE cannot be active in production');
     }
     console.log('⚠️ TEST MODE: Using test user ID:', testUserId);
+    const testDbUser =
+      (await queryOne('SELECT * FROM users WHERE auth0_id = $1', [testUserId])) ?? null;
+
     return {
       req,
-      user: { sub: testUserId },
-      dbUser: null,
+      user: { sub: testUserId, email: testDbUser?.email },
+      dbUser: testDbUser,
+      loaders: createLoaders(testUserId),
     };
   }
 
@@ -90,5 +96,6 @@ export async function createContext(req: NextRequest): Promise<GraphQLContext> {
     req,
     user: sessionUser,
     dbUser,
+    loaders: createLoaders(sessionUser?.sub),
   };
 }

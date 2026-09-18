@@ -23,6 +23,8 @@
 
 ### 3) Database Schema Summary
 
+For a clean Supabase database, run `database/install.sql` in pgAdmin or the Supabase SQL editor, then run `database/verify.sql`. The install script is the canonical fresh-install schema; the files under `database/migrations/` document historical incremental changes and are not required for a new database.
+
 | Table          | Key columns                                                                                                 | Notes                                                                       |
 | -------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `users`        | `id SERIAL`, `auth0_id TEXT`, `email TEXT`                                                                  | `id` is internal integer; `auth0_id` is the Auth0 `sub` claim               |
@@ -32,6 +34,15 @@
 | `items`        | `id SERIAL`, `board_id INTEGER`, `name TEXT`, `is_checked BOOLEAN`, `category TEXT`, `deleted_at TIMESTAMP` | Soft-deletes via `deleted_at`; calendar event fields added in migration 003 |
 
 > ⚠️ **Critical gotcha**: `user_boards.user_id` is INTEGER but `board_shares.shared_with_user_id` is TEXT. Permission checks must handle both — see `graphql/resolvers/permissions.ts`.
+
+### 3.1 Supabase and pgAdmin connection
+
+- Create a Supabase project and run `database/install.sql` against its PostgreSQL database.
+- In pgAdmin, use the host, port, database, user, and password from Supabase's **Connect** panel. Enable SSL and use `require` unless Supabase provides a CA certificate that you explicitly configure.
+- Configure the application with `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, and `PGSSLMODE=require`. Do not commit `.env` or connection credentials.
+- Use the Supabase pooler connection for serverless deployment when recommended by the Supabase project; use the direct connection for administrative work in pgAdmin when network access permits.
+- Do not run `database/seed.sql` for a clean production database. It assumes fixed IDs and inserts sample data.
+- `database/install.sql` enables Row Level Security on all application tables without adding permissive policies. This keeps Supabase Data API access denied by default; the current Auth0/server-side `pg` architecture must be mapped to explicit policies before browser or anon-key access is enabled.
 
 ### 4) Secrets and Credentials Handling
 

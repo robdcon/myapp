@@ -1,6 +1,7 @@
 import { ApolloServer } from '@apollo/server';
 import { startServerAndCreateNextHandler } from '@as-integrations/next';
 import { NextRequest } from 'next/server';
+import depthLimit from 'graphql-depth-limit';
 import { typeDefs } from '@/graphql/schema';
 import { resolvers } from '@/graphql/resolvers';
 import { createContext } from '@/graphql/context';
@@ -10,6 +11,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   introspection: true,
+  validationRules: [depthLimit(6)],
   plugins: [ApolloServerPluginLandingPageLocalDefault({ embed: true })],
 });
 

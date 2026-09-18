@@ -1,4 +1,5 @@
 import { GraphQLContext } from '../context';
+import { GraphQLError } from 'graphql';
 import { pool } from '@/src/shared/lib/db';
 import {
   syncBoardCalendar,
@@ -24,7 +25,9 @@ export const calendarResolvers = {
       context: GraphQLContext
     ) => {
       if (!context.user) {
-        throw new Error('You must be logged in');
+        throw new GraphQLError('You must be logged in', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       const userId = context.user.sub;
@@ -32,7 +35,9 @@ export const calendarResolvers = {
       // Check permission
       const hasPermission = await checkBoardEditPermission(boardId, userId);
       if (!hasPermission) {
-        throw new Error('You do not have permission to manage this board');
+        throw new GraphQLError('You do not have permission to manage this board', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
       // Get board calendar tokens
@@ -44,13 +49,17 @@ export const calendarResolvers = {
       );
 
       if (boardQuery.rows.length === 0) {
-        throw new Error('Board not found or not an Events board');
+        throw new GraphQLError('Board not found or not an Events board', {
+          extensions: { code: 'NOT_FOUND' },
+        });
       }
 
       const board = boardQuery.rows[0];
 
       if (!board.google_access_token || !board.google_refresh_token) {
-        throw new Error('Board is not connected to Google Calendar');
+        throw new GraphQLError('Board is not connected to Google Calendar', {
+          extensions: { code: 'BAD_REQUEST' },
+        });
       }
 
       // Decrypt and get valid token
@@ -96,7 +105,9 @@ export const calendarResolvers = {
       context: GraphQLContext
     ) => {
       if (!context.user) {
-        throw new Error('You must be logged in');
+        throw new GraphQLError('You must be logged in', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       const userId = context.user.sub;
@@ -111,13 +122,17 @@ export const calendarResolvers = {
       );
 
       if (permissionCheck.rows.length === 0) {
-        throw new Error('Board not found or no permission');
+        throw new GraphQLError('Board not found or no permission', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
       const status = await getBoardSyncStatus(boardId);
 
       if (!status) {
-        throw new Error('Board not found');
+        throw new GraphQLError('Board not found', {
+          extensions: { code: 'NOT_FOUND' },
+        });
       }
 
       return status;
@@ -138,7 +153,9 @@ export const calendarResolvers = {
       context: GraphQLContext
     ) => {
       if (!context.user) {
-        throw new Error('You must be logged in');
+        throw new GraphQLError('You must be logged in', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       const userId = context.user.sub;
@@ -146,7 +163,9 @@ export const calendarResolvers = {
       // Check permission
       const hasPermission = await checkBoardEditPermission(boardId, userId);
       if (!hasPermission) {
-        throw new Error('You do not have permission to manage this board');
+        throw new GraphQLError('You do not have permission to manage this board', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
       // Update board with selected calendar
@@ -156,8 +175,6 @@ export const calendarResolvers = {
          WHERE id = $3`,
         [calendarId, calendarName, boardId]
       );
-
-      console.log(`✅ Calendar ${calendarName} selected for board ${boardId}`);
 
       return true;
     },
@@ -171,7 +188,9 @@ export const calendarResolvers = {
       context: GraphQLContext
     ) => {
       if (!context.user) {
-        throw new Error('You must be logged in');
+        throw new GraphQLError('You must be logged in', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       const userId = context.user.sub;
@@ -179,10 +198,11 @@ export const calendarResolvers = {
       // Check permission
       const hasPermission = await checkBoardEditPermission(boardId, userId);
       if (!hasPermission) {
-        throw new Error('You do not have permission to sync this board');
+        throw new GraphQLError('You do not have permission to sync this board', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
-      console.log(`🔄 Starting calendar sync for board ${boardId}...`);
       const result = await syncBoardCalendar(boardId);
 
       return {
@@ -203,7 +223,9 @@ export const calendarResolvers = {
       context: GraphQLContext
     ) => {
       if (!context.user) {
-        throw new Error('You must be logged in');
+        throw new GraphQLError('You must be logged in', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       const userId = context.user.sub;
@@ -211,7 +233,9 @@ export const calendarResolvers = {
       // Check permission
       const hasPermission = await checkBoardEditPermission(boardId, userId);
       if (!hasPermission) {
-        throw new Error('You do not have permission to manage this board');
+        throw new GraphQLError('You do not have permission to manage this board', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
       // Clear calendar connection
@@ -228,8 +252,6 @@ export const calendarResolvers = {
         [boardId]
       );
 
-      console.log(`✅ Calendar disconnected from board ${boardId}`);
-
       return true;
     },
 
@@ -242,7 +264,9 @@ export const calendarResolvers = {
       context: GraphQLContext
     ) => {
       if (!context.user) {
-        throw new Error('You must be logged in');
+        throw new GraphQLError('You must be logged in', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       const userId = context.user.sub;
@@ -250,12 +274,12 @@ export const calendarResolvers = {
       // Check permission
       const hasPermission = await checkBoardEditPermission(boardId, userId);
       if (!hasPermission) {
-        throw new Error('You do not have permission to manage this board');
+        throw new GraphQLError('You do not have permission to manage this board', {
+          extensions: { code: 'FORBIDDEN' },
+        });
       }
 
       await updateSyncRange(boardId, days);
-
-      console.log(`✅ Sync range updated to ${days} days for board ${boardId}`);
 
       return true;
     },
@@ -263,12 +287,10 @@ export const calendarResolvers = {
 
   Board: {
     /**
-     * Add calendar status to Board type
+     * Add calendar status to Board type using DataLoader to prevent N+1 queries
      */
     calendarStatus: async (parent: any, _: any, context: GraphQLContext) => {
-      // Only fetch if user has permission (already checked in board resolver)
-      const status = await getBoardSyncStatus(parent.id);
-      return status;
+      return context.loaders.calendarStatusByBoardId.load(parent.id);
     },
   },
 };

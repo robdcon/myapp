@@ -14,7 +14,7 @@ export async function checkBoardEditPermission(
        FROM user_boards ub
        WHERE ub.board_id = $1
          AND ub.user_id = (SELECT id FROM users WHERE auth0_id = $2)
-         AND LOWER(ub.role) IN ('owner', 'editor')
+         AND LOWER(ub.role::text) IN ('owner', 'editor')
      )
      OR EXISTS (
        SELECT 1
@@ -76,7 +76,7 @@ export async function checkBoardOwnerPermission(
        FROM user_boards ub
        WHERE ub.board_id = $1
          AND ub.user_id = (SELECT id FROM users WHERE auth0_id = $2)
-         AND LOWER(ub.role) = 'owner'
+         AND LOWER(ub.role::text) = 'owner'
      ) AS has_permission`,
     [boardId, userId]
   );
@@ -92,7 +92,7 @@ export async function getBoardRoleForUser(
   userId: string
 ): Promise<string | null> {
   const result = await pool.query(
-    `SELECT LOWER(ub.role) AS role
+    `SELECT LOWER(ub.role::text) AS role
      FROM user_boards ub
      WHERE ub.board_id = $1
        AND ub.user_id = (SELECT id FROM users WHERE auth0_id = $2)`,

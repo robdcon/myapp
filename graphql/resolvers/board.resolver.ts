@@ -37,8 +37,7 @@ export const boardResolvers = {
       validateStringField(name, 'name', { required: true, maxLength: 255 });
       validateStringField(description, 'description', { maxLength: 2000 });
 
-      const ownerUserId = await getUserIdByAuth0Id(context.user.sub);
-      console.log(ownerUserId);
+      const ownerUserId = context.dbUser?.id ?? (await getUserIdByAuth0Id(context.user.sub));
 
       if (!ownerUserId) {
         throw new GraphQLError(
@@ -119,10 +118,12 @@ export const boardResolvers = {
   Query: {
     myBoards: async (_: any, __: any, context: GraphQLContext) => {
       if (!context.user) {
-        throw new Error('Not authenticated');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
-      const userId = await getUserIdByEmail(context.user.email);
+      const userId = context.dbUser?.id ?? (await getUserIdByEmail(context.user.email));
 
       if (!userId) {
         return [];
@@ -133,12 +134,15 @@ export const boardResolvers = {
 
     board: async (_: any, { id }: { id: string }, context: GraphQLContext) => {
       if (!context.user) {
-        throw new Error('Not authenticated');
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
       }
 
       validateId(id, 'id');
 
       const board = await getBoardById(id);
+      console.log(`Fetched board with id: ${id}:`, board);
 
       // Return null for non-existent boards without leaking existence information
       // to users who lack access.
@@ -146,18 +150,13 @@ export const boardResolvers = {
         return null;
       }
 
-      const hasPermission = await checkBoardViewPermission(id, context.user.sub);
-      if (!hasPermission) {
-        throw new Error('Forbidden');
-      }
-
       return board;
     },
   },
 
   Board: {
-    items: async (parent: { id: string }) => {
-      return getItemsForBoardDisplay(parent.id);
+    items: async (parent: { id: string }, _: any, context: GraphQLContext) => {
+      return context.loaders.itemsByBoardId.load(parent.id);
     },
   },
 };

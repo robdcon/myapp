@@ -1,11 +1,14 @@
 import { useMutation } from '@apollo/client/react';
+import type { OperationVariables } from '@apollo/client';
 import { CREATE_ITEM_MUTATION } from '@/src/entities/item';
 import { GET_BOARD_QUERY } from '@/src/entities/board';
 import type { CreateItemInput, CreateItemData } from '@/src/entities/item';
 import type { GetBoardData } from '@/src/entities/board';
 
 export const useCreateItem = (boardId: string, onSuccess?: () => void) => {
-  const [createItemMutation, { loading }] = useMutation<CreateItemData>(CREATE_ITEM_MUTATION, {
+  const [createItemMutation, { loading }] = useMutation<CreateItemData, OperationVariables>(
+    CREATE_ITEM_MUTATION,
+    {
     optimisticResponse: (vars) => ({
       createItem: {
         __typename: 'Item',
