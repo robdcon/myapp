@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSerwist } from '@serwist/turbopack';
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['@ericblade/quagga2', 'ndarray-pixels', 'sharp'],
@@ -29,4 +30,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);
