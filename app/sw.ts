@@ -17,13 +17,26 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-// GraphQL responses are deliberately excluded from any runtime caching (see
-// docs/adr/0001-pwa-conversion-mvp-scope.md): the app's Apollo client already
-// requests with `cache: 'no-store'`, so the service worker should never serve
-// a stale/offline response for `/api/graphql` and must always hit the network.
+// Authenticated content — HTML page navigations, RSC payloads, and the
+// GraphQL API — is deliberately excluded from ALL runtime caching (see
+// docs/adr/0001-pwa-conversion-mvp-scope.md). `defaultCache` otherwise
+// NetworkFirst-caches same-origin documents/RSC/API responses, which would
+// risk serving one user's cached authenticated page (e.g. a board) to a
+// different user, or a stale post-logout page, when falling back to cache.
+// The app's Apollo client already requests with `cache: 'no-store'`, so
+// nothing here should ever be served from the cache — only the static app
+// shell (JS/CSS/fonts/images) is precached/cached by `defaultCache`.
 const runtimeCaching = [
   {
-    matcher: ({ url }: { url: URL }) => url.pathname.startsWith('/api/graphql'),
+    matcher: ({ request }: { request: Request }) => request.destination === 'document',
+    handler: new NetworkOnly(),
+  },
+  {
+    matcher: ({ request }: { request: Request }) => request.headers.get('RSC') === '1',
+    handler: new NetworkOnly(),
+  },
+  {
+    matcher: ({ url }: { url: URL }) => url.pathname.startsWith('/api/'),
     handler: new NetworkOnly(),
   },
   ...defaultCache,
