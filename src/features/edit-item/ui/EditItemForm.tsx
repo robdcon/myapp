@@ -19,13 +19,13 @@ import {
   SelectLabel,
 } from '@/components/ui/select';
 import { useEditItem } from '../api/edit-item';
-import { ITEM_CATEGORIES } from '@/src/shared';
 import type { EditItemFeatureProps } from '../model/types';
 import type { ItemFormData } from '@/src/entities/item';
 
 export function EditItemForm({
   itemId,
   boardId,
+  categories,
   onSuccess,
   isOpen,
   onClose,
@@ -34,27 +34,39 @@ export function EditItemForm({
   const [formData, setFormData] = useState<ItemFormData>({
     name: initialValues?.name || '',
     details: initialValues?.details || '',
-    category: initialValues?.category || '',
+    category:
+      initialValues?.category && categories.includes(initialValues.category)
+        ? initialValues.category
+        : '',
   });
 
   const categoryCollection = useMemo(() => {
     return createListCollection({
-      items: ITEM_CATEGORIES.map((category) => ({
+      items: categories.map((category) => ({
         label: category,
         value: category,
       })),
     });
-  }, []);
+  }, [categories]);
 
   useEffect(() => {
     if (initialValues) {
       setFormData({
         name: initialValues.name || '',
         details: initialValues.details || '',
-        category: initialValues.category || '',
+        category:
+          initialValues.category && categories.includes(initialValues.category)
+            ? initialValues.category
+            : '',
       });
     }
-  }, [initialValues]);
+  }, [initialValues, categories]);
+
+  useEffect(() => {
+    if (formData.category && !categories.includes(formData.category)) {
+      setFormData((prev) => ({ ...prev, category: '' }));
+    }
+  }, [categories, formData.category]);
 
   useEffect(() => {
     if (!isOpen) return;

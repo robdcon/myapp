@@ -1,10 +1,13 @@
 export class ItemEntity {
+  static readonly UNCATEGORIZED_CATEGORY_KEY = '\u0000';
+  static readonly UNCATEGORIZED_CATEGORY_LABEL = 'Uncategorized items';
+
   static groupByCategory(
     items: import('./types').Item[]
   ): Record<string, import('./types').Item[]> {
     return items.reduce(
       (acc, item) => {
-        const category = item.category || 'Uncategorized';
+        const category = item.category || ItemEntity.UNCATEGORIZED_CATEGORY_KEY;
         if (!acc[category]) {
           acc[category] = [];
         }

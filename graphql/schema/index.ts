@@ -23,6 +23,15 @@ export const typeDefs = gql`
     shareToken: String
     isPublic: Boolean!
     calendarStatus: CalendarStatus
+    categories: [BoardCategory!]!
+    canEdit: Boolean!
+  }
+
+  type BoardCategory {
+    id: ID!
+    board_id: ID!
+    name: String!
+    active_item_count: Int!
   }
 
   type CalendarStatus {
@@ -115,6 +124,8 @@ export const typeDefs = gql`
     createItem(boardId: ID!, name: String!, details: String, category: String): Item!
     updateItem(itemId: ID!, name: String, details: String, category: String): Item!
     deleteItem(itemId: ID!): Boolean!
+    createCategory(boardId: ID!, name: String!): BoardCategory!
+    deleteCategory(boardId: ID!, categoryId: ID!): Boolean!
 
     # Board Sharing Mutations
     shareBoard(boardId: ID!, email: String!, permission: PermissionLevel!): BoardShare!

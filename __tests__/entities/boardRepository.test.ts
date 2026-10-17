@@ -4,6 +4,8 @@ import {
 } from '@/src/entities/board/api/boardRepository';
 import { BoardType } from '@/src/entities/board/model/types';
 
+vi.mock('server-only', () => ({}));
+
 vi.mock('@/src/shared/lib/db', () => ({
   query: vi.fn(),
   queryOne: vi.fn(),

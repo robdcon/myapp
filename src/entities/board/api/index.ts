@@ -8,6 +8,12 @@ export const GET_BOARD_QUERY = gql`
       name
       board_type
       description
+      canEdit
+      categories {
+        id
+        name
+        active_item_count
+      }
       items {
         id
         name
@@ -16,6 +22,22 @@ export const GET_BOARD_QUERY = gql`
         category
       }
     }
+  }
+`;
+
+export const CREATE_CATEGORY_MUTATION = gql`
+  mutation CreateCategory($boardId: ID!, $name: String!) {
+    createCategory(boardId: $boardId, name: $name) {
+      id
+      name
+      active_item_count
+    }
+  }
+`;
+
+export const DELETE_CATEGORY_MUTATION = gql`
+  mutation DeleteCategory($boardId: ID!, $categoryId: ID!) {
+    deleteCategory(boardId: $boardId, categoryId: $categoryId)
   }
 `;
 

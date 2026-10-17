@@ -9,6 +9,7 @@ export const useCreateItem = (boardId: string, onSuccess?: () => void) => {
   const [createItemMutation, { loading }] = useMutation<CreateItemData, OperationVariables>(
     CREATE_ITEM_MUTATION,
     {
+    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
     optimisticResponse: (vars) => ({
       createItem: {
         __typename: 'Item',

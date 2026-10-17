@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Box,
   Button,
@@ -19,43 +19,56 @@ import {
   SelectLabel,
 } from '@/components/ui/select';
 import { useCreateItem } from '../api/create-item';
-import { ITEM_CATEGORIES } from '@/src/shared';
 import type { CreateItemFeatureProps } from '../model/types';
 import type { ItemFormData } from '@/src/entities/item';
 
 export function CreateItemForm({
   boardId,
+  categories,
   onSuccess,
   isOpen,
   onClose,
   defaultCategory,
 }: Readonly<CreateItemFeatureProps>) {
+  const availableDefaultCategory =
+    defaultCategory && categories.includes(defaultCategory) ? defaultCategory : '';
+  const previousDefaultCategory = useRef(defaultCategory);
   const [formData, setFormData] = useState<ItemFormData>({
     name: '',
     details: '',
-    category: defaultCategory || '',
+    category: availableDefaultCategory,
   });
 
   const categoryCollection = useMemo(() => {
     return createListCollection({
-      items: ITEM_CATEGORIES.map((category) => ({
+      items: categories.map((category) => ({
         label: category,
         value: category,
       })),
     });
-  }, []);
+  }, [categories]);
 
   useEffect(() => {
-    if (defaultCategory) {
-      setFormData((prev) => ({ ...prev, category: defaultCategory }));
+    if (previousDefaultCategory.current !== defaultCategory) {
+      previousDefaultCategory.current = defaultCategory;
+      setFormData((prev) => ({
+        ...prev,
+        category: availableDefaultCategory,
+      }));
     }
-  }, [defaultCategory]);
+  }, [defaultCategory, availableDefaultCategory]);
+
+  useEffect(() => {
+    if (formData.category && !categories.includes(formData.category)) {
+      setFormData((prev) => ({ ...prev, category: '' }));
+    }
+  }, [categories, formData.category]);
 
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ name: '', details: '', category: defaultCategory || '' });
+      setFormData({ name: '', details: '', category: availableDefaultCategory });
     }
-  }, [isOpen, defaultCategory]);
+  }, [isOpen, availableDefaultCategory]);
 
   useEffect(() => {
     if (!isOpen) return;

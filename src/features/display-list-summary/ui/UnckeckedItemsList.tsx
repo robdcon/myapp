@@ -9,9 +9,10 @@ import { EditItemForm } from '@/src/features/edit-item';
 
 interface UncheckedItemsListProps {
   boardId: string;
+  categories: string[];
 }
 
-export const UncheckedItemsList = ({ boardId }: UncheckedItemsListProps) => {
+export const UncheckedItemsList = ({ boardId, categories }: UncheckedItemsListProps) => {
   const { uncheckedItems, totalUnchecked, hasUncheckedItems, loading, error } =
     useDisplayUncheckedItems(boardId);
   const { toggleItemCheck, isItemToggling } = useToggleItemCheck(boardId);
@@ -59,6 +60,7 @@ export const UncheckedItemsList = ({ boardId }: UncheckedItemsListProps) => {
         <EditItemForm
           itemId={editingItemId}
           boardId={boardId}
+          categories={categories}
           onSuccess={() => setEditingItemId(null)}
           isOpen={!!editingItemId}
           onClose={() => setEditingItemId(null)}

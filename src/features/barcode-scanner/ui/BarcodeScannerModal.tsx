@@ -32,12 +32,14 @@ type ScannerState = 'idle' | 'scanning' | 'looking_up' | 'preview';
 export interface BarcodeScannerModalProps {
   open: boolean;
   onClose: () => void;
+  categories: string[];
   onAddItem: (name: string, details: string, category: string) => Promise<void>;
 }
 
 export function BarcodeScannerModal({
   open,
   onClose,
+  categories,
   onAddItem,
 }: BarcodeScannerModalProps) {
   const [state, setState] = useState<ScannerState>('idle');
@@ -140,6 +142,7 @@ export function BarcodeScannerModal({
       <ScannedProductPreview
         open={isShowingPreview}
         result={scanResult}
+        categories={categories}
         onAdd={handleAddItem}
         onScanAnother={handleScanAnother}
         onClose={handlePreviewClose}

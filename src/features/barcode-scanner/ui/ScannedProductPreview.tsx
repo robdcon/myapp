@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Box, VStack, HStack, Text, Button, Input, Image, Badge } from '@chakra-ui/react';
 import {
   DialogRoot,
@@ -20,20 +20,14 @@ import {
 } from '@/components/ui/select';
 import { Field } from '@/components/ui/field';
 import { createListCollection } from '@chakra-ui/react';
-import { ITEM_CATEGORIES, DEFAULT_CATEGORY } from '@/src/shared';
+import { DEFAULT_CATEGORY } from '@/src/shared';
 import { LuScanLine, LuPackage } from 'react-icons/lu';
 import type { ProductLookupResult } from '../api/product-lookup';
-
-const categoryCollection = createListCollection({
-  items: ITEM_CATEGORIES.map((category) => ({
-    label: category,
-    value: category,
-  })),
-});
 
 export interface ScannedProductPreviewProps {
   open: boolean;
   result: ProductLookupResult | null;
+  categories: string[];
   onAdd: (name: string, details: string, category: string) => void;
   onScanAnother: () => void;
   onClose: () => void;
@@ -43,6 +37,7 @@ export interface ScannedProductPreviewProps {
 export function ScannedProductPreview({
   open,
   result,
+  categories,
   onAdd,
   onScanAnother,
   onClose,
@@ -50,7 +45,14 @@ export function ScannedProductPreview({
 }: ScannedProductPreviewProps) {
   const [name, setName] = useState('');
   const [details, setDetails] = useState('');
-  const [category, setCategory] = useState<string[]>([DEFAULT_CATEGORY]);
+  const [category, setCategory] = useState<string[]>([]);
+  const categoryCollection = useMemo(
+    () =>
+      createListCollection({
+        items: categories.map((value) => ({ label: value, value })),
+      }),
+    [categories]
+  );
 
   // Reset form when result changes
   useEffect(() => {
@@ -61,17 +63,18 @@ export function ScannedProductPreview({
       if (result.product.brand) detailParts.push(result.product.brand);
       if (result.product.quantity) detailParts.push(result.product.quantity);
       setDetails(detailParts.join(' - '));
-      setCategory([result.product.category || DEFAULT_CATEGORY]);
+      const mappedCategory = result.product.category || DEFAULT_CATEGORY;
+      setCategory(categories.includes(mappedCategory) ? [mappedCategory] : []);
     } else if (result && !result.found) {
       setName('');
       setDetails('');
-      setCategory([DEFAULT_CATEGORY]);
+      setCategory(categories.includes(DEFAULT_CATEGORY) ? [DEFAULT_CATEGORY] : []);
     }
-  }, [result]);
+  }, [result, categories]);
 
   const handleAdd = () => {
     if (!name.trim()) return;
-    onAdd(name.trim(), details.trim(), category[0]);
+    onAdd(name.trim(), details.trim(), category[0] || '');
   };
 
   const productFound = result?.found && result?.product;
@@ -172,7 +175,7 @@ export function ScannedProductPreview({
                 onValueChange={(e) => setCategory(e.value)}
                 disabled={isAdding}
               >
-                <SelectTrigger>
+                <SelectTrigger clearable>
                   <SelectValueText placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>

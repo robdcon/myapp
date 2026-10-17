@@ -1,9 +1,12 @@
 export { BoardEntity } from './model/board';
 export type {
   Board,
+  BoardCategory,
   CreateBoardInput,
   BoardFormData,
   GetBoardData,
+  CreateCategoryData,
+  DeleteCategoryData,
   MyBoardsData,
   CreateBoardData,
   UpdateBoardData,
@@ -20,6 +23,8 @@ export type {
 export { BoardType } from './model/types';
 export {
   GET_BOARD_QUERY,
+  CREATE_CATEGORY_MUTATION,
+  DELETE_CATEGORY_MUTATION,
   MY_BOARDS_QUERY,
   CREATE_BOARD_MUTATION,
   UPDATE_BOARD_MUTATION,

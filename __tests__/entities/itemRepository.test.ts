@@ -1,8 +1,16 @@
 import {
+  createItem,
   getItemsByBoardId,
+  ItemCategoryNotFoundError,
   toggleItemChecked,
   getItemById,
 } from '@/src/entities/item/api/itemRepository';
+
+const transactionClient = {
+  query: vi.fn(),
+};
+
+vi.mock('server-only', () => ({}));
 
 vi.mock('@/src/shared/lib/db', () => ({
   query: vi.fn(),
@@ -13,10 +21,11 @@ vi.mock('@/src/shared/lib/db', () => ({
   pool: {},
 }));
 
-import { query, queryOne } from '@/src/shared/lib/db';
+import { query, queryOne, transaction } from '@/src/shared/lib/db';
 
 const mockQuery = vi.mocked(query);
 const mockQueryOne = vi.mocked(queryOne);
+const mockTransaction = vi.mocked(transaction);
 
 const sampleItem = {
   id: '10',
@@ -33,6 +42,9 @@ const sampleItem = {
 describe('itemRepository', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTransaction.mockImplementation(async (callback) =>
+      callback(transactionClient as never)
+    );
   });
 
   describe('getItemsByBoardId', () => {
@@ -42,7 +54,7 @@ describe('itemRepository', () => {
       const result = await getItemsByBoardId('1');
 
       expect(mockQuery).toHaveBeenCalledWith(
-        expect.stringContaining('WHERE board_id = $1'),
+        expect.stringContaining('WHERE item.board_id = $1'),
         ['1']
       );
       expect(result).toEqual([sampleItem]);
@@ -86,9 +98,10 @@ describe('itemRepository', () => {
 
       const result = await getItemById('10');
 
-      expect(mockQueryOne).toHaveBeenCalledWith('SELECT * FROM items WHERE id = $1', [
-        '10',
-      ]);
+      expect(mockQueryOne).toHaveBeenCalledWith(
+        expect.stringContaining('LEFT JOIN board_categories'),
+        ['10']
+      );
       expect(result).toEqual(sampleItem);
     });
 
@@ -98,6 +111,40 @@ describe('itemRepository', () => {
       const result = await getItemById('999');
 
       expect(result).toBeNull();
+    });
+
+    describe('createItem', () => {
+      it('locks and resolves a board category before creating the item', async () => {
+        transactionClient.query
+          .mockResolvedValueOnce({ rows: [{ id: '15', name: 'Pantry' }] })
+          .mockResolvedValueOnce({ rows: [{ ...sampleItem, category: undefined }] });
+
+        const result = await createItem({
+          boardId: '1',
+          name: 'Rice',
+          category: ' pantry ',
+        });
+
+        expect(transactionClient.query.mock.calls[0][0]).toContain('FOR KEY SHARE');
+        expect(transactionClient.query.mock.calls[1][0]).toContain('category_id');
+        expect(transactionClient.query.mock.calls[1][1]).toEqual([
+          '1',
+          'Rice',
+          undefined,
+          '15',
+          undefined,
+        ]);
+        expect(result?.category).toBe('Pantry');
+      });
+
+      it('rejects a category not available on the selected board', async () => {
+        transactionClient.query.mockResolvedValueOnce({ rows: [] });
+
+        await expect(
+          createItem({ boardId: '1', name: 'Rice', category: 'Missing' })
+        ).rejects.toBeInstanceOf(ItemCategoryNotFoundError);
+        expect(transactionClient.query).toHaveBeenCalledTimes(1);
+      });
     });
   });
 });

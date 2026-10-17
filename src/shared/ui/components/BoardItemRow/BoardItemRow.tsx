@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Box, Flex, VStack, Text, Button, HStack } from '@chakra-ui/react';
+import { Box, Flex, VStack, Text, HStack, IconButton } from '@chakra-ui/react';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { BoardType } from '@/src/entities/board';
 import type { Item } from '@/src/entities/item';
+import { LuPen, LuTrash2  } from "react-icons/lu";
 
 export interface BoardItemRowProps {
   item: Item;
@@ -149,27 +150,20 @@ export const BoardItemRow = React.memo(function BoardItemRow({
           </VStack>
         </Flex>
         <HStack gap={2}>
-          <Button
-            data-edit-button="true"
-            onClick={handleEditClick}
-            variant="ghost"
-            size="sm"
-            colorPalette="appPrimary"
-            _hover={{ bg: 'appPrimary.50' }}
-          >
-            Edit
-          </Button>
+          <IconButton aria-label="Edit item" size="sm" variant="ghost" colorScheme="appPrimary" onClick={handleEditClick}><LuPen /></IconButton>
+          
           {onDelete && (
-            <Button
+            <IconButton
               data-delete-button="true"
               onClick={handleDeleteClick}
+              aria-label="Delete item"
               variant="ghost"
               size="sm"
               colorPalette="red"
               _hover={{ bg: 'red.50' }}
             >
-              Delete
-            </Button>
+              <LuTrash2 />
+            </IconButton>
           )}
         </HStack>
       </Flex>

@@ -1,5 +1,6 @@
 import 'server-only';
 import { query, queryOne, transaction } from '@/src/shared/lib/db';
+import { seedBoardCategories } from '@/src/entities/category/api/categoryRepository';
 import { Board } from '../model/types';
 
 export interface BoardRow extends Board {
@@ -67,6 +68,8 @@ export async function createBoard(params: CreateBoardParams): Promise<Board> {
        VALUES ($1, $2, 'OWNER')`,
       [ownerUserId, board.id]
     );
+
+    await seedBoardCategories(client, board.id);
 
     return board;
   });

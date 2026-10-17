@@ -4,7 +4,7 @@ export interface Item {
   name: string;
   details?: string;
   is_checked: boolean;
-  category?: string;
+  category?: string | null;
   created_at: string;
   updated_at: string;
   google_event_id?: string | null;
@@ -18,14 +18,14 @@ export interface CreateItemInput {
   boardId: string;
   name: string;
   details?: string;
-  category?: string;
+  category?: string | null;
 }
 
 export interface UpdateItemInput {
   itemId: string;
   name?: string;
   details?: string;
-  category?: string;
+  category?: string | null;
 }
 
 export interface ItemFormData {
