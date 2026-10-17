@@ -6,6 +6,7 @@ import type { GetBoardData } from '@/src/entities/board';
 
 export const useEditItem = (boardId: string, onSuccess?: () => void) => {
   const [updateItemMutation, { loading }] = useMutation<UpdateItemData>(UPDATE_ITEM_MUTATION, {
+    refetchQueries: [{ query: GET_BOARD_QUERY, variables: { id: boardId } }],
     optimisticResponse: (vars) => {
       return {
         updateItem: {

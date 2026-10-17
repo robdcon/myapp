@@ -1,6 +1,7 @@
 export interface EditItemFeatureProps {
   itemId: string | null;
   boardId: string;
+  categories: string[];
   onSuccess?: () => void;
   isOpen: boolean;
   onClose: () => void;

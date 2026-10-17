@@ -14,6 +14,14 @@ export interface Board {
   created_at: string;
   updated_at: string;
   items?: Item[];
+  categories?: BoardCategory[];
+  canEdit?: boolean;
+}
+
+export interface BoardCategory {
+  id: string;
+  name: string;
+  active_item_count: number;
 }
 
 export interface CreateBoardInput {
@@ -37,6 +45,14 @@ export interface BoardFormData {
 // GraphQL Response Types
 export interface GetBoardData {
   board: Board;
+}
+
+export interface CreateCategoryData {
+  createCategory: BoardCategory;
+}
+
+export interface DeleteCategoryData {
+  deleteCategory: boolean;
 }
 
 export interface MyBoardsData {
