@@ -5,7 +5,10 @@ export interface GraphQLDataLoaders {
   itemsByBoardId: DataLoader<string, any[]>;
   sharesByBoardId: DataLoader<string, any[]>;
   isSharedByBoardId: DataLoader<string, boolean>;
-  permissionByBoardAndUser: DataLoader<{ boardId: string; userId: string }, string | null>;
+  permissionByBoardAndUser: DataLoader<
+    { boardId: string; userId: string },
+    string | null
+  >;
   calendarStatusByBoardId: DataLoader<string, any | null>;
 }
 
@@ -14,9 +17,12 @@ export interface GraphQLDataLoaders {
  */
 async function batchItemsByBoardIds(boardIds: readonly string[]) {
   const result = await pool.query(
-    `SELECT * FROM items 
-     WHERE board_id = ANY($1::int[]) AND deleted_at IS NULL 
-     ORDER BY category NULLS LAST, created_at ASC`,
+    `SELECT item.*, category.name AS category
+     FROM items item
+     LEFT JOIN board_categories category
+       ON category.board_id = item.board_id AND category.id = item.category_id
+     WHERE item.board_id = ANY($1::int[]) AND item.deleted_at IS NULL
+     ORDER BY category.name NULLS LAST, item.created_at ASC`,
     [boardIds]
   );
 
@@ -88,9 +94,7 @@ async function batchIsSharedByBoardIds(boardIds: readonly string[]) {
 /**
  * Batch load user permissions for (boardId, userId) pairs.
  */
-async function batchPermissions(
-  keys: readonly { boardId: string; userId: string }[]
-) {
+async function batchPermissions(keys: readonly { boardId: string; userId: string }[]) {
   if (keys.length === 0) return [];
 
   const boardIds = Array.from(new Set(keys.map((k) => k.boardId)));
