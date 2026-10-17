@@ -15,6 +15,7 @@ import {
   createItem,
   updateItem,
   softDeleteItem,
+  ItemCategoryNotFoundError,
 } from '@/src/entities/item/api/itemRepository';
 
 export const itemResolvers = {
@@ -60,7 +61,7 @@ export const itemResolvers = {
         boardId: string;
         name: string;
         details?: string;
-        category?: string;
+        category?: string | null;
       },
       context: GraphQLContext
     ) => {
@@ -83,8 +84,13 @@ export const itemResolvers = {
         const createdByUserId =
           context.dbUser?.id ?? (await getUserIdByAuth0Id(userId));
 
-        return createItem({ boardId, name, details, category, createdByUserId });
+        return await createItem({ boardId, name, details, category, createdByUserId });
       } catch (error: any) {
+        if (error instanceof ItemCategoryNotFoundError) {
+          throw new GraphQLError(error.message, {
+            extensions: { code: 'CATEGORY_NOT_FOUND' },
+          });
+        }
         if (error.code === '23505') {
           throw new GraphQLError(`Item "${name}" already exists on this board`, {
             extensions: { code: 'DUPLICATE' },
@@ -105,7 +111,7 @@ export const itemResolvers = {
         itemId: string;
         name?: string;
         details?: string;
-        category?: string;
+        category?: string | null;
       },
       context: GraphQLContext
     ) => {
@@ -139,8 +145,13 @@ export const itemResolvers = {
       }
 
       try {
-        return updateItem({ itemId, name, details, category });
+        return await updateItem({ itemId, name, details, category });
       } catch (error: any) {
+        if (error instanceof ItemCategoryNotFoundError) {
+          throw new GraphQLError(error.message, {
+            extensions: { code: 'CATEGORY_NOT_FOUND' },
+          });
+        }
         if (error.code === '23505') {
           throw new GraphQLError(`Item "${name}" already exists on this board`, {
             extensions: { code: 'DUPLICATE' },

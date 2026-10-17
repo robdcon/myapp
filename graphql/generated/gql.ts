@@ -21,7 +21,9 @@ type Documents = {
     "\n  mutation RemoveBoardShare($shareId: ID!) {\n    removeBoardShare(shareId: $shareId)\n  }\n": typeof types.RemoveBoardShareDocument,
     "\n  mutation GenerateShareLink($boardId: ID!) {\n    generateShareLink(boardId: $boardId)\n  }\n": typeof types.GenerateShareLinkDocument,
     "\n  mutation RevokeShareLink($boardId: ID!) {\n    revokeShareLink(boardId: $boardId)\n  }\n": typeof types.RevokeShareLinkDocument,
-    "\n  query GetBoard($id: ID!) {\n    board(id: $id) {\n      id\n      name\n      board_type\n      description\n      items {\n        id\n        name\n        details\n        is_checked\n        category\n        google_event_id\n        event_start_time\n        event_end_time\n        event_description\n        google_calendar_link\n      }\n    }\n  }\n": typeof types.GetBoardDocument,
+    "\n  query GetBoard($id: ID!) {\n    board(id: $id) {\n      id\n      name\n      board_type\n      description\n      canEdit\n      categories {\n        id\n        name\n        active_item_count\n      }\n      items {\n        id\n        name\n        details\n        is_checked\n        category\n      }\n    }\n  }\n": typeof types.GetBoardDocument,
+    "\n  mutation CreateCategory($boardId: ID!, $name: String!) {\n    createCategory(boardId: $boardId, name: $name) {\n      id\n      name\n      active_item_count\n    }\n  }\n": typeof types.CreateCategoryDocument,
+    "\n  mutation DeleteCategory($boardId: ID!, $categoryId: ID!) {\n    deleteCategory(boardId: $boardId, categoryId: $categoryId)\n  }\n": typeof types.DeleteCategoryDocument,
     "\n  query MyBoards {\n    myBoards {\n      id\n      name\n      created_at\n      board_type\n    }\n  }\n": typeof types.MyBoardsDocument,
     "\n  mutation CreateBoard($name: String!, $board_type: BoardType!, $description: String) {\n    createBoard(name: $name, board_type: $board_type, description: $description) {\n      id\n      name\n      board_type\n      description\n      created_at\n    }\n  }\n": typeof types.CreateBoardDocument,
     "\n  mutation UpdateBoard($id: ID!, $name: String, $description: String) {\n    updateBoard(id: $id, name: $name, description: $description) {\n      id\n      name\n      description\n      updated_at\n    }\n  }\n": typeof types.UpdateBoardDocument,
@@ -46,7 +48,9 @@ const documents: Documents = {
     "\n  mutation RemoveBoardShare($shareId: ID!) {\n    removeBoardShare(shareId: $shareId)\n  }\n": types.RemoveBoardShareDocument,
     "\n  mutation GenerateShareLink($boardId: ID!) {\n    generateShareLink(boardId: $boardId)\n  }\n": types.GenerateShareLinkDocument,
     "\n  mutation RevokeShareLink($boardId: ID!) {\n    revokeShareLink(boardId: $boardId)\n  }\n": types.RevokeShareLinkDocument,
-    "\n  query GetBoard($id: ID!) {\n    board(id: $id) {\n      id\n      name\n      board_type\n      description\n      items {\n        id\n        name\n        details\n        is_checked\n        category\n        google_event_id\n        event_start_time\n        event_end_time\n        event_description\n        google_calendar_link\n      }\n    }\n  }\n": types.GetBoardDocument,
+    "\n  query GetBoard($id: ID!) {\n    board(id: $id) {\n      id\n      name\n      board_type\n      description\n      canEdit\n      categories {\n        id\n        name\n        active_item_count\n      }\n      items {\n        id\n        name\n        details\n        is_checked\n        category\n      }\n    }\n  }\n": types.GetBoardDocument,
+    "\n  mutation CreateCategory($boardId: ID!, $name: String!) {\n    createCategory(boardId: $boardId, name: $name) {\n      id\n      name\n      active_item_count\n    }\n  }\n": types.CreateCategoryDocument,
+    "\n  mutation DeleteCategory($boardId: ID!, $categoryId: ID!) {\n    deleteCategory(boardId: $boardId, categoryId: $categoryId)\n  }\n": types.DeleteCategoryDocument,
     "\n  query MyBoards {\n    myBoards {\n      id\n      name\n      created_at\n      board_type\n    }\n  }\n": types.MyBoardsDocument,
     "\n  mutation CreateBoard($name: String!, $board_type: BoardType!, $description: String) {\n    createBoard(name: $name, board_type: $board_type, description: $description) {\n      id\n      name\n      board_type\n      description\n      created_at\n    }\n  }\n": types.CreateBoardDocument,
     "\n  mutation UpdateBoard($id: ID!, $name: String, $description: String) {\n    updateBoard(id: $id, name: $name, description: $description) {\n      id\n      name\n      description\n      updated_at\n    }\n  }\n": types.UpdateBoardDocument,
@@ -109,7 +113,15 @@ export function gql(source: "\n  mutation RevokeShareLink($boardId: ID!) {\n    
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  query GetBoard($id: ID!) {\n    board(id: $id) {\n      id\n      name\n      board_type\n      description\n      items {\n        id\n        name\n        details\n        is_checked\n        category\n        google_event_id\n        event_start_time\n        event_end_time\n        event_description\n        google_calendar_link\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetBoard($id: ID!) {\n    board(id: $id) {\n      id\n      name\n      board_type\n      description\n      items {\n        id\n        name\n        details\n        is_checked\n        category\n        google_event_id\n        event_start_time\n        event_end_time\n        event_description\n        google_calendar_link\n      }\n    }\n  }\n"];
+export function gql(source: "\n  query GetBoard($id: ID!) {\n    board(id: $id) {\n      id\n      name\n      board_type\n      description\n      canEdit\n      categories {\n        id\n        name\n        active_item_count\n      }\n      items {\n        id\n        name\n        details\n        is_checked\n        category\n      }\n    }\n  }\n"): (typeof documents)["\n  query GetBoard($id: ID!) {\n    board(id: $id) {\n      id\n      name\n      board_type\n      description\n      canEdit\n      categories {\n        id\n        name\n        active_item_count\n      }\n      items {\n        id\n        name\n        details\n        is_checked\n        category\n      }\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation CreateCategory($boardId: ID!, $name: String!) {\n    createCategory(boardId: $boardId, name: $name) {\n      id\n      name\n      active_item_count\n    }\n  }\n"): (typeof documents)["\n  mutation CreateCategory($boardId: ID!, $name: String!) {\n    createCategory(boardId: $boardId, name: $name) {\n      id\n      name\n      active_item_count\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\n  mutation DeleteCategory($boardId: ID!, $categoryId: ID!) {\n    deleteCategory(boardId: $boardId, categoryId: $categoryId)\n  }\n"): (typeof documents)["\n  mutation DeleteCategory($boardId: ID!, $categoryId: ID!) {\n    deleteCategory(boardId: $boardId, categoryId: $categoryId)\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
