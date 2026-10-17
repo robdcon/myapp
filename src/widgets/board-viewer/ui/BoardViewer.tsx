@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation } from '@apollo/client/react';
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Box,
@@ -42,6 +42,7 @@ import type { Item } from '@/src/entities/item';
 import type { BoardViewerWidgetProps } from '../model/types';
 import { UncheckedItemsList } from '@/src/features/display-list-summary';
 import { ShareBoardDialog } from '@/src/features/boards/ui/ShareBoardDialog';
+import { CategoryManagerDialog } from '@/src/features/board-categories/ui/CategoryManagerDialog';
 import {
   CalendarConnectionStatus,
   ConnectCalendarButton,
@@ -62,6 +63,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
     undefined
   );
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isCategoryManagerOpen, setIsCategoryManagerOpen] = useState(false);
   const [isCalendarSelectorOpen, setIsCalendarSelectorOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -137,6 +139,10 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
 
   const board = data?.board;
   const items = board?.items || [];
+  const categoryOptions = useMemo(
+    () => board?.categories?.map((category) => category.name) ?? [],
+    [board?.categories]
+  );
 
   const { checkAllItems, uncheckAllItems, hasCheckedItems, hasUncheckedItems } =
     useBulkItemActions(boardId, items);
@@ -161,7 +167,9 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
   const editingItem = editingItemId ? items.find((i) => i.id === editingItemId) : null;
 
   const handleQuickAdd = (category?: string) => {
-    setSelectedCategory(category);
+    setSelectedCategory(
+      category === ItemEntity.UNCATEGORIZED_CATEGORY_KEY ? undefined : category
+    );
     setIsAddingItem(true);
   };
 
@@ -202,6 +210,19 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
 
   // Group items by category
   const itemsByCategory = ItemEntity.groupByCategory(items);
+  const categoryNames = [
+    ...new Set([
+      ...(board?.categories?.map((category) => category.name) ?? []),
+      ...Object.keys(itemsByCategory),
+    ]),
+  ].sort((left, right) => {
+    if (left === ItemEntity.UNCATEGORIZED_CATEGORY_KEY) return 1;
+    if (right === ItemEntity.UNCATEGORIZED_CATEGORY_KEY) return -1;
+    return left.localeCompare(right);
+  });
+  const categoryEntries = categoryNames.map(
+    (category) => [category, itemsByCategory[category] ?? []] as const
+  );
   const checkedCount = ItemEntity.getCheckedCount(items);
   const totalCount = items.length;
 
@@ -259,26 +280,37 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                   {board?.name}
                 </Heading>
 
-                <Button
-                  colorPalette="appPrimary"
-                  size="sm"
-                  onClick={() => setIsShareDialogOpen(true)}
-                >
-                  <svg
-                    className="w-4 h-4 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                <HStack>
+                  {board?.canEdit && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsCategoryManagerOpen(true)}
+                    >
+                      Settings
+                    </Button>
+                  )}
+                  <Button
+                    colorPalette="appPrimary"
+                    size="sm"
+                    onClick={() => setIsShareDialogOpen(true)}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                    />
-                  </svg>
-                  Share
-                </Button>
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                      />
+                    </svg>
+                    Share
+                  </Button>
+                </HStack>
               </HStack>
 
               {board?.description && (
@@ -368,7 +400,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           />
 
           {/* Sticky Category Navigation */}
-          {Object.keys(itemsByCategory).length > 0 && (
+          {categoryEntries.length > 0 && (
             <Box
               position="sticky"
               top="0"
@@ -399,7 +431,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                   },
                 }}
               >
-                {Object.entries(itemsByCategory).map(([category, items]) => (
+                {categoryEntries.map(([category, categoryItems]) => (
                   <Button
                     key={category}
                     onClick={() => scrollToCategory(category)}
@@ -409,7 +441,9 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                     flexShrink={0}
                     fontWeight="medium"
                   >
-                    {category}
+                    {category === ItemEntity.UNCATEGORIZED_CATEGORY_KEY
+                      ? ItemEntity.UNCATEGORIZED_CATEGORY_LABEL
+                      : category}
                     <Badge
                       ml={2}
                       colorPalette={
@@ -418,7 +452,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                       variant="subtle"
                       fontSize="xs"
                     >
-                      {items.length}
+                      {categoryItems.length}
                     </Badge>
                   </Button>
                 ))}
@@ -429,6 +463,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           {/* Add Item Form */}
           <CreateItemForm
             boardId={boardId}
+            categories={categoryOptions}
             onSuccess={(category) => handleItemCreated(category)}
             isOpen={isAddingItem}
             onClose={handleCloseAddForm}
@@ -439,6 +474,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           <EditItemForm
             itemId={editingItemId}
             boardId={boardId}
+            categories={categoryOptions}
             onSuccess={() => setEditingItemId(null)}
             isOpen={!!editingItemId && !!editingItem}
             onClose={() => setEditingItemId(null)}
@@ -454,7 +490,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           />
 
           {/* Items by Category */}
-          {Object.entries(itemsByCategory).length === 0 ? (
+          {categoryEntries.length === 0 ? (
             <Card.Root>
               <Card.Body textAlign="center" py={12}>
                 <Text color="gray.500" fontSize="lg" mb={4} fontWeight="medium">
@@ -464,100 +500,103 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
             </Card.Root>
           ) : (
             <VStack align="stretch" gap={6}>
-              <UncheckedItemsList boardId={boardId} />
-              {Object.entries(itemsByCategory).map(
-                ([category, categoryItems]: [string, Item[]]) => (
-                  <Card.Root
-                    key={category}
-                    ref={(el) => {
-                      categoryRefs.current[category] = el;
-                    }}
-                    variant="outline"
-                    borderColor={
-                      highlightedCategory === category
-                        ? 'appPrimary.400'
-                        : 'appPrimary.200'
-                    }
-                    borderWidth={highlightedCategory === category ? '3px' : '1px'}
-                    _hover={{
-                      shadow: 'lg',
-                      transform: 'translateY(-2px)',
-                      borderColor: 'appPrimary.300',
-                    }}
-                    transition="all 0.3s ease"
-                    bg={highlightedCategory === category ? 'appPrimary.50' : 'white'}
+              <UncheckedItemsList boardId={boardId} categories={categoryOptions} />
+              {categoryEntries.map(([category, categoryItems]) => (
+                <Card.Root
+                  key={category}
+                  ref={(el) => {
+                    categoryRefs.current[category] = el;
+                  }}
+                  variant="outline"
+                  borderColor={
+                    highlightedCategory === category ? 'appPrimary.400' : 'appPrimary.200'
+                  }
+                  borderWidth={highlightedCategory === category ? '3px' : '1px'}
+                  _hover={{
+                    shadow: 'lg',
+                    transform: 'translateY(-2px)',
+                    borderColor: 'appPrimary.300',
+                  }}
+                  transition="all 0.3s ease"
+                  bg={highlightedCategory === category ? 'appPrimary.50' : 'white'}
+                >
+                  <Card.Header
+                    bg="appPrimary.50"
+                    borderBottom="1px"
+                    borderColor="appPrimary.100"
                   >
-                    <Card.Header
-                      bg="appPrimary.50"
-                      borderBottom="1px"
-                      borderColor="appPrimary.100"
-                    >
-                      <Flex justify="space-between" align="center">
-                        <Heading size="lg" color="appPrimary.700">
-                          {category}
-                        </Heading>
-                        <IconButton
-                          onClick={() => handleQuickAdd(category)}
-                          variant="ghost"
-                          colorPalette="appPrimary"
-                          aria-label={`Add item to ${category}`}
-                          size="sm"
-                        >
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 4v16m8-8H4"
-                            />
-                          </svg>
-                        </IconButton>
-                      </Flex>
-                    </Card.Header>
-
-                    <Card.Body p={0} className="BoardItems">
-                      <VStack
-                        align="stretch"
-                        gap={0}
-                        divideY="1px"
-                        divideColor="appPrimary.100"
+                    <Flex justify="space-between" align="center">
+                      <Heading size="lg" color="appPrimary.700">
+                        {category === ItemEntity.UNCATEGORIZED_CATEGORY_KEY
+                          ? ItemEntity.UNCATEGORIZED_CATEGORY_LABEL
+                          : category}
+                      </Heading>
+                      <IconButton
+                        onClick={() => handleQuickAdd(category)}
+                        variant="ghost"
+                        colorPalette="appPrimary"
+                        aria-label={`Add item to ${category}`}
+                        size="sm"
                       >
-                        {categoryItems.map((item: Item) => {
-                          // Render CalendarEventItem for items with google_event_id
-                          if (item.google_event_id) {
-                            return (
-                              <CalendarEventItem
-                                key={item.id}
-                                item={item}
-                                onEdit={setEditingItemId}
-                                onDelete={deleteItem}
-                              />
-                            );
-                          }
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                      </IconButton>
+                    </Flex>
+                  </Card.Header>
 
-                          // Render normal BoardItemRow for regular items
+                  <Card.Body p={0} className="BoardItems">
+                    <VStack
+                      align="stretch"
+                      gap={0}
+                      divideY="1px"
+                      divideColor="appPrimary.100"
+                    >
+                      {categoryItems.map((item: Item) => {
+                        // Render CalendarEventItem for items with google_event_id
+                        if (item.google_event_id) {
                           return (
-                            <BoardItemRow
+                            <CalendarEventItem
                               key={item.id}
                               item={item}
-                              boardType={board?.board_type ?? BoardType.CHECKLIST}
-                              onToggleCheck={toggleItemCheck}
                               onEdit={setEditingItemId}
                               onDelete={deleteItem}
-                              isToggling={isItemToggling(item.id)}
                             />
                           );
-                        })}
-                      </VStack>
-                    </Card.Body>
-                  </Card.Root>
-                )
-              )}
+                        }
+
+                        // Render normal BoardItemRow for regular items
+                        return (
+                          <BoardItemRow
+                            key={item.id}
+                            item={item}
+                            boardType={board?.board_type ?? BoardType.CHECKLIST}
+                            onToggleCheck={toggleItemCheck}
+                            onEdit={setEditingItemId}
+                            onDelete={deleteItem}
+                            isToggling={isItemToggling(item.id)}
+                          />
+                        );
+                      })}
+                    </VStack>
+                    {categoryItems.length === 0 && (
+                      <Text color="gray.500" fontSize="sm" textAlign="center" py={6}>
+                        No items in this category yet.
+                      </Text>
+                    )}
+                  </Card.Body>
+                </Card.Root>
+              ))}
             </VStack>
           )}
         </Container>
@@ -581,6 +620,15 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
                   disabled={isAddingItem}
                 />
               )}
+
+              {board && (
+                <CategoryManagerDialog
+                  boardId={boardId}
+                  categories={board.categories ?? []}
+                  open={isCategoryManagerOpen}
+                  onClose={() => setIsCategoryManagerOpen(false)}
+                />
+              )}
             </HStack>
 
             {board?.board_type === BoardType.CHECKLIST && (
@@ -599,6 +647,7 @@ export function BoardViewer({ boardId }: Readonly<BoardViewerWidgetProps>) {
           <BarcodeScannerModal
             open={isScannerOpen}
             onClose={() => setIsScannerOpen(false)}
+            categories={categoryOptions}
             onAddItem={handleAddScannedItem}
           />
         )}
