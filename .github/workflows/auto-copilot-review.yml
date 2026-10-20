@@ -40,7 +40,7 @@ jobs:
       # Step 1: Checkout the repository code
       # This action (actions/checkout) is provided by GitHub
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Step 2: Add a confirmation comment
       # This uses the GitHub CLI to add a comment to the PR.
